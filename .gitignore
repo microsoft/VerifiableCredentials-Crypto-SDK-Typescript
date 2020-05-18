@@ -348,3 +348,5 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+libs/keys/package-lock.json
+libs/keys/nunitresults.xml

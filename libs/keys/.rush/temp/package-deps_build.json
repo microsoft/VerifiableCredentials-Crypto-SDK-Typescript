@@ -1,0 +1,4 @@
+{
+  "files": {},
+  "arguments": "tsc --p tsconfig.json "
+}
