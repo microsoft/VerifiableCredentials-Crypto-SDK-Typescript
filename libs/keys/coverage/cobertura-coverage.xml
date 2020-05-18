@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
-<coverage lines-valid="239" lines-covered="239" line-rate="1" branches-valid="86" branches-covered="86" branch-rate="1" timestamp="1589793709562" complexity="0" version="0.1">
+<coverage lines-valid="239" lines-covered="239" line-rate="1" branches-valid="86" branches-covered="86" branch-rate="1" timestamp="1589794209143" complexity="0" version="0.1">
   <sources>
     <source>C:\did1\repos\VerifiableCredentials-Crypto-SDK-Typescript\libs\keys</source>
   </sources>

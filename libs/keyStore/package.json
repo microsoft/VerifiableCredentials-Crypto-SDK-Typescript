@@ -1,7 +1,7 @@
 {
-  "name": "verifiablecredentials-crypto-sdk-typescript-keys",
+  "name": "verifiablecredentials-crypto-sdk-typescript-keystore",
   "version": "1.1.0",
-  "description": "Package for managing keys in the DID space.",
+  "description": "Package for managing keys in a key store.",
   "repository": {
     "type": "git",
     "url": "https://msazure.visualstudio.com/DefaultCollection/One/_git/AD-DID-Services-Enterprise-Agent.git"
@@ -29,17 +29,18 @@
     "jasmine-reporters": "^2.3.2",
     "jasmine-spec-reporter": "^4.2.1",
     "jasmine-ts": "^0.3.0",
-    "nyc": "15.0.1",
+    "nyc": "^15.0.1",
     "prettier": "^1.18.2",
     "ts-node": "8.5.4",
     "tslint": "^5.20.0",
-    "typescript": "3.9.2"
+    "typescript": "3.7.3",
+    "typescript-map": "0.0.7"
   },
   "dependencies": {
+    "@microsoft/crypto-keys": "^1.0.0",
     "@types/node": "12.12.16",
     "base64url": "^3.0.1",
-    "clone": "2.1.2",
-    "node-jose": "1.0.0",
+    "clone": "^2.1.2",
     "webcrypto-core": "1.0.1"
   },
   "nyc": {

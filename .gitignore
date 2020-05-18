@@ -17,6 +17,10 @@
 mono_crash.*
 
 # Build results
+.nyc_output
+coverage
+dist
+.rush
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
@@ -350,3 +354,4 @@ MigrationBackup/
 .ionide/
 libs/keys/package-lock.json
 libs/keys/nunitresults.xml
+libs/keyStore/nunitresults.xml
