@@ -1,12 +1,6 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
-
 import { IKeyStore } from '@microsoft/crypto-keystore';
-import CryptoFactory, { CryptoFactoryScope } from './CryptoFactory';
+import { CryptoFactory, CryptoFactoryScope } from './index';
 import { SubtleCryptoElliptic } from '@microsoft/crypto-subtle-plugin-elliptic';
-import { SubtleCrypto } from './index';
 
 /**
  * Utility class to handle all CryptoFactory dependency injection for the environment node.

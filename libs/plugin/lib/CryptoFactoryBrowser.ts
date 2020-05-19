@@ -24,6 +24,7 @@ export default class CryptoFactoryBrowser extends CryptoFactory {
     this.addMessageSigner('ES256K', {subtleCrypto, scope: CryptoFactoryScope.All});
     this.addMessageSigner('EdDSA', {subtleCrypto, scope: CryptoFactoryScope.All});
     this.algorithmTransform = CryptoFactoryBrowser.normalizeAlgorithm;
-    this.keyTransform = CryptoFactoryBrowser.normalizeJwk;
+    this.keyTransformImport = CryptoFactoryBrowser.normalizeJwkImport;
+    this.keyTransformExport = CryptoFactoryBrowser.normalizeJwkExport;
   }
 }

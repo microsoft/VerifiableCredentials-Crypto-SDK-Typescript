@@ -8,31 +8,36 @@ const { Crypto } = require("@peculiar/webcrypto");
  */
 export default class SubtleCrypto {
     constructor() {
-      console.log(`SubtleCrypto object created`);
+        console.log(`SubtleCrypto object created`);
     }
 
     private subtle = new Crypto().subtle;
     private _cryptoFactory: CryptoFactory | undefined;
 
-    public set  cryptoFactory(cryptoFactory: CryptoFactory | undefined) {
+    /**
+     * Set a new crypto factory
+     */
+    public set cryptoFactory(cryptoFactory: CryptoFactory | undefined) {
         this._cryptoFactory = cryptoFactory;
     }
 
-    public get  cryptoFactory(): CryptoFactory | undefined {
+    /**
+     * Gets the crypto factory
+     */
+    public get cryptoFactory(): CryptoFactory | undefined {
         return this._cryptoFactory;
     }
 
     public async digest(algorithm: Algorithm, data: BufferSource): Promise<ArrayBuffer> {
-      // CryptoFactory transforms
-      algorithm = this.cryptoFactory ? this.cryptoFactory.algorithmTransform(algorithm) : algorithm;
+        // CryptoFactory transforms
+        algorithm = this.cryptoFactory ? this.cryptoFactory.algorithmTransform(algorithm) : algorithm;
+        const result = await this.subtle.digest(algorithm, data);
 
-      const result = await this.subtle.digest(algorithm, data);
-
-      return result;
-  }
+        return result;
+    }
 
 
-    public async generateKey(algorithm: Algorithm, extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKeyPair | CryptoKey> {
+    public async generateKey(algorithm: Algorithm, extractable: boolean, keyUsages: KeyUsage[], _options?: any): Promise<CryptoKeyPair | CryptoKey> {
         // CryptoFactory transforms
         algorithm = this.cryptoFactory ? this.cryptoFactory.algorithmTransform(algorithm) : algorithm;
 
@@ -76,24 +81,6 @@ export default class SubtleCrypto {
         return result;
     }
 
-    public async deriveBits(algorithm: Algorithm, baseKey: CryptoKey, length: number): Promise<ArrayBuffer> {
-        // CryptoFactory transforms
-        algorithm = this.cryptoFactory ? this.cryptoFactory.algorithmTransform(algorithm) : algorithm;
-
-        const result = await this.subtle.deriveBits(algorithm, baseKey, length);
-
-        return result;
-    }
-
-    public async deriveKey(algorithm: Algorithm, baseKey: CryptoKey, derivedKeyType: Algorithm, extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKey> {
-        // CryptoFactory transforms
-        algorithm = this.cryptoFactory ? this.cryptoFactory.algorithmTransform(algorithm) : algorithm;
-
-        const result = await this.subtle.deriveBits(algorithm, baseKey, derivedKeyType, extractable, keyUsages);
-
-        return result;
-    }
-
     //public async exportKey(format: "raw" | "spki" | "pkcs8", key: CryptoKey): Promise<ArrayBuffer>;
     //public async exportKey(format: "jwk", key: CryptoKey): Promise<JsonWebKey>;
     //public async exportKey(format: KeyFormat, key: CryptoKey): Promise<JsonWebKey | ArrayBuffer>;
@@ -101,14 +88,14 @@ export default class SubtleCrypto {
         // CryptoFactory transforms
 
         let result = await this.subtle.exportKey(format, key);
-        result = this.cryptoFactory ? this.cryptoFactory.keyTransform(result, CryptoFactoryScope.All) : result;
+        result = this.cryptoFactory ? this.cryptoFactory.keyTransformExport(result, CryptoFactoryScope.All) : result;
         return result;
     }
 
     public async importKey(format: KeyFormat, keyData: JsonWebKey | BufferSource, algorithm: Algorithm, extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKey> {
         // CryptoFactory transforms
-      algorithm = this.cryptoFactory ? this.cryptoFactory.algorithmTransform(algorithm) : algorithm;
-
+        algorithm = this.cryptoFactory ? this.cryptoFactory.algorithmTransform(algorithm) : algorithm;
+        keyData = this.cryptoFactory ? this.cryptoFactory.keyTransformImport(keyData, CryptoFactoryScope.All): keyData;
         const result = await this.subtle.importKey(format, keyData, algorithm, extractable, keyUsages);
 
         return result;

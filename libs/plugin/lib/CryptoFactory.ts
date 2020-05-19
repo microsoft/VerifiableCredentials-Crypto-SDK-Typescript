@@ -68,7 +68,12 @@ export default class CryptoFactory {
   /**
    * Method to transform the key for the underlying plugin
    */
-  public keyTransform = (key: any, _scope: CryptoFactoryScope) => { return key };
+  public keyTransformImport = (key: any, _scope: CryptoFactoryScope) => { return key };
+
+  /**
+   * Method to transform the key for the underlying plugin
+   */
+  public keyTransformExport = (key: any, _scope: CryptoFactoryScope) => { return key };
 
   /**
    * The key encryptors
@@ -125,22 +130,9 @@ export default class CryptoFactory {
     this.messageAuthenticationCodeSigners = {'*': [{ subtleCrypto: defaultCrypto, scope: CryptoFactoryScope.All}]};
     this.messageDigests = {'*': [{ subtleCrypto: defaultCrypto, scope: CryptoFactoryScope.All}]};
     this.algorithmTransform = CryptoFactory.normalizeAlgorithm;
-    this.keyTransform = CryptoFactory.normalizeJwk;
+    this.keyTransformImport = CryptoFactory.normalizeJwkImport;
+    this.keyTransformExport = CryptoFactory.normalizeJwkExport;
   }
-
- /**
-  * Method to transform the algorithm for the underlying plugin
-  */
-  public transformAlgorithm (alg: Algorithm) {
-    return this.algorithmTransform(alg);
-  }
-
-  /**
-   * Method to transform the key for the underlying plugin
-   */
-  public transformKey (key: any, scope: CryptoFactoryScope) { 
-    return this.keyTransform(key, scope) 
-  };
 
   /**
    * Sets the key encrypter plugin given the encryption algorithm's name
@@ -300,7 +292,7 @@ export default class CryptoFactory {
    * Normalize the JWK parameters so it can be used by underlying crypto.
    * @param jwk Json web key to be normalized
    */
-  public static normalizeJwk (jwk: any) {
+  public static normalizeJwkImport (jwk: any) {
     if (jwk.crv) {
       if (jwk.crv === CURVE_P256K || jwk.crv === CURVE_SECP256K1) {
         const clonedKey = clone(jwk);
@@ -312,6 +304,21 @@ export default class CryptoFactory {
     return jwk;
   }
 
+  /**
+   * Normalize the JWK parameters from the underlying crypto so it is normalized to standardized parameters.
+   * @param jwk Json web key to be normalized
+   */
+  public static normalizeJwkExport (jwk: any) {
+    if (jwk.crv) {
+      if (jwk.crv === CURVE_P256K || jwk.crv === CURVE_K256) {
+        const clonedKey = clone(jwk);
+        clonedKey.crv = CURVE_SECP256K1;
+        return clonedKey;
+      }
+    }
+
+    return jwk;
+  }
   /**
    * Normalize the algorithm so it can be used by underlying crypto.
    * @param algorithm Algorithm to be normalized

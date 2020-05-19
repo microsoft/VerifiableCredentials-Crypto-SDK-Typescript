@@ -28,7 +28,7 @@ describe('SubtleCryptoExtension', () => {
     expect(jwk.kty).toEqual('EC');
   });
  
-  it('should generate an RSA key', async () => {
+  fit('should generate an RSA key', async () => {
     const alg = CryptoHelpers.jwaToWebCrypto('RSA-OAEP');
     const key: any = <CryptoKey> await generator.generateKey(
       alg,
