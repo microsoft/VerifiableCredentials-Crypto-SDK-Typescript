@@ -1,0 +1,68 @@
+{
+  "name": "verifiablecredentials-crypto-sdk-typescript-plugin",
+  "version": "1.1.0",
+  "description": "Package for plugeable crypto based on subtle crypto.",
+  "repository": {
+    "type": "git",
+    "url": "https://msazure.visualstudio.com/DefaultCollection/One/_git/AD-DID-Services-Enterprise-Agent.git"
+  },
+  "keywords": [
+    "Decentralized Identity",
+    "Verifiable Credentials",
+    "DID",
+    "crypto",
+    "keys"
+  ],
+  "author": "Microsoft Corporation",
+  "license": "MIT",
+  "main": "./dist/lib/index.js",
+  "scripts": {
+    "build": "tsc --p tsconfig.json",
+    "test": "nyc jasmine-ts --config=./tests/jasmine.json",
+    "lint": "tslint --fix --project . --config ./tslint.json",
+    "lint-pr": "tslint --project . --config ./tslint.json"
+  },
+  "devDependencies": {
+    "@microsoft/package-support": "^1.0.0",
+    "@types/jasmine": "^2.8.9",
+    "jasmine": "^3.2.0",
+    "jasmine-reporters": "^2.3.2",
+    "jasmine-spec-reporter": "^4.2.1",
+    "jasmine-ts": "^0.3.0",
+    "nyc": "^15.0.1",
+    "prettier": "^1.18.2",
+    "ts-node": "8.5.4",
+    "tslint": "^5.20.0",
+    "typescript": "3.9.2",
+    "typescript-map": "0.0.7"
+  },
+  "dependencies": {
+    "@microsoft/crypto-keys": "^1.0.0",
+    "@microsoft/crypto-keystore": "^1.0.0",
+    "@microsoft/crypto-subtle-plugin-elliptic": "^1.0.0",
+    "@peculiar/webcrypto": "1.1.1",
+    "@types/node": "12.12.16",
+    "base64url": "^3.0.1",
+    "big-integer": "^1.0.0",
+    "bn.js": "4.11.8",
+    "clone": "2.1.2",
+    "elliptic": "6.5.2",
+    "node-jose": "1.0.0",
+    "webcrypto-core": "1.0.1"
+  },
+  "nyc": {
+    "extension": [
+      ".ts",
+      ".tsx"
+    ],
+    "include": [
+      "src/**",
+      "lib/**"
+    ],
+    "reporter": [
+      "text",
+      "cobertura",
+      "html"
+    ]
+  }
+}

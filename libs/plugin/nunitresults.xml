@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<test-results name="Jasmine Results" total="18" failures="3" not-run="0" date="2020-05-19" time="06:17:57">
+ <test-suite name="CryptoFactory" executed="true" success="true" time="0.015">
+  <results>
+   <test-case name="should create a crypto suite" executed="true" success="true" time="0.003">
+   </test-case>
+   <test-case name="should plugin a new algorithm into crypto suite" executed="true" success="true" time="0.002">
+   </test-case>
+  </results>
+ </test-suite>
+ <test-suite name="PairwiseKey" executed="true" success="true" time="185.753">
+  <results>
+   <test-case name="should throw because the algorithm is not supported for pairwise key generation" executed="true" success="true" time="0.057">
+   </test-case>
+   <test-case name="should throw because the EC curve is not supported for pairwise key generation" executed="true" success="true" time="0.012">
+   </test-case>
+   <test-case name="should generate a masterkey" executed="true" success="true" time="0.085">
+   </test-case>
+   <test-case name="should generate the same keys as in the EC reference file" executed="true" success="true" time="0.21">
+   </test-case>
+   <test-case name="should generate the same keys as in the RSA reference file" executed="true" success="true" time="51.581">
+   </test-case>
+   <test-case name="should generate a 2048 bit pairwise RSA key" executed="true" success="true" time="28.262">
+   </test-case>
+   <test-case name="should generate a deterministic pairwise key capable of signing" executed="true" success="true" time="0.218">
+   </test-case>
+   <test-case name="should generate a deterministic pairwise key" executed="true" success="true" time="0.004">
+   </test-case>
+   <test-case name="should generate unique pairwise keys for different personas" executed="true" success="true" time="0.071">
+   </test-case>
+   <test-case name="should generate unique pairwise identifiers using a different seed" executed="true" success="true" time="5.58">
+   </test-case>
+   <test-case name="should generate unique pairwise identifiers for different peers" executed="true" success="true" time="0.258">
+   </test-case>
+  </results>
+ </test-suite>
+ <test-suite name="SubtleCryptoExtension" executed="true" success="false" time="0.574">
+  <results>
+   <test-case name="should generate an ECDSA key" executed="true" success="false" time="0.054">
+    <failure>
+     <message><![CDATA[Error: Cannot get CryptoKey from secure storage]]></message>
+     <stack-trace><![CDATA[Error: Cannot get CryptoKey from secure storage
+    at getCryptoKey (C:\did1\repos\VerifiableCredentials-Crypto-SDK-Typescript\libs\plugin\node_modules\@peculiar\webcrypto\build\webcrypto.js:90:15)
+    at EcdsaProvider.checkCryptoKey (C:\did1\repos\VerifiableCredentials-Crypto-SDK-Typescript\libs\plugin\node_modules\@peculiar\webcrypto\build\webcrypto.js:1586:29)
+    at EcdsaProvider.checkExportKey (C:\did1\repos\VerifiableCredentials-Crypto-SDK-Typescript\libs\plugin\node_modules\@peculiar\webcrypto\node_modules\webcrypto-core\build\webcrypto-core.js:207:14)
+    at EcdsaProvider.exportKey (C:\did1\repos\VerifiableCredentials-Crypto-SDK-Typescript\libs\plugin\node_modules\@peculiar\webcrypto\node_modules\webcrypto-core\build\webcrypto-core.js:202:29)
+    at SubtleCrypto.exportKey (C:\did1\repos\VerifiableCredentials-Crypto-SDK-Typescript\libs\plugin\node_modules\@peculiar\webcrypto\node_modules\webcrypto-core\build\webcrypto-core.js:820:39)
+    at SubtleCrypto.exportKey (C:\did1\repos\VerifiableCredentials-Crypto-SDK-Typescript\libs\plugin\lib\SubtleCrypto.ts:21:30)
+    at SubtleCryptoExtension.exportJwkKey (C:\did1\repos\VerifiableCredentials-Crypto-SDK-Typescript\libs\plugin\lib\SubtleCryptoExtension.ts:80:76)
+    at UserContext.<anonymous> (C:\did1\repos\VerifiableCredentials-Crypto-SDK-Typescript\libs\plugin\tests\SubtleCryptoExtension.spec.ts:24:33)]]></stack-trace>
+    </failure>
+   </test-case>
+   <test-case name="should generate an RSA key" executed="true" success="false" time="0.061">
+    <failure>
+     <message><![CDATA[Error: Cannot get CryptoKey from secure storage]]></message>
+     <stack-trace><![CDATA[Error: Cannot get CryptoKey from secure storage
+    at getCryptoKey (C:\did1\repos\VerifiableCredentials-Crypto-SDK-Typescript\libs\plugin\node_modules\@peculiar\webcrypto\build\webcrypto.js:90:15)
+    at RsaOaepProvider.checkCryptoKey (C:\did1\repos\VerifiableCredentials-Crypto-SDK-Typescript\libs\plugin\node_modules\@peculiar\webcrypto\build\webcrypto.js:1182:29)
+    at RsaOaepProvider.checkExportKey (C:\did1\repos\VerifiableCredentials-Crypto-SDK-Typescript\libs\plugin\node_modules\@peculiar\webcrypto\node_modules\webcrypto-core\build\webcrypto-core.js:207:14)
+    at RsaOaepProvider.exportKey (C:\did1\repos\VerifiableCredentials-Crypto-SDK-Typescript\libs\plugin\node_modules\@peculiar\webcrypto\node_modules\webcrypto-core\build\webcrypto-core.js:202:29)
+    at SubtleCrypto.exportKey (C:\did1\repos\VerifiableCredentials-Crypto-SDK-Typescript\libs\plugin\node_modules\@peculiar\webcrypto\node_modules\webcrypto-core\build\webcrypto-core.js:820:39)
+    at SubtleCrypto.exportKey (C:\did1\repos\VerifiableCredentials-Crypto-SDK-Typescript\libs\plugin\lib\SubtleCrypto.ts:21:30)
+    at SubtleCryptoExtension.exportJwkKey (C:\did1\repos\VerifiableCredentials-Crypto-SDK-Typescript\libs\plugin\lib\SubtleCryptoExtension.ts:80:76)
+    at UserContext.<anonymous> (C:\did1\repos\VerifiableCredentials-Crypto-SDK-Typescript\libs\plugin\tests\SubtleCryptoExtension.spec.ts:38:33)]]></stack-trace>
+    </failure>
+   </test-case>
+   <test-case name="should generate an oct key" executed="true" success="false" time="0.004">
+    <failure>
+     <message><![CDATA[TypeError: Cannot add property alg, object is not extensible]]></message>
+     <stack-trace><![CDATA[    at <Jasmine>
+    at SubtleCryptoExtension.generateKey (C:\did1\repos\VerifiableCredentials-Crypto-SDK-Typescript\libs\plugin\lib\SubtleCryptoExtension.ts:14:1003)
+    at UserContext.<anonymous> (C:\did1\repos\VerifiableCredentials-Crypto-SDK-Typescript\libs\plugin\tests\SubtleCryptoExtension.spec.ts:47:34)]]></stack-trace>
+    </failure>
+   </test-case>
+   <test-case name="should sign a message" executed="true" success="true" time="0.221">
+   </test-case>
+   <test-case name="should sign a message with key reference options" executed="true" success="true" time="0.095">
+   </test-case>
+  </results>
+ </test-suite>
+</test-results>

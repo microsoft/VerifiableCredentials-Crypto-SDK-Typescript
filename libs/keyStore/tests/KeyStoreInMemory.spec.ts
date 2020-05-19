@@ -69,8 +69,8 @@ describe('KeyStoreInMemory', () => {
     expect(key.qi).toBeUndefined();
 
     key = await keyStore.get('rsaKey');
-    expect(key.d).toBeUndefined();
-    expect(key.n).toBeDefined();
+    expect(key.keys[0].d).toBeUndefined();
+    expect(key.keys[0].n).toBeDefined();
   });
 
   it('should save a string', async () => {
