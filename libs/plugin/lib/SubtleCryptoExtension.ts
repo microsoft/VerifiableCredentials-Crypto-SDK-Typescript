@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { CryptoHelpers, PairwiseKey, CryptoFactory, CryptoFactoryScope, SubtleCrypto, ISubtleCryptoExtension } from './index';
 import { CryptoKey } from 'webcrypto-core';
-import { PublicKey, PrivateKey, KeyType, IKeyContainer } from '@microsoft/crypto-keys';
-import { KeyReferenceOptions, IKeyStore, CryptoAlgorithm, CryptoError } from '@microsoft/crypto-keystore';
+import { PublicKey, PrivateKey, KeyType, IKeyContainer } from 'verifiablecredentials-crypto-sdk-typescript-keys';
+import { KeyReferenceOptions, IKeyStore, CryptoAlgorithm, CryptoError } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 
 /**
  * The class extends the @class SubtleCrypto with addtional methods.

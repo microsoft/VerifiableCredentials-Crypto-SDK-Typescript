@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { EllipticCurveSubtleKey } from '@microsoft/crypto-keys';
+import { EllipticCurveSubtleKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import base64url from 'base64url';
-import { SubtleCrypto } from '@microsoft/crypto-subtle-plugin';
+import { SubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import { CryptoKey } from 'webcrypto-core';
 import KeyVaultProvider from './KeyVaultProvider';
 import KeyStoreKeyVault from '../keyStore/KeyStoreKeyVault';
-import { IKeyStore } from '@microsoft/crypto-keystore';
+import { IKeyStore } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 
 /**
  * Wrapper class for key vault plugin

@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { SubtleCrypto } from '../index';
-import { W3cCryptoApiConstants, PrivateKey, KeyTypeFactory, KeyType, EcPrivateKey, JoseConstants } from '@microsoft/crypto-keys';
-import { CryptoAlgorithm, CryptoError } from '@microsoft/crypto-keystore';
+import { W3cCryptoApiConstants, PrivateKey, KeyTypeFactory, KeyType, EcPrivateKey, JoseConstants } from 'verifiablecredentials-crypto-sdk-typescript-keys';
+import { CryptoAlgorithm, CryptoError } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import base64url from "base64url";
 import CryptoFactory, { CryptoFactoryScope } from "../CryptoFactory";
 

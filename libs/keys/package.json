@@ -30,6 +30,7 @@
     "jasmine-spec-reporter": "^4.2.1",
     "jasmine-ts": "^0.3.0",
     "nyc": "15.0.1",
+    "preload-js": "^0.6.3",
     "prettier": "^1.18.2",
     "ts-node": "8.5.4",
     "tslint": "^5.20.0",

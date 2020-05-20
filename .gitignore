@@ -16,6 +16,10 @@
 # Mono auto generated files
 mono_crash.*
 
+# rush
+common/temp/
+.rush
+
 # Build results
 package-lock.json
 nunitresults.xml

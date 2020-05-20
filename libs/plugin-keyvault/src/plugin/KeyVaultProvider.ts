@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { KeyClient, JsonWebKey, KeyType } from '@azure/keyvault-keys';
-import { SubtleCrypto } from '@microsoft/crypto-subtle-plugin';
+import { SubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import { ProviderCrypto } from 'webcrypto-core';
-import { IKeyStore, KeyStoreOptions } from '@microsoft/crypto-keystore';
+import { IKeyStore, KeyStoreOptions } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import KeyStoreKeyVault from '../keyStore/KeyStoreKeyVault';
 
 /**

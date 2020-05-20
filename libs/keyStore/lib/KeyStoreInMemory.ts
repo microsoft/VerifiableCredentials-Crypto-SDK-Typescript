@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IKeyContainer, KeyType, PrivateKey, CryptographicKey, OctKey, KeyContainer } from '@microsoft/crypto-keys';
+import { IKeyContainer, KeyType, PrivateKey, CryptographicKey, OctKey, KeyContainer } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import base64url from 'base64url';
 import IKeyStore, { KeyStoreListItem } from './IKeyStore';
 import KeyStoreOptions from './KeyStoreOptions';

@@ -6,8 +6,8 @@
  import { KeyClient, JsonWebKey, CryptographyClient } from '@azure/keyvault-keys';
  import { SecretClient } from '@azure/keyvault-secrets';
  import { ClientSecretCredential } from '@azure/identity';
- import { KeyStoreOptions, IKeyStore, KeyStoreListItem } from '@microsoft/crypto-keystore';
- import { RsaPublicKey, EcPublicKey, KeyType, OctKey, KeyContainer, IKeyContainer, CryptographicKey, EcPrivateKey, RsaPrivateKey } from '@microsoft/crypto-keys';
+ import { KeyStoreOptions, IKeyStore, KeyStoreListItem } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+ import { RsaPublicKey, EcPublicKey, KeyType, OctKey, KeyContainer, IKeyContainer, CryptographicKey, EcPrivateKey, RsaPrivateKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
  import base64url from 'base64url';
 
 /**

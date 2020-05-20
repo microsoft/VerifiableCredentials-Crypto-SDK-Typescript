@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IKeyContainer, KeyType, CryptographicKey } from '@microsoft/crypto-keys';
+import { IKeyContainer, KeyType, CryptographicKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import KeyStoreOptions from './KeyStoreOptions';
 
 /**

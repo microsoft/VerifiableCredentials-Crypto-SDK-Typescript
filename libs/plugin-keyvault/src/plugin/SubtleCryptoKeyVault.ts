@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { SubtleCrypto } from 'webcrypto-core';
-import { IKeyStore } from '@microsoft/crypto-keystore';
+import { IKeyStore } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import KeyVaultEcdsaProvider from './KeyVaultEcdsaProvider';
 import KeyVaultRsaOaepProvider from './KeyVaultRsaOaepProvider';
 

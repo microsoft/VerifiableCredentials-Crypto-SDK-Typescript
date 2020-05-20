@@ -2,13 +2,13 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
- import { EllipticCurveSubtleKey } from '@microsoft/crypto-keys';
+ import { EllipticCurveSubtleKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
  import KeyStoreKeyVault from '../src/keyStore/KeyStoreKeyVault';
  import KeyVaultEcdsaProvider from '../src/plugin/KeyVaultEcdsaProvider';
  import KeyVaultRsaOaepProvider from '../src/plugin/KeyVaultRsaOaepProvider';
- import { KeyStoreOptions, KeyStoreInMemory } from '@microsoft/crypto-keystore';
+ import { KeyStoreOptions, KeyStoreInMemory } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
  import { KeyClient } from '@azure/keyvault-keys';
- import { SubtleCrypto } from '@microsoft/crypto-subtle-plugin';
+ import { SubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import Credentials from './Credentials';
  const clone = require('clone');
  

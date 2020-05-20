@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const lib_1 = require("../lib");
 const base64url_1 = require("base64url");
 describe('RsaPrivateKey', () => {
-    fit('should create an RSA key', () => {
+    it('should create an RSA key', () => {
         const key = {
             kty: lib_1.KeyType.RSA,
             d: 'AQAB',

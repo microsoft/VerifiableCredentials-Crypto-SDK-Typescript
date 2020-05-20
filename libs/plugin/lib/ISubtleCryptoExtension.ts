@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { SubtleCrypto } from './index';
-import { CryptoAlgorithm, KeyReferenceOptions } from '@microsoft/crypto-keystore';
-import { PrivateKey } from '@microsoft/crypto-keys';
+import { CryptoAlgorithm, KeyReferenceOptions } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { PrivateKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import { CryptoFactoryScope } from './CryptoFactory';
 
 /**

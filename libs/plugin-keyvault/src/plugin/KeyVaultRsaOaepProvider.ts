@@ -2,10 +2,10 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { SubtleCrypto } from '@microsoft/crypto-subtle-plugin';
+import { SubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import { CryptoKey } from 'webcrypto-core';
-import { RsaSubtleKey } from '@microsoft/crypto-keys';
-import { IKeyStore } from '@microsoft/crypto-keystore';
+import { RsaSubtleKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
+import { IKeyStore } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import base64url from 'base64url';
 import KeyVaultProvider from './KeyVaultProvider';
 import KeyStoreKeyVault from '../keyStore/KeyStoreKeyVault';

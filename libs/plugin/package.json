@@ -37,9 +37,8 @@
     "typescript-map": "0.0.7"
   },
   "dependencies": {
-    "@microsoft/crypto-keys": "^1.0.0",
-    "@microsoft/crypto-keystore": "^1.0.0",
-    "@microsoft/crypto-subtle-plugin-elliptic": "^1.0.0",
+    "verifiablecredentials-crypto-sdk-typescript-keys": "^1.0.0",
+    "verifiablecredentials-crypto-sdk-typescript-keystore": "^1.0.0",
     "@peculiar/webcrypto": "1.1.1",
     "@types/node": "12.12.16",
     "base64url": "^3.0.1",

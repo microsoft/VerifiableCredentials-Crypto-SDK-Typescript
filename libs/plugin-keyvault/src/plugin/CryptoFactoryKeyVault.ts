@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CryptoFactory, CryptoFactoryScope } from '@microsoft/crypto-subtle-plugin';
+import { CryptoFactory, CryptoFactoryScope } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import { SubtleCryptoKeyVault, KeyStoreKeyVault } from '../index';
-import { IKeyStore } from '@microsoft/crypto-keystore';
+import { IKeyStore } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 
 /**
  * Utility class to handle all CryptoFactory dependency injection for the environment CryptoFactoryKeyVault.
@@ -38,11 +38,11 @@ export default class CryptoFactoryKeyVault extends CryptoFactory {
     };
     */
     this.algorithmTransform = (jwk: any) => { return jwk; } 
-      this.keyTransform = (jwk: any, scope: CryptoFactoryScope) => { 
+      this.keyTransformImport = (jwk: any, scope: CryptoFactoryScope) => { 
         if (scope === CryptoFactoryScope.Private) {
           return jwk; 
         }
-        return CryptoFactory.normalizeJwk(jwk);
+        return CryptoFactory.normalizeJwkImport(jwk);
       } 
     }
 }
