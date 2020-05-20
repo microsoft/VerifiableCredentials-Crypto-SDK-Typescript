@@ -4,7 +4,7 @@
   "description": "Package for plugeable crypto based on subtle crypto.",
   "repository": {
     "type": "git",
-    "url": "https://msazure.visualstudio.com/DefaultCollection/One/_git/AD-DID-Services-Enterprise-Agent.git"
+    "url": "https://github.com/microsoft/VerifiableCredentials-Crypto-SDK-Typescript.git"
   },
   "keywords": [
     "Decentralized Identity",

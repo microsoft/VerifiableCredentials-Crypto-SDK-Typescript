@@ -56,7 +56,9 @@ export enum CryptoFactoryScope {
 }
 
 /**
- * Utility class to handle all CryptoSuite dependency injection
+ * Utility class to handle all CryptoSuite dependency injection.
+ * A crypto factory is a suite of crypto operations which defines the mapping
+ * between an algorithm and the library implementing it.
  */
 export default class CryptoFactory {
 

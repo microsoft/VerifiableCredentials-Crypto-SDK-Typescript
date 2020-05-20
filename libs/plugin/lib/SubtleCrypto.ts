@@ -4,7 +4,8 @@ import { CryptoFactoryScope } from './CryptoFactory';
 const { Crypto } = require("@peculiar/webcrypto");
 
 /**
- * Wrapper class for subtle crypto
+ * Wrapper class for W3C subtle crypto.
+ * A subtle crypto class is the actual crypto library to be used.
  */
 export default class SubtleCrypto {
     constructor() {

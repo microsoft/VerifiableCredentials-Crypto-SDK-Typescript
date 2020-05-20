@@ -1,4 +1,4 @@
-import { CryptoFactoryBrowser, SubtleCryptoNode } from '../../lib';
+import { CryptoFactoryBrowser, SubtleCryptoNode } from '../lib';
 import { KeyStoreInMemory } from '@microsoft/crypto-keystore';
 
 describe('CryptoFactoryBrowser', () => {

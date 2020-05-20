@@ -1,7 +1,7 @@
 {
-  "name": "verifiablecredentials-crypto-sdk-typescript-keystore",
+  "name": "verifiablecredentials-crypto-sdk-typescript-plugin-keyvault",
   "version": "1.1.0",
-  "description": "Package for managing keys in a key store.",
+  "description": "Subtle crypto plugin to support crypto and key operations on key vault.",
   "repository": {
     "type": "git",
     "url": "https://github.com/microsoft/VerifiableCredentials-Crypto-SDK-Typescript.git"
@@ -13,33 +13,46 @@
     "crypto",
     "keys"
   ],
-  "author": "Microsoft Corporation",
-  "license": "MIT",
-  "main": "./dist/lib/index.js",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "scripts": {
-    "build": "tsc --p tsconfig.json",
+    "build": "tsc  --p ./tsconfig.json",
     "test": "nyc jasmine-ts --config=./tests/jasmine.json",
     "lint": "tslint --fix --project . --config ./tslint.json",
     "lint-pr": "tslint --project . --config ./tslint.json"
   },
+  "author": "",
+  "license": "ISC",
   "devDependencies": {
     "@microsoft/package-support": "^1.0.0",
     "@types/jasmine": "^2.8.9",
+    "@types/node": "12.12.16",
+    "eslint": "^6.2.1",
+    "eslint-config-prettier": "^6.1.0",
+    "eslint-plugin-prettier": "^3.1.0",
     "jasmine": "^3.5.0",
     "jasmine-reporters": "^2.3.2",
     "jasmine-spec-reporter": "^4.2.1",
     "jasmine-ts": "^0.3.0",
+    "ms-rest-azure": "2.6.0",
     "nyc": "^15.0.1",
     "prettier": "^1.18.2",
+    "source-map-support": "^0.5.9",
     "ts-node": "8.5.4",
     "tslint": "^5.20.0",
+    "tslint-config-standard": "^8.0.1",
     "typescript": "3.9.2"
   },
   "dependencies": {
+    "@azure/identity": "1.0.0",
+    "@azure/keyvault-keys": "4.0.2",
+    "@azure/keyvault-secrets": "4.0.2",
     "@microsoft/crypto-keys": "^1.0.0",
-    "@types/node": "12.12.16",
-    "base64url": "^3.0.1",
-    "clone": "^2.1.2",
+    "@microsoft/crypto-keystore": "^1.0.0",
+    "@microsoft/crypto-subtle-plugin": "^1.0.0",
+    "@microsoft/crypto-subtle-plugin-elliptic": "^1.0.0",
+    "base64url": "3.0.1",
+    "clone": "2.1.2",
     "webcrypto-core": "1.0.1"
   },
   "nyc": {
@@ -48,12 +61,15 @@
       ".tsx"
     ],
     "include": [
-      "lib/**"
+      "src/**"
     ],
     "reporter": [
       "text",
       "cobertura",
       "html"
     ]
-  }
+  },
+  "files": [
+    "dist/src/**/*"
+  ]
 }
