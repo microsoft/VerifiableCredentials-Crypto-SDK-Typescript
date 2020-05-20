@@ -1,0 +1,22 @@
+{
+  "defaultSeverity": "error",
+  "extends": "tslint-microsoft-contrib/recommended",
+  "linterOptions": {
+    "exclude": [
+      "node_modules/**"
+    ]
+  },
+  "rulesDirectory": [
+    "node_modules/tslint-microsoft-contrib"
+  ],
+  "rules": {
+    "no-string-based-set-timeout": false,
+    "function-name": [
+      true,
+      {
+        "static-method-regex": "^[a-z][\\w\\d]+$"
+      }
+    ],
+    "no-relative-imports": false
+  }
+}
