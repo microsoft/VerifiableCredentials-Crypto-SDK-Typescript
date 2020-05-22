@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { ClientSecretCredential } from '@azure/identity';
-import KeyStoreFactory from '../lib/KeystoreFactory';
+import KeyStoreFactory from '../lib/KeyStoreFactory';
 import { IKeyStore } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 
 // Sample config
@@ -16,10 +16,15 @@ describe('KeyStoreFactory', () => {
   it('should create the key store in memory', () => {
     const keyStore: IKeyStore = KeyStoreFactory.create('KeyStoreInMemory');
     expect(keyStore.constructor.name).toEqual('KeyStoreInMemory');
+    
+    // negative cases
+    expect(() => KeyStoreFactory.create('xxx')).toThrowError(`Key store 'xxx' not found`);
   });
   it('should create the KV key store', () => {
     const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
-     const keyStore: IKeyStore = KeyStoreFactory.create('KeyStoreKeyVault', credential, vaultUri);
+    let keyStore: IKeyStore = KeyStoreFactory.create('KeyStoreKeyVault', credential, vaultUri);
+    expect(keyStore.constructor.name).toEqual('KeyStoreKeyVault');
+    keyStore = KeyStoreFactory.create('KeyStoreKeyVault', credential, vaultUri, keyStore);
     expect(keyStore.constructor.name).toEqual('KeyStoreKeyVault');
   });
 });

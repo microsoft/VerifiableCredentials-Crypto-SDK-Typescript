@@ -167,7 +167,8 @@ export default class KeyStoreKeyVault implements IKeyStore {
 
     } else {
       const keyClient: KeyClient = <KeyClient>client;
-      const kvKey: JsonWebKey = this.toKeyVaultKey(<IKeyContainer>key);
+      const kvKey: CryptoKeyPair = KeyStoreKeyVault.toKeyVaultKey(<IKeyContainer>key);
+      
       await keyClient.importKey(keyReference, kvKey);
     }
   }
@@ -217,7 +218,7 @@ export default class KeyStoreKeyVault implements IKeyStore {
    * Convert key container into a key vault compatible key
    * @param container to convert
    */
-  public toKeyVaultKey(container: IKeyContainer): JsonWebKey {
+  public static toKeyVaultKey(container: IKeyContainer): CryptoKeyPair {
     const key: any = (<IKeyContainer>container).getKey<CryptographicKey>();
     if (key.kty === KeyType.EC || key.kty === 'EC') {
       key.kty = 'EC';

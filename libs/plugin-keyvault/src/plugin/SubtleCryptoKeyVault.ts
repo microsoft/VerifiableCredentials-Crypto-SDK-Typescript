@@ -34,14 +34,7 @@ export default class SubtleCryptoKeyVault extends SubtleCrypto implements ISubtl
    * Returns the @class SubtleCrypto implementation for the nodes environment
    */
   public getSubtleCrypto(): any {
-    return SubtleCryptoKeyVault.getSubtleCrypto();
-  }
-
-  /**
-   * Returns the @class SubtleCrypto implementation for the nodes environment
-   */
-  public static getSubtleCrypto(): any {
-    return SubtleCryptoKeyVault.crypto;
+    return this;
   }
 
 }

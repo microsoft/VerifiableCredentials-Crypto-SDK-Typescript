@@ -10,12 +10,16 @@ describe('CryptoFactoryManager', () => {
   const keyStore = new KeyStoreInMemory();
 
   it('should create CryptoFactoryNode', () => {
-    const cryptoFactory = CryptoFactoryManager.create('CryptoFactoryNode',keyStore, crypto);
+    const cryptoFactory = CryptoFactoryManager.create('CryptoFactoryNode', keyStore, crypto);
     expect(cryptoFactory.constructor.name).toEqual('CryptoFactoryNode');
-  });
+
+    // negative cases
+    expect(() => CryptoFactoryManager.create('xxx', keyStore, crypto)).toThrowError(`Crypto factory 'xxx' not found`)  });
 
   it('should create CryptoFactoryKeyVault', () => {
-    const cryptoFactory = CryptoFactoryManager.create('CryptoFactoryKeyVault',keyStore, crypto);
+    const cryptoFactory = CryptoFactoryManager.create('CryptoFactoryKeyVault', keyStore, crypto);
     expect(cryptoFactory.constructor.name).toEqual('CryptoFactoryKeyVault');
   });
 });
+
+

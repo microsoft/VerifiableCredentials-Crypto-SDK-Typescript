@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { ClientSecretCredential } from '@azure/identity';
-import { CryptographicKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
+import { CryptographicKey, IKeyContainer, KeyContainer } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import { SubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import KeyStoreKeyVault from '../src/keyStore/KeyStoreKeyVault';
 import KeyVaultEcdsaProvider from '../src/plugin/KeyVaultEcdsaProvider';
@@ -113,5 +113,22 @@ describe('KeyStoreKeyVault', () => {
     } finally {
       await (<SecretClient>keyStore.getKeyStoreClient(new KeyStoreOptions({ extractable: true }))).beginDeleteSecret(name);
     }
+  });
+});
+
+describe('KeyStoreKeyVault without credentials', () => {
+  it ('should convert toKeyVaultKey', async () => {
+    const subtle = new SubtleCrypto();
+    const key = await subtle.generateKey(
+      <any>{
+          name: "ECDSA",
+          namedCurve: "K-256", 
+      },
+      true, 
+      ["sign", "verify"]);
+      
+      const container = new KeyContainer(<any>key); 
+      const kvKey = KeyStoreKeyVault.toKeyVaultKey(container);
+      expect(kvKey.privateKey).toBeDefined();
   });
 });
