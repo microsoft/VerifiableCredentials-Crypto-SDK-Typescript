@@ -29,10 +29,10 @@
     "elliptic": "6.5.2",
     "minimalistic-crypto-utils": "1.0.1",
     "sha.js": "^2.4.11",
+    "verifiablecredentials-crypto-sdk-typescript-plugin": "^1.0.0",
     "webcrypto-core": "1.0.1"
   },
   "devDependencies": {
-    "@microsoft/package-support": "^1.0.0",
     "@types/jasmine": "2.8.16",
     "@types/node": "12.12.16",
     "husky": "0.14.3",

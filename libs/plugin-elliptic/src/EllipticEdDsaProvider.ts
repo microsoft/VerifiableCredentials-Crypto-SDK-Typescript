@@ -39,8 +39,9 @@ export default class EllipticEdDsaProvider extends EllipticDsaProvider {
    */
   async onGenerateKey (algorithm: EcKeyGenParams, extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKeyPair> {
     const ec = this.getCurve(algorithm.namedCurve);
-    const seed: any  = await this.crypto.generateKey(<AesKeyGenParams>{name: 'AES-GCM', length: 256}, false, ['encrypt']);
-    const keyPair = ec.keyFromSecret(seed.data);
+    const random: any  = await this.crypto.generateKey(<AesKeyGenParams>{name: 'AES-GCM', length: 256}, true, ['encrypt']);
+    const seed = await (await this.crypto.exportKey('jwk', random)).k;
+    const keyPair = ec.keyFromSecret(seed);
     if (!keyPair.pub) {
       keyPair.pub = keyPair.getPublic();
     }
@@ -63,7 +64,8 @@ export default class EllipticEdDsaProvider extends EllipticDsaProvider {
    */
   async onSign (algorithm: EcdsaParams, key: CryptoKey, data: ArrayBuffer): Promise<ArrayBuffer> {
     const ecKey = (<EllipticCurveKey> key).key;
-    (<any> data).length = data.byteLength;
+    data = Buffer.from(data);
+    //(<any> data).length = data.byteLength;
     const signature = new Buffer(ecKey.sign(Buffer.from(data)).toHex(), 'hex');
     const r = signature.slice(0, 32);
     const s = signature.slice(32);
@@ -83,7 +85,7 @@ export default class EllipticEdDsaProvider extends EllipticDsaProvider {
    */
   async onVerify (_algorithm: EcdsaParams, key: CryptoKey, signature: ArrayBuffer, data: ArrayBuffer): Promise<boolean> {
     const ecKey = (<EllipticCurveKey> key).key;
-    (<any> data).length = data.byteLength;
+    data = Buffer.from(data);
 
     let signed = new Uint8Array(signature);
     if (signature.byteLength > 65) {

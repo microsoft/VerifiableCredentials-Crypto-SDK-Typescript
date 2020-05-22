@@ -57,8 +57,8 @@ export default class CryptoHelpers {
       case JoseConstants.Rs512:
         return { name: W3cCryptoApiConstants.RsaSsaPkcs1V15, hash: { name: `SHA-${jwa.replace('RS', '')}` } };
       case JoseConstants.RsaOaep:
-      case JoseConstants.RsaOaep256:
-        return { name: 'RSA-OAEP-256', hash: 'SHA-256', modulusLength: 2048, publicExponent: new Uint8Array([0x01, 0x00, 0x01]) };
+        case JoseConstants.RsaOaep256:
+          return { name: 'RSA-OAEP', hash: 'SHA-256', modulusLength: 2048, publicExponent: new Uint8Array([0x01, 0x00, 0x01]) };
       case JoseConstants.AesGcm128:
       case JoseConstants.AesGcm192:
       case JoseConstants.AesGcm256:
@@ -127,7 +127,7 @@ export default class CryptoHelpers {
     const name = algorithm.name;
     switch (algorithm.name.toUpperCase()) {
       case 'RSASSA-PKCS1-V1_5':
-        return <RsaHashedImportParams>{ name, hash: { name: hash } };
+        return <RsaHashedImportParams>{ name, hash };
       case 'HMAC':
       case 'SHA-256':
       case 'SHA-384':
@@ -136,10 +136,10 @@ export default class CryptoHelpers {
       case 'ECDSA':
       case 'EDDSA':
       case 'ECDH':
-        return <EcKeyImportParams>{ name, namedCurve: (<EcPublicKey>jwk).crv , hash: { name: hash }};
+        return <EcKeyImportParams>{ name, namedCurve: (<EcPublicKey>jwk).crv , hash};
       case 'RSA-OAEP':
       case 'RSA-OAEP-256':
-        return { name: 'RSA-OAEP-256', hash: 'SHA-256' }
+        return { name: 'RSA-OAEP', hash: 'SHA-256' }
       case 'AES-GCM':
         return <RsaHashedImportParams>{ name };
     }

@@ -24,7 +24,6 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@microsoft/package-support": "^1.0.0",
     "@types/jasmine": "^2.8.9",
     "@types/node": "12.12.16",
     "adal-node": "^0.1.28",
