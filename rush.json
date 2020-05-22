@@ -339,5 +339,10 @@
       "packageName": "verifiablecredentials-crypto-sdk-typescript-plugin-factory",
       "projectFolder": "libs/plugin-factory"
     },
+    {
+      "shouldPublish": true,
+      "packageName": "verifiablecredentials-crypto-sdk-typescript-protocols-common",
+      "projectFolder": "libs/protocols-common"
+    },
   ]
 }
