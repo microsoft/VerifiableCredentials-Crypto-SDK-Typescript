@@ -1,3 +1,4 @@
+[![Build Status](https://dev.azure.com/decentralized-identity/Core/_apis/build/status/VerifiableCredentials-Crypto-SDK-Typescript?branchName=master)](https://dev.azure.com/decentralized-identity/Core/_build/latest?definitionId=33&branchName=master)
 
 # Contributing
 
