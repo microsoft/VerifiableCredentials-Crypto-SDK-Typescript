@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { ClientSecretCredential } from '@azure/identity';
 import { CryptographicKey, IKeyContainer, KeyContainer } from 'verifiablecredentials-crypto-sdk-typescript-keys';
-import { SubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
+import { SubtleCrypto, CryptoFactory } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import KeyStoreKeyVault from '../src/keyStore/KeyStoreKeyVault';
 import KeyVaultEcdsaProvider from '../src/plugin/KeyVaultEcdsaProvider';
 import { KeyStoreOptions, KeyStoreInMemory } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
@@ -12,6 +12,7 @@ import { KeyClient } from '@azure/keyvault-keys';
 import { SecretClient } from '@azure/keyvault-secrets';
 import { CryptoKey } from 'webcrypto-core';
 import Credentials from './Credentials';
+import KeyVaultRsaOaepProvider from '../src/plugin/KeyVaultRsaOaepProvider';
 
 // Sample config
 const tenantId = Credentials.tenantGuid;
@@ -95,40 +96,104 @@ describe('KeyStoreKeyVault', () => {
       await (<SecretClient>keyStore.getKeyStoreClient(new KeyStoreOptions({ extractable: true }))).beginDeleteSecret(name);
     }
   });
-  xit('should return a key container as a secret', async () => {
+
+  it('should return a key container as a secret', async () => {
     const name = 'KvTest-KeyStoreKeyVault' + Math.random().toString(10).substr(2);
     const cache = new KeyStoreInMemory();
     const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
     const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
     try {
-      const alg = { name: 'ECDSA', namedCurve: 'secp256k1', hash: { name: 'SHA-256' } };
+      const alg = { name: 'ECDSA', namedCurve: 'K-256', hash: { name: 'SHA-256' } };
 
       const cryptoKey: any = <CryptoKey>await subtle.generateKey(alg, true, ['sign']);
       const jwk: any = await subtle.exportKey('jwk', cryptoKey.privateKey);
       jwk.kid = name;
-      await keyStore.save(name, JSON.stringify(<CryptographicKey>jwk), new KeyStoreOptions({ extractable: true }));
-      const container = await keyStore.get(name, new KeyStoreOptions({ extractable: true, latestVersion: false }));
+      await keyStore.save(name, <CryptographicKey>jwk, new KeyStoreOptions({ extractable: true }));
+      let container = await keyStore.get(name, new KeyStoreOptions({ extractable: true, latestVersion: false }));
       expect(container.keys.length).toEqual(1);
       expect((await cache.list(new KeyStoreOptions({ extractable: true, latestVersion: false })))[name]).toBeDefined();
     } finally {
       await (<SecretClient>keyStore.getKeyStoreClient(new KeyStoreOptions({ extractable: true }))).beginDeleteSecret(name);
     }
   });
+
+  it('should return a non extractable key', async () => {
+    const name = 'KvTest-KeyStoreKeyVault' + Math.random().toString(10).substr(2);
+    const cache = new KeyStoreInMemory();
+    const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+    const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
+    subtle.cryptoFactory = new CryptoFactory(keyStore, subtle);
+
+    try {
+      const alg = <any>{
+        name: "RSASSA-PKCS1-v1_5",
+        modulusLength: 2048,
+        publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+        hash: { name: "SHA-256" }
+      }
+
+      const cryptoKey: any = <CryptoKey>await subtle.generateKey(alg, true, ['sign']);
+      const jwk: any = await subtle.exportKey('jwk', cryptoKey.privateKey);
+      jwk.kid = name;
+
+
+      await keyStore.save(name, new KeyContainer(jwk), new KeyStoreOptions({ extractable: false }));
+      let container = await keyStore.get(name, new KeyStoreOptions({ extractable: false, latestVersion: false }));
+      expect(container.keys.length).toEqual(1);
+      expect((await cache.list(new KeyStoreOptions({ extractable: false, latestVersion: false })))[name]).toBeUndefined();
+    } finally {
+      await (<KeyClient>keyStore.getKeyStoreClient(new KeyStoreOptions({ extractable: false }))).beginDeleteKey(name);
+    }
+  });
 });
 
 describe('KeyStoreKeyVault without credentials', () => {
-  it ('should convert toKeyVaultKey', async () => {
+  it('should convert toKeyVaultKey', async () => {
     const subtle = new SubtleCrypto();
-    const key = await subtle.generateKey(
+    let cryptokey = <CryptoKeyPair>await subtle.generateKey(
       <any>{
-          name: "ECDSA",
-          namedCurve: "K-256", 
+        name: "ECDSA",
+        namedCurve: "K-256",
       },
-      true, 
+      true,
       ["sign", "verify"]);
-      
-      const container = new KeyContainer(<any>key); 
-      const kvKey = KeyStoreKeyVault.toKeyVaultKey(container);
-      expect(kvKey.privateKey).toBeDefined();
+    let key = await subtle.exportKey('jwk', cryptokey.privateKey);
+    let container = new KeyContainer(<any>key);
+    let kvKey = KeyStoreKeyVault.toKeyVaultKey(container);
+    expect(kvKey).toBeDefined();
+
+    cryptokey = <CryptoKeyPair>await subtle.generateKey(
+      <any>{
+        name: "RSASSA-PKCS1-v1_5",
+        modulusLength: 2048,
+        publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+        hash: { name: "SHA-256" }
+      },
+      true,
+      ["sign", "verify"]);
+
+    key = await subtle.exportKey('jwk', cryptokey.privateKey);
+    container = new KeyContainer(<any>key);
+    kvKey = KeyStoreKeyVault.toKeyVaultKey(container);
+    expect(kvKey).toBeDefined();
   });
+  it('should convert Rsa Key', async () => {
+    const subtle = new SubtleCrypto();
+    const alg = <RsaKeyGenParams>{
+      name: "RSASSA-PKCS1-v1_5",
+      modulusLength: 2048,
+      publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+      hash: { name: "SHA-256" }
+    };
+
+    let cryptokey = <CryptoKeyPair>await subtle.generateKey(alg,
+      true,
+      ["sign", "verify"]);
+    let key = await subtle.exportKey('jwk', cryptokey.privateKey);
+    let container = new KeyContainer(<any>key);
+    let kvKey = new KeyVaultRsaOaepProvider(subtle, new KeyStoreInMemory()).toRsaKey(<any>key, alg, true, ["sign", "verify"]);
+    expect(kvKey).toBeDefined();
+  });
+
+
 });

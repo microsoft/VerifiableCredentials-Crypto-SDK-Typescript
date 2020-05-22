@@ -105,7 +105,7 @@ export default class KeyVaultRsaOaepProvider extends KeyVaultProvider {
       throw new Error(`Export key only supports jwk`);
     }
 
-    const jwkKey = (key as RsaSubtleKey).key;
+    const jwkKey = (key as RsaSubtleKey).key || (key as RsaSubtleKey);
     const kid = jwkKey.kid;
 
     let e = jwkKey.e;
@@ -137,7 +137,7 @@ export default class KeyVaultRsaOaepProvider extends KeyVaultProvider {
    * @param extractable is true if the key is exportable
    * @param keyUsages sign or verify
    */
-  async toRsaKey (keyData: JsonWebKey, algorithm: RsaKeyGenParams, extractable: boolean, keyUsages: KeyUsage[]): Promise<RsaSubtleKey> {
+  public async toRsaKey (keyData: JsonWebKey, algorithm: RsaKeyGenParams, extractable: boolean, keyUsages: KeyUsage[]): Promise<RsaSubtleKey> {
     const jwkKey: any = keyData;
     return new RsaSubtleKey(algorithm, extractable,keyUsages, 'public', await this.onExportKey('jwk', jwkKey));
   }
