@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CryptoError } from '@microsoft/crypto-keystore';
-import { ISubtleCrypto } from './ISubtleCryptoExtension';
+import { CryptoError } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { ISubtleCrypto } from './index';
  
  /**
   * Subtle crypto for browser

@@ -2,8 +2,8 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { SubtleCryptoNode, CryptoFactory, CryptoFactoryNode, CryptoFactoryScope } from '../lib/index';
-import { KeyStoreInMemory } from '@microsoft/crypto-keystore';
+import { SubtleCryptoNode, CryptoFactory, CryptoFactoryScope } from '../lib/index';
+import { KeyStoreInMemory } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import SubtleCryptoMock from './SubtleCryptoMock';
 //import { SubtleCryptoElliptic } from '../../';
 
@@ -81,13 +81,4 @@ describe('CryptoFactory', () => {
     jwk.crv = 'secp256k1';
     expect(factory.keyTransformImport(jwk, CryptoFactoryScope.All)).toEqual({crv: 'K-256'});
   });
-
-  it('should plugin a new algorithm into crypto suite',() => {
-    const keyStore = new KeyStoreInMemory();
-    
-    const factory = new CryptoFactoryNode(keyStore, SubtleCryptoNode.getSubtleCrypto());
-    const messageSigner = factory.getMessageSigner('ed25519', CryptoFactoryScope.All);
-    expect((<any>messageSigner).providers.algorithms.includes('EDDSA')).toBeTruthy();
-    expect((<any>messageSigner).providers.algorithms.includes('ECDSA')).toBeTruthy();
-  })
 });

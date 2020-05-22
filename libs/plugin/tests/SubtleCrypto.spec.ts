@@ -1,5 +1,5 @@
 import { SubtleCrypto, CryptoFactory, SubtleCryptoNode } from '../lib';
-import { KeyStoreInMemory } from '@microsoft/crypto-keystore';
+import { KeyStoreInMemory } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { verify } from 'crypto';
 import base64url from 'base64url';
 

@@ -7,11 +7,11 @@ describe('OkpPrivateKey', () => {
             kty: lib_1.KeyType.EC,
             d: 'AQAB',
             x: 'AQAB',
-            alg: 'ed25519'
+            alg: 'EdDSA'
         };
         let okpPrivateKey = new lib_1.OkpPrivateKey(key);
-        expect(okpPrivateKey.alg).toEqual('ed25519');
-        expect(okpPrivateKey.getPublicKey().d).toEqual('AQAB');
+        expect(okpPrivateKey.alg).toEqual('EdDSA');
+        expect(okpPrivateKey.getPublicKey().d).toBeUndefined();
         expect(okpPrivateKey.getPublicKey().x).toEqual('AQAB');
     });
 });

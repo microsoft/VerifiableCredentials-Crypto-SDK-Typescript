@@ -16,10 +16,17 @@
 # Mono auto generated files
 mono_crash.*
 
+# rush
+common/temp/
+.rush
+shrinkwrap.yaml
+
 # Build results
+package-deps_build.json
 package-lock.json
 nunitresults.xml
 .nyc_output
+coverage/
 coverage
 dist
 .rush

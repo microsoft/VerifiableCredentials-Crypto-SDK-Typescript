@@ -23,20 +23,19 @@
     "lint-pr": "tslint --project . --config ./tslint.json"
   },
   "devDependencies": {
-    "@microsoft/package-support": "^1.0.0",
     "@types/jasmine": "^2.8.9",
     "jasmine": "^3.5.0",
     "jasmine-reporters": "^2.3.2",
     "jasmine-spec-reporter": "^4.2.1",
     "jasmine-ts": "^0.3.0",
-    "nyc": "^15.0.1",
+    "nyc": "14.1.1",
     "prettier": "^1.18.2",
     "ts-node": "8.5.4",
     "tslint": "^5.20.0",
     "typescript": "3.9.2"
   },
   "dependencies": {
-    "@microsoft/crypto-keys": "^1.0.0",
+    "verifiablecredentials-crypto-sdk-typescript-keys": "^1.0.0",
     "@types/node": "12.12.16",
     "base64url": "^3.0.1",
     "clone": "^2.1.2",

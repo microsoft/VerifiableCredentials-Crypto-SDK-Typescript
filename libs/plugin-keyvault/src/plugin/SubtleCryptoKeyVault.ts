@@ -4,26 +4,37 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { SubtleCrypto } from 'webcrypto-core';
-import { IKeyStore } from '@microsoft/crypto-keystore';
+import { IKeyStore } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { ISubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import KeyVaultEcdsaProvider from './KeyVaultEcdsaProvider';
 import KeyVaultRsaOaepProvider from './KeyVaultRsaOaepProvider';
 
 /**
  * Subtle crypto class
  */
-export default class SubtleCryptoKeyVault extends SubtleCrypto {
+export default class SubtleCryptoKeyVault extends SubtleCrypto implements ISubtleCrypto {
+  private static crypto: SubtleCrypto = new SubtleCrypto();
+  
   /**
    * Create a new instance of @class SubtleCryptoKeyVault
    * @param subtle A default subtle crypto object. Can be used for local crypto functions
    * @param keyStore The key vault key store
    */
-  constructor (
+  constructor(
     private subtle: any,
     private keyStore: IKeyStore) {
     super();
 
-      // Add key vault provider to SubtleCrypto
+    // Add key vault provider to SubtleCrypto
     this.providers.set(new KeyVaultEcdsaProvider(this.subtle, this.keyStore));
     this.providers.set(new KeyVaultRsaOaepProvider(this.subtle, this.keyStore));
   }
+
+  /**
+   * Returns the @class SubtleCrypto implementation for the nodes environment
+   */
+  public getSubtleCrypto(): any {
+    return this;
+  }
+
 }

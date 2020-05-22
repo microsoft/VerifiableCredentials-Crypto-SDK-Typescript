@@ -5,8 +5,8 @@
  
 // tslint:disable-next-line: import-name
 import {CryptoFactory, SubtleCryptoExtension, SubtleCryptoNode, PairwiseKey } from '../lib/index';
-import { KeyStoreInMemory } from '@microsoft/crypto-keystore';
-import { PrivateKey, EcPrivateKey, OctKey, KeyContainer } from '@microsoft/crypto-keys';
+import { KeyStoreInMemory } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { PrivateKey, EcPrivateKey, OctKey, KeyContainer } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import base64url from 'base64url';
 
 class Helpers {

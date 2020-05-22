@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { SubtleCrypto } from '../index';
-import { CryptoError, CryptoAlgorithm } from '@microsoft/crypto-keystore';
-import { OctKey, PrivateKey, KeyTypeFactory, KeyType, IKeyContainer, W3cCryptoApiConstants, JoseConstants } from '@microsoft/crypto-keys';
+import { CryptoError, CryptoAlgorithm } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { OctKey, PrivateKey, KeyTypeFactory, KeyType, IKeyContainer, W3cCryptoApiConstants, JoseConstants } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import CryptoFactory, { CryptoFactoryScope } from "../CryptoFactory";
 import RsaPairwiseKey from "./RsaPairwiseKey";
 import EcPairwiseKey from "./EcPairwiseKey";

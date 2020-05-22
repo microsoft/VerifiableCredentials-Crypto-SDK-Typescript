@@ -1,0 +1,35 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/command-line.schema.json",
+
+  "commands": [
+    {
+      /**
+       * (Required) Determines the type of custom command.
+       * Rush's "bulk" commands are invoked separately for each project.  Rush will look in
+       * each project's package.json file for a "scripts" entry whose name matches the
+       * command name.  By default, the command will run for every project in the repo,
+       * according to the dependency graph (similar to how "rush build" works).
+       * The set of projects can be restricted e.g. using the "--to" or "--from" parameters.
+       */
+      "commandKind": "bulk",
+      "name": "test",
+      "summary": "Run unit tests on all projects.",
+      "description": "Run unit tests on all projects.",
+      "ignoreMissingScript": true,
+      "enableParallelism": true
+    },
+    {
+      /**
+       * (Required) Determines the type of custom command.
+       * Rush's "global" commands are invoked once for the entire repo.
+       */
+      "commandKind": "global",
+
+      "name": "publish-all",
+      "summary": "Publish the required packages",
+      "description": "Run this command to publish the required packages",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "rush publish -p  --include-all -r https://msazure.pkgs.visualstudio.com/_packaging/AD-DID-Packages/npm/registry/"
+    }
+  ]
+}

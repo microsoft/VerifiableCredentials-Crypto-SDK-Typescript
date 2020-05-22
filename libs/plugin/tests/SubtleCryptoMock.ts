@@ -1,5 +1,4 @@
-import { SubtleCrypto } from '../lib/index';
-import { ISubtleCrypto } from '../lib/ISubtleCryptoExtension';
+import { ISubtleCrypto, SubtleCrypto } from '../lib/index';
 
 /**
  * Subtle crypto for node

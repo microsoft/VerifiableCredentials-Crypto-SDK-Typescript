@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IKeyStore } from '@microsoft/crypto-keystore';
+import { IKeyStore } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { SubtleCrypto } from './index';
 const clone = require('clone');
 

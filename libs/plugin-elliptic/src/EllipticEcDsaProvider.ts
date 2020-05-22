@@ -68,7 +68,7 @@ export default class EllipticEcDsaProvider extends EllipticDsaProvider {
    */
   async onSign (algorithm: EcdsaParams, key: CryptoKey, data: ArrayBuffer): Promise<ArrayBuffer> {
     const ecKey = (<EllipticCurveKey> key).key;
-    (<any> data).length = data.byteLength;
+    data = Buffer.from(data);
     let hashAlgortihm = (typeof algorithm.hash === 'object' ? algorithm.hash.name || 'sha256' : algorithm.hash || 'sha256').replace('-','');
     const hash = shajs(hashAlgortihm).update(data);
     const signature = ecKey.sign(hash.digest);
@@ -89,7 +89,7 @@ export default class EllipticEcDsaProvider extends EllipticDsaProvider {
    */
   async onVerify (algorithm: EcdsaParams, key: CryptoKey, signature: ArrayBuffer, data: ArrayBuffer): Promise<boolean> {
     const ecKey = (<EllipticCurveKey> key).key;
-    (<any> data).length = data.byteLength;
+    data = Buffer.from(data);
     let hashAlgortihm = (typeof algorithm.hash === 'object' ? algorithm.hash.name || 'sha256' : algorithm.hash || 'sha256').replace('-','');
     const hash = shajs(hashAlgortihm).update(data);
 

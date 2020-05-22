@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CryptoAlgorithm } from '@microsoft/crypto-keystore';
-import { KeyUseFactory, RsaPrivateKey, PrivateKey, KeyType, W3cCryptoApiConstants, JoseConstants } from '@microsoft/crypto-keys';
+import { CryptoAlgorithm } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { KeyUseFactory, RsaPrivateKey, PrivateKey, KeyType, W3cCryptoApiConstants, JoseConstants } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import CryptoFactory, { CryptoFactoryScope } from "../CryptoFactory";
 import base64url from "base64url";
 const bigInt = require('big-integer');
