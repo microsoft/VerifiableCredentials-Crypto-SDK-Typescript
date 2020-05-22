@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { CryptoError } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
-import { ISubtleCrypto } from './ISubtleCryptoExtension';
+import { ISubtleCrypto } from './index';
  
  /**
   * Subtle crypto for browser

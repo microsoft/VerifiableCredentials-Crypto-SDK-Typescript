@@ -2,6 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import { ClientSecretCredential } from '@azure/identity';
 import { CryptographicKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import { SubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import KeyStoreKeyVault from '../src/keyStore/KeyStoreKeyVault';
@@ -39,12 +40,13 @@ afterEach(() => {
   jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
 });
 
-xdescribe('KeyStoreKeyVault', () => {
+describe('KeyStoreKeyVault', () => {
   const alg = { name: 'ECDSA', namedCurve: 'SECP256K1', hash: { name: 'SHA-256' } };
   it('should list a named generated key', async () => {
     const name = 'KvTest-KeyStoreKeyVault' + Math.random().toString(10).substr(2);
     const cache = new KeyStoreInMemory();
-    const keyStore = new KeyStoreKeyVault(tenantId, clientId, clientSecret, vaultUri, cache);
+    const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+    const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
     try {
       const provider = new KeyVaultEcdsaProvider(subtle, keyStore);
       await provider.onGenerateKey(alg, true, ['sign'], { name });
@@ -60,7 +62,8 @@ xdescribe('KeyStoreKeyVault', () => {
   it('should list a default generated key', async () => {
     const name = 'ECDSA-sign-EC';
     const cache = new KeyStoreInMemory();
-    const keyStore = new KeyStoreKeyVault(tenantId, clientId, clientSecret, vaultUri, cache);
+    const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+    const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
     let list = await keyStore.list(new KeyStoreOptions({ extractable: false, latestVersion: false }));
     let versionsCount = list[name] ? list[name].kids.length + 1 : 1;
     try {
@@ -75,7 +78,8 @@ xdescribe('KeyStoreKeyVault', () => {
   it('should set a secret', async () => {
     const name = 'KvTest-KeyStoreKeyVault' + Math.random().toString(10).substr(2);
     const cache = new KeyStoreInMemory();
-    const keyStore = new KeyStoreKeyVault(tenantId, clientId, clientSecret, vaultUri, cache);
+    const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+    const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
     let throwed = false;
     try {
       await keyStore.save(name, 'abcdefg');
@@ -94,7 +98,8 @@ xdescribe('KeyStoreKeyVault', () => {
   xit('should return a key container as a secret', async () => {
     const name = 'KvTest-KeyStoreKeyVault' + Math.random().toString(10).substr(2);
     const cache = new KeyStoreInMemory();
-    const keyStore = new KeyStoreKeyVault(tenantId, clientId, clientSecret, vaultUri, cache);
+    const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+    const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
     try {
       const alg = { name: 'ECDSA', namedCurve: 'secp256k1', hash: { name: 'SHA-256' } };
 

@@ -16,7 +16,7 @@
       "summary": "Run unit tests on all projects.",
       "description": "Run unit tests on all projects.",
       "ignoreMissingScript": true,
-      "enableParallelism": false
+      "enableParallelism": true
     },
     {
       /**

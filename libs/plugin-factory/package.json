@@ -1,7 +1,7 @@
 {
-  "name": "verifiablecredentials-crypto-sdk-typescript-keystore",
+  "name": "verifiablecredentials-crypto-sdk-typescript-plugin-factory",
+  "description": "Factory Package for crypto plugins.",
   "version": "1.1.0",
-  "description": "Package for managing keys in a key store.",
   "repository": {
     "type": "git",
     "url": "https://github.com/microsoft/VerifiableCredentials-Crypto-SDK-Typescript.git"
@@ -11,7 +11,7 @@
     "Verifiable Credentials",
     "DID",
     "crypto",
-    "keys"
+    "agnostic"
   ],
   "author": "Microsoft Corporation",
   "license": "MIT",
@@ -25,6 +25,7 @@
   "devDependencies": {
     "@microsoft/package-support": "^1.0.0",
     "@types/jasmine": "^2.8.9",
+    "@types/node": "12.12.16",
     "jasmine": "^3.5.0",
     "jasmine-reporters": "^2.3.2",
     "jasmine-spec-reporter": "^4.2.1",
@@ -36,10 +37,12 @@
     "typescript": "3.9.2"
   },
   "dependencies": {
-    "verifiablecredentials-crypto-sdk-typescript-keys": "^1.0.0",
+    "@azure/identity": "1.0.0",
+    "verifiablecredentials-crypto-sdk-typescript-keystore": "^1.0.0",
+    "verifiablecredentials-crypto-sdk-typescript-plugin": "^1.0.0",
+    "verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites": "^1.0.0",
+    "verifiablecredentials-crypto-sdk-typescript-plugin-keyvault": "^1.0.0",
     "@types/node": "12.12.16",
-    "base64url": "^3.0.1",
-    "clone": "^2.1.2",
     "webcrypto-core": "1.0.1"
   },
   "nyc": {

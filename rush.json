@@ -329,12 +329,15 @@
       "packageName": "verifiablecredentials-crypto-sdk-typescript-plugin-keyvault",
       "projectFolder": "libs/plugin-keyvault"
     },
-    /*
     {
       "shouldPublish": true,
       "packageName": "verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites",
-      "projectFolder": "libs/crypto/plugin-cryptofactory-suites"
-    }
-    */
+      "projectFolder": "libs/plugin-cryptofactory-suites"
+    },
+    {
+      "shouldPublish": true,
+      "packageName": "verifiablecredentials-crypto-sdk-typescript-plugin-factory",
+      "projectFolder": "libs/plugin-factory"
+    },
   ]
 }

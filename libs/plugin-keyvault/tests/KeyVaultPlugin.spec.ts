@@ -2,6 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import { ClientSecretCredential } from '@azure/identity';
  import { EllipticCurveSubtleKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
  import KeyStoreKeyVault from '../src/keyStore/KeyStoreKeyVault';
  import KeyVaultEcdsaProvider from '../src/plugin/KeyVaultEcdsaProvider';
@@ -39,13 +40,14 @@ const vaultUri = Credentials.vaultUri;
    jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
  });
  
- xdescribe('KeyVaultPlugin', () => {
+ describe('KeyVaultPlugin', () => {
    const alg = { name: 'ECDSA', namedCurve: 'SECP256K1', hash: { name: 'SHA-256' } };
    it('should generate a key', async () => {
      const name = 'ECDSA-sign-EC';
      const cache = new KeyStoreInMemory();
-     const keyStore = new KeyStoreKeyVault(tenantId, clientId, clientSecret, vaultUri, cache);
-     const plugin = new KeyVaultEcdsaProvider(subtle, keyStore);
+     const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+     const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
+      const plugin = new KeyVaultEcdsaProvider(subtle, keyStore);
      try {
        const result = await plugin.onGenerateKey(alg, true, ['sign']);
        expect((result as EllipticCurveSubtleKey).key.crv).toEqual('SECP256K1');
@@ -57,8 +59,9 @@ const vaultUri = Credentials.vaultUri;
    it('should generate a key and secret', async () => {
      const name = 'ECDSA-sign-EC';
      const cache = new KeyStoreInMemory();
-     const keyStore = new KeyStoreKeyVault(tenantId, clientId, clientSecret, vaultUri, cache);
-     try {
+     const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+     const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
+      try {
        let list = await keyStore.list(new KeyStoreOptions({extractable: false, latestVersion: false }));
        const versions = list[name];
        const plugin = new KeyVaultEcdsaProvider(subtle, keyStore);
@@ -99,7 +102,8 @@ const vaultUri = Credentials.vaultUri;
    it('should sign a message', async () => {
     const name = 'KvTest-KeyStorePlugin-' + Math.random().toString(10).substr(2);
     const cache = new KeyStoreInMemory();
-     const keyStore = new KeyStoreKeyVault(tenantId, clientId, clientSecret, vaultUri, cache);
+    const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+    const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
      try {
        const plugin = new KeyVaultEcdsaProvider(subtle, keyStore);
  
@@ -127,13 +131,14 @@ const vaultUri = Credentials.vaultUri;
      }
    });
  });
- xdescribe('rsa-oaep', () => {
+ describe('rsa-oaep', () => {
    const alg = { name: 'RSA-OAEP', hash: 'SHA-256', modulusLength: 2048, publicExponent: new Uint8Array([0x01, 0x00, 0x01]) };
    it('should decrypt a message', async () => {
      const name = 'RSA-OAEP-decrypt-RSA';
      const cache = new KeyStoreInMemory();
-     const keyStore = new KeyStoreKeyVault(tenantId, clientId, clientSecret, vaultUri, cache);
-     try {
+     const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+     const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
+      try {
        const plugin = new KeyVaultRsaOaepProvider(subtle, keyStore);
        const payload = Buffer.from('hello houston');
  

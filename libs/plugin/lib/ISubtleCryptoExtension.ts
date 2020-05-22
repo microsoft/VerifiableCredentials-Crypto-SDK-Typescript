@@ -8,17 +8,6 @@ import { PrivateKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import { CryptoFactoryScope } from './CryptoFactory';
 
 /**
- * Interface for the Subtle Crypto 
- */
- export interface ISubtleCrypto {
- 
-/**
- * Returns the @class SubtleCrypto implementation for the nodes environment
- */
- getSubtleCrypto(): SubtleCrypto;
-}
-
-/**
  * Interface for the Subtle Crypto extensions
  */
 export default interface ISubtleCryptoExtension extends SubtleCrypto {

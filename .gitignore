@@ -19,11 +19,13 @@ mono_crash.*
 # rush
 common/temp/
 .rush
+shrinkwrap.yaml
 
 # Build results
 package-lock.json
 nunitresults.xml
 .nyc_output
+coverage/
 coverage
 dist
 .rush
