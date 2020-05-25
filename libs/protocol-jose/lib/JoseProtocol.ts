@@ -165,7 +165,7 @@ export default class JoseProtocol implements IPayloadProtection {
    }
 
    // Map string to protection format
-  private getProtectionFormat(format: string): ProtectionFormat {
+  public getProtectionFormat(format: string): ProtectionFormat {
     switch(format.toLocaleLowerCase()) {
       case 'jwsflatjson': return ProtectionFormat.JwsFlatJson;
       case 'jwscompactjson': return ProtectionFormat.JwsCompactJson;

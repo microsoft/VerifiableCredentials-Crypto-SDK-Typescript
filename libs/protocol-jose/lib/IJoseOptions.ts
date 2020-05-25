@@ -39,6 +39,13 @@ export interface IJwsSigningOptions extends IJoseOptions {
 }
 
 /**
+ * Interface defining JWT options.
+ */
+export interface IJwtSigningOptions extends IJwsSigningOptions {
+  expiryInSeconds?: number
+}
+
+/**
  * Interface defining encryption options.
  */
 export interface IJweEncryptionOptions extends IJoseOptions {
