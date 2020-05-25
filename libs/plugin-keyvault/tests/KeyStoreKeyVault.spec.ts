@@ -122,7 +122,6 @@ describe('KeyStoreKeyVault', () => {
     const cache = new KeyStoreInMemory();
     const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
     const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
-    subtle.cryptoFactory = new CryptoFactory(keyStore, subtle);
 
     try {
       const alg = <any>{

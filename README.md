@@ -14,7 +14,7 @@ This includes algorithms such as:
 * And several more not actively used within DIF
 
 ## Goal - Provide a standardized API 
-The primitives API is based on the [W3C Web Crypto API](https://www.w3.org/TR/WebCryptoAPI/). 
+The crypto API is based on the [W3C Web Crypto API](https://www.w3.org/TR/WebCryptoAPI/). 
 
 The SDK uses several layers or crypto implementations:
 
@@ -22,12 +22,20 @@ The SDK uses several layers or crypto implementations:
 * For Elliptic curve ed25519 the npm package elliptic is used.
 * The subtle crypto API is provided by the excellent work of [@peculiar/webcrypto](https://www.npmjs.com/package/@peculiar/webcrypto).
 
-## Goal - Plugeable Crypto layers
-The goal of plugeable crypto is to make application completely agnostic to the used algorithm, even hardware enviroments. 
-The algorithms to use should be in some configuration and as such a standardized API can be used for any crypto calls.
-A change in algorithms should only happen in configuration and does not impact the application itself.
+## Goal - Support for payload protection
+The crypto SDK provides support for protecting payloads. 
+Supported protocols:
+* [JSON Web Signature (JWS) - RFC 7515](https://tools.ietf.org/html/rfc7515).
+* [JSON Web Encryption (JWE) - RFC 7516](https://tools.ietf.org/html/rfc7516).
+* [JSON Web Key (JWK) - RFC 7517](https://tools.ietf.org/html/rfc7517).
+* [JSON Web Token (JWT) - RFC 7519. Only signed payloads](https://tools.ietf.org/html/rfc7519).
 
-As such we can configure an application to do all private key operations on another service (hardware security module) such as [Key Vault](https://docs.microsoft.com/en-us/azure/key-vault/general/). This implies that keys can be generated on Key Vault and all private key operations will happen on Key Vault. A such there is no need for the private key to ever leave Key Vault.
+## Goal - Plugeable Crypto layers
+The goal of plugeable crypto is to make applications agnostic to the used algorithms and hardware environments. 
+The applications need to store the used algorithms in configuration and as such a standardized API can be used for any crypto calls. So changing algorithms or hardware environments will not impact the applications.
+
+### Key Vault
+We can configure an application to do all private key operations on another service (hardware security module) such as [Key Vault](https://docs.microsoft.com/en-us/azure/key-vault/general/). This implies that keys can be generated on Key Vault and all private key operations will happen on Key Vault. A such there is no need for the private key to ever leave the secure Key Vault environment.
 
 A test enviroment might not need the same level of security and could generate and use keys on nodejs.
 
@@ -35,42 +43,58 @@ A test enviroment might not need the same level of security and could generate a
 # Concepts
 
 ## KeyStore
-KeyStore is an abstraction where cryptographic keys are going to be stored. This SDK provides to key stores:
+KeyStore is an abstraction of where cryptographic keys are stored. This SDK provides two key stores:
 
-* KeyStoreInMemory Simple cache in memory for keys
-* KeyStoreKeyVault Store the keys on Key Vault
+* KeyStoreInMemory: Simple cache in memory for keys
+* KeyStoreKeyVault: Store the keys on Key Vault
+
+KeyStores can be created by honoring the IKeyStore interface.
 
 You can use the KeyStoreFactory.create('KeyStoreInMemory') to create the KeyStore to use.
+
 
 ## SubtleCrypto
 SubtleCrypto is the standardized API defined by W3C. 
 
+    const subtle = SubtleCryptoFactory.create('SubtleCryptoNode');
     const key = await subtle.generateKey(
         {
-            name: "HMAC",
-            hash: {name: "SHA-256"}, 
-            length: 256
-        },
+            name: "ECDSA",
+            namedCurve: "secp256k1"
+        },        
         true, 
-        ["sign", "verify"])
+        ["sign", "verify"]);
 
-This is an example how to generate an HMAC key. Next we can export this key into a [Json Web Key](https://tools.ietf.org/html/rfc7517)
+This is an example how to generate an secp256k1 key, commonly used in the DID community. Next we can export this key into a [Json Web Key](https://tools.ietf.org/html/rfc7517)
 
 
     const jwk = await subtle.exportKey(
         "jwk",
-        key)
+        key.privateKey);
 
-We could also sign with this key.
+We could also sign with this generated private key.
 
     cont signature = await subtle.sign(
         {
-            name: "HMAC",
-        },
-        key, 
-        data) //ArrayBuffer of data you want to sign
+            name: "ECDSA",
+            hash: {name: "SHA-256"}
+        },        
+        key.privateKey, 
+        Buffer.from('Payload to sign')); 
 
-Have look to a look at the subtle API examples on github [diafygi/webcrypto-examples](https://github.com/diafygi/webcrypto-examples/).
+And finally verify the signature
+
+    const result = await subtle.verify(
+        {
+            name: "ECDSA",
+            hash: {name: "SHA-256"}
+        },
+        key.publicKey, 
+        signature, 
+        Buffer.from('Payload to sign')); 
+    
+Checkout the /samples folder for samples.
+Have a look at the subtle API examples on github [diafygi/webcrypto-examples](https://github.com/diafygi/webcrypto-examples/).
 
 Use the SubtleCryptoFactory.create('SubtleCryptoNode') factory method to create the default SubtleCrypto API.
 
@@ -101,13 +125,28 @@ Use the CryptoFactoryManager.create('CryptoFactoryNode', new SubtleCrypto()) fac
 
 ## Install
 
+To add the sdk to your package.json do:
+
+npm i verifiablecredentials-crypto-sdk-typescript
+
+
+
+# Cloning
+
+If you want to clone the SDK, you need to use [rush](https://rushjs.io/). The crypto SDK is assembled with a several smaller packages. 
+This is transparant to applications using the SDK.
+
+## Install rush
+
 npm install -g @microsoft/rush
 
+## Update all packages
 rush update
+or rush update --full for a refresh
 
 ## Build
 
-rush build
+rush build or rush rebuild to force a full build
 
 ## test
 

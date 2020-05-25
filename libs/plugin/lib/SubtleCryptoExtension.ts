@@ -47,9 +47,6 @@ export default class SubtleCryptoExtension extends SubtleCrypto implements ISubt
     
     let jwk: PrivateKey = (await <Promise<IKeyContainer>>this.keyStore.get(keyReferenceInStore, {publicKeyOnly: false, extractable})).getKey<PrivateKey>();
 
-    algorithm = this.cryptoFactory.algorithmTransform(algorithm);
-    jwk = this.cryptoFactory.keyTransformImport(jwk, CryptoFactoryScope.Private);
-
     const crypto: SubtleCrypto = CryptoHelpers.getSubtleCryptoForAlgorithm(this.cryptoFactory, algorithm, CryptoFactoryScope.Private);
     const keyImportAlgorithm: any = CryptoHelpers.getKeyImportAlgorithm(algorithm, jwk);
     
@@ -131,8 +128,6 @@ export default class SubtleCryptoExtension extends SubtleCrypto implements ISubt
    * @param payload which was signed
    */
   public async verifyByJwk(algorithm: CryptoAlgorithm, jwk: JsonWebKey, signature: BufferSource, payload: BufferSource): Promise<boolean> {
-    algorithm = this.cryptoFactory.algorithmTransform(algorithm);
-    jwk = this.cryptoFactory.keyTransformImport(jwk, CryptoFactoryScope.Public);
     const crypto: SubtleCrypto = CryptoHelpers.getSubtleCryptoForAlgorithm(this.cryptoFactory, algorithm, CryptoFactoryScope.Public);
     const keyImportAlgorithm: any = CryptoHelpers.getKeyImportAlgorithm(algorithm, jwk);
 
@@ -192,12 +187,10 @@ export default class SubtleCryptoExtension extends SubtleCrypto implements ISubt
    * @param cipher to decrypt
    */
    public async decryptByKeyStore(algorithm: CryptoAlgorithm, keyReference: string, cipher: BufferSource): Promise<ArrayBuffer> {
-    algorithm = this.cryptoFactory.algorithmTransform(algorithm);
 
     let jwk: PrivateKey = (await this.keyStore.get(keyReference, {publicKeyOnly: false})).getKey<PrivateKey>();
     const crypto: SubtleCrypto = CryptoHelpers.getSubtleCryptoForAlgorithm(this.cryptoFactory, algorithm, CryptoFactoryScope.Private);
     const keyImportAlgorithm: any = CryptoHelpers.getKeyImportAlgorithm(algorithm, jwk);
-    jwk = this.cryptoFactory.keyTransformImport(jwk, CryptoFactoryScope.Private);
 
     const key = await crypto.importKey('jwk', jwk, keyImportAlgorithm, true, ['decrypt']);
     return crypto.decrypt(algorithm, key, <ArrayBuffer>cipher);
@@ -210,10 +203,8 @@ export default class SubtleCryptoExtension extends SubtleCrypto implements ISubt
    * @param cipher to decrypt
    */
    public async decryptByJwk(algorithm: CryptoAlgorithm, jwk: JsonWebKey, cipher: BufferSource): Promise<ArrayBuffer> {
-    algorithm = this.cryptoFactory.algorithmTransform(algorithm);
     const crypto: SubtleCrypto = CryptoHelpers.getSubtleCryptoForAlgorithm(this.cryptoFactory, algorithm, CryptoFactoryScope.Private);
     const keyImportAlgorithm: any = CryptoHelpers.getKeyImportAlgorithm(algorithm, jwk);
-    jwk = this.cryptoFactory.keyTransformImport(jwk, CryptoFactoryScope.Private);
 
     const key = await crypto.importKey('jwk', jwk, keyImportAlgorithm, true, ['decrypt']);
     return crypto.decrypt(algorithm, key, <ArrayBuffer>cipher);
@@ -226,9 +217,7 @@ export default class SubtleCryptoExtension extends SubtleCrypto implements ISubt
    * @param data to encrypt
    */
   public async encryptByJwk(algorithm: CryptoAlgorithm, jwk: PublicKey | JsonWebKey, data: BufferSource): Promise<ArrayBuffer> {
-    algorithm = this.cryptoFactory.algorithmTransform(algorithm);
     const keyImportAlgorithm: any = CryptoHelpers.getKeyImportAlgorithm(algorithm, jwk);
-    jwk = this.cryptoFactory.keyTransformImport(jwk, CryptoFactoryScope.Public);
 
     const crypto: SubtleCrypto = CryptoHelpers.getSubtleCryptoForAlgorithm(this.cryptoFactory, algorithm, CryptoFactoryScope.Public);
     const key = await crypto.importKey('jwk', jwk, keyImportAlgorithm, true, ['encrypt']);
@@ -243,6 +232,6 @@ export default class SubtleCryptoExtension extends SubtleCrypto implements ISubt
    */
   public async exportJwkKey(algorithm: Algorithm, key: CryptoKey, scope: CryptoFactoryScope): Promise<JsonWebKey> {
     const crypto: any = CryptoHelpers.getSubtleCryptoForAlgorithm(this.cryptoFactory, algorithm, scope);
-    return crypto.exportKey('jwk', this.cryptoFactory.keyTransformExport(key, scope));
+    return crypto.exportKey('jwk', key);
   }
 }
