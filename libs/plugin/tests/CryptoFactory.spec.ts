@@ -72,13 +72,12 @@ describe('CryptoFactory', () => {
     const jwk = {
       crv: 'abc'
     };
-    const keyStore = new KeyStoreInMemory();
-    const factory = new CryptoFactory(keyStore, SubtleCryptoNode.getSubtleCrypto());
-    expect(factory.keyTransformImport(jwk, CryptoFactoryScope.All)).toEqual(jwk);
-    expect(factory.keyTransformExport(jwk, CryptoFactoryScope.All)).toEqual(jwk);
+    const subtle = SubtleCryptoNode.getSubtleCrypto();
+    expect(subtle.keyImportTransform(jwk, CryptoFactoryScope.All)).toEqual(jwk);
+    expect(subtle.keyImportTransform(jwk, CryptoFactoryScope.All)).toEqual(jwk);
     jwk.crv = 'K-256';
-    expect(factory.keyTransformExport(jwk, CryptoFactoryScope.All)).toEqual({crv: 'secp256k1'});
+    expect(subtle.keyExportTransform(jwk, CryptoFactoryScope.All)).toEqual({crv: 'secp256k1'});
     jwk.crv = 'secp256k1';
-    expect(factory.keyTransformImport(jwk, CryptoFactoryScope.All)).toEqual({crv: 'K-256'});
+    expect(subtle.keyImportTransform(jwk, CryptoFactoryScope.All)).toEqual({crv: 'K-256'});
   });
 });

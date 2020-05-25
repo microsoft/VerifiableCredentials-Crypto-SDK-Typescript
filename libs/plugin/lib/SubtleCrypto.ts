@@ -2,36 +2,75 @@ import { CryptoFactory } from './index';
 import { CryptoKeyPair, CryptoKey } from 'webcrypto-core';
 import { CryptoFactoryScope } from './CryptoFactory';
 const { Crypto } = require("@peculiar/webcrypto");
+const clone = require('clone');
+
+// Named curves
+const CURVE_P256K = 'P-256K';
+const CURVE_K256 = 'K-256';
+const CURVE_SECP256K1 = 'secp256k1';
+
 
 /**
  * Wrapper class for W3C subtle crypto.
  * A subtle crypto class is the actual crypto library to be used.
  */
 export default class SubtleCrypto {
-    constructor() {
-        console.log(`SubtleCrypto object created`);
-    }
-
+   
     private subtle = new Crypto().subtle;
-    private _cryptoFactory: CryptoFactory | undefined;
 
-    /**
-     * Set a new crypto factory
-     */
-    public set cryptoFactory(cryptoFactory: CryptoFactory | undefined) {
-        this._cryptoFactory = cryptoFactory;
+    constructor() {
     }
 
     /**
-     * Gets the crypto factory
+     * Normalize the algorithm so it can be used by underlying crypto.
+     * @param algorithm Algorithm to be normalized
      */
-    public get cryptoFactory(): CryptoFactory | undefined {
-        return this._cryptoFactory;
+    public algorithmTransform(algorithm: any) {
+        if (algorithm.namedCurve) {
+            if (algorithm.namedCurve === CURVE_P256K || algorithm.namedCurve === CURVE_SECP256K1) {
+                const alg = clone(algorithm);
+                alg.namedCurve = CURVE_K256;
+                return alg;
+            }
+        }
+
+        return algorithm;
+    }
+
+    /**
+   * Normalize the JWK parameters so it can be used by underlying crypto.
+   * @param jwk Json web key to be normalized
+   */
+    public keyImportTransform(jwk: any) {
+        if (jwk.crv) {
+            if (jwk.crv === CURVE_P256K || jwk.crv === CURVE_SECP256K1) {
+                const clonedKey = clone(jwk);
+                clonedKey.crv = CURVE_K256;
+                return clonedKey;
+            }
+        }
+
+        return jwk;
+    }
+
+    /**
+     * Normalize the JWK parameters from the underlying crypto so it is normalized to standardized parameters.
+     * @param jwk Json web key to be normalized
+     */
+    public keyExportTransform(jwk: any) {
+        if (jwk.crv) {
+            if (jwk.crv === CURVE_P256K || jwk.crv === CURVE_K256) {
+                const clonedKey = clone(jwk);
+                clonedKey.crv = CURVE_SECP256K1;
+                return clonedKey;
+            }
+        }
+
+        return jwk;
     }
 
     public async digest(algorithm: Algorithm, data: BufferSource): Promise<ArrayBuffer> {
-        // CryptoFactory transforms
-        algorithm = this.cryptoFactory ? this.cryptoFactory.algorithmTransform(algorithm) : algorithm;
+        algorithm = this.algorithmTransform(algorithm);
         const result = await this.subtle.digest(algorithm, data);
 
         return result;
@@ -39,44 +78,35 @@ export default class SubtleCrypto {
 
 
     public async generateKey(algorithm: Algorithm, extractable: boolean, keyUsages: KeyUsage[], _options?: any): Promise<CryptoKeyPair | CryptoKey> {
-        // CryptoFactory transforms
-        algorithm = this.cryptoFactory ? this.cryptoFactory.algorithmTransform(algorithm) : algorithm;
-
+        algorithm = this.algorithmTransform(algorithm);
         const result = await this.subtle.generateKey(algorithm, extractable, keyUsages);
+
         return result;
     }
 
     public async sign(algorithm: Algorithm, key: CryptoKey, data: BufferSource): Promise<ArrayBuffer> {
-        // CryptoFactory transforms
-        algorithm = this.cryptoFactory ? this.cryptoFactory.algorithmTransform(algorithm) : algorithm;
-
+        algorithm = this.algorithmTransform(algorithm);
         const result = await this.subtle.sign(algorithm, key, data);
 
         return result;
     }
 
     public async verify(algorithm: Algorithm, key: CryptoKey, signature: BufferSource, data: BufferSource): Promise<boolean> {
-        // CryptoFactory transforms
-        algorithm = this.cryptoFactory ? this.cryptoFactory.algorithmTransform(algorithm) : algorithm;
-
+        algorithm = this.algorithmTransform(algorithm);
         const result = await this.subtle.verify(algorithm, key, signature, data);
 
         return result;
     }
 
     public async encrypt(algorithm: Algorithm, key: CryptoKey, data: BufferSource): Promise<ArrayBuffer> {
-        // CryptoFactory transforms
-        algorithm = this.cryptoFactory ? this.cryptoFactory.algorithmTransform(algorithm) : algorithm;
-
+        algorithm = this.algorithmTransform(algorithm);
         const result = await this.subtle.encrypt(algorithm, key, data);
 
         return result;
     }
 
     public async decrypt(algorithm: Algorithm, key: CryptoKey, data: BufferSource): Promise<ArrayBuffer> {
-        // CryptoFactory transforms
-        algorithm = this.cryptoFactory ? this.cryptoFactory.algorithmTransform(algorithm) : algorithm;
-
+        algorithm = this.algorithmTransform(algorithm);
         const result = await this.subtle.decrypt(algorithm, key, data);
 
         return result;
@@ -86,30 +116,18 @@ export default class SubtleCrypto {
     //public async exportKey(format: "jwk", key: CryptoKey): Promise<JsonWebKey>;
     //public async exportKey(format: KeyFormat, key: CryptoKey): Promise<JsonWebKey | ArrayBuffer>;
     public async exportKey(format: KeyFormat, key: CryptoKey): Promise<JsonWebKey | ArrayBuffer> {
-        // CryptoFactory transforms
 
         let result = await this.subtle.exportKey(format, key);
-        result = this.cryptoFactory ? this.cryptoFactory.keyTransformExport(result, CryptoFactoryScope.All) : result;
+        result = format === 'jwk' ? this.keyExportTransform(result): result;
+
         return result;
     }
 
     public async importKey(format: KeyFormat, keyData: JsonWebKey | BufferSource, algorithm: Algorithm, extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKey> {
-        // CryptoFactory transforms
-        algorithm = this.cryptoFactory ? this.cryptoFactory.algorithmTransform(algorithm) : algorithm;
-        keyData = this.cryptoFactory ? this.cryptoFactory.keyTransformImport(keyData, CryptoFactoryScope.All): keyData;
+        algorithm = this.algorithmTransform(algorithm);
+        keyData = format === 'jwk' ? this.keyImportTransform(keyData): keyData;
         const result = await this.subtle.importKey(format, keyData, algorithm, extractable, keyUsages);
 
         return result;
     }
-
-    public async wrapKey(format: KeyFormat, key: CryptoKey, wrappingKey: CryptoKey, wrapAlgorithm: Algorithm): Promise<ArrayBuffer> {
-        const result = await this.subtle.wrapKey(format, key, wrappingKey, wrapAlgorithm);
-        return result;
-    }
-
-    public async unwrapKey(format: KeyFormat, wrappedKey: BufferSource, unwrappingKey: CryptoKey, unwrapAlgorithm: Algorithm, unwrappedKeyAlgorithm: Algorithm, extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKey> {
-        const result = await this.subtle.unwrapKey(format, wrappedKey, unwrappingKey, unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages);
-        return result;
-    }
-
 }

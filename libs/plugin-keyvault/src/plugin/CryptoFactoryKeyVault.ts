@@ -17,32 +17,12 @@ export default class CryptoFactoryKeyVault extends CryptoFactory {
    * @param keyStore used to store private jeys
    * @param defaultCrypto Default subtle crypto used for e.g. hashing.
    */
-  constructor (keyStore: IKeyStore, defaultCrypto: any) {
+  constructor(keyStore: IKeyStore, defaultCrypto: any) {
     super(keyStore, defaultCrypto);
     const subtleCrypto: any = new SubtleCryptoKeyVault(defaultCrypto, <KeyStoreKeyVault>keyStore);
-    this.addMessageSigner('ES256K', {subtleCrypto, scope: CryptoFactoryScope.Private});
-    this.addMessageSigner('ECDSA', {subtleCrypto, scope: CryptoFactoryScope.Private});
-    this.addKeyEncrypter('RSA-OAEP', {subtleCrypto, scope: CryptoFactoryScope.Private});
-    this.addKeyEncrypter('RSA-OAEP-256', {subtleCrypto, scope: CryptoFactoryScope.Private});
-    /*
-    this.algorithmTransform = (algorithm: Algorithm) => {
-      if ((<any>algorithm).namedCurve) {
-        if ((<any>algorithm).namedCurve === 'SECP256K1') {
-          const alg = clone(algorithm);
-          alg.namedCurve = 'P-256K';
-          return alg;
-        }
-      }
-
-      return algorithm;
-    };
-    */
-    this.algorithmTransform = (jwk: any) => { return jwk; } 
-      this.keyTransformImport = (jwk: any, scope: CryptoFactoryScope) => { 
-        if (scope === CryptoFactoryScope.Private) {
-          return jwk; 
-        }
-        return CryptoFactory.normalizeJwkImport(jwk);
-      } 
-    }
+    this.addMessageSigner('ES256K', { subtleCrypto, scope: CryptoFactoryScope.Private });
+    this.addMessageSigner('ECDSA', { subtleCrypto, scope: CryptoFactoryScope.Private });
+    this.addKeyEncrypter('RSA-OAEP', { subtleCrypto, scope: CryptoFactoryScope.Private });
+    this.addKeyEncrypter('RSA-OAEP-256', { subtleCrypto, scope: CryptoFactoryScope.Private });
+  }
 }
