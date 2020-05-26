@@ -19,6 +19,7 @@ mono_crash.*
 # rush
 common/temp/
 .rush
+.rush/
 shrinkwrap.yaml
 
 # Build results
@@ -363,3 +364,4 @@ MigrationBackup/
 .ionide/
 
  
+libs/keys/.rush/temp/package-deps_build.json

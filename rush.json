@@ -349,5 +349,10 @@
       "packageName": "verifiablecredentials-crypto-sdk-typescript-protocol-jose",
       "projectFolder": "libs/protocol-jose"
     },
+    {
+      "shouldPublish": true,
+      "packageName": "verifiablecredentials-crypto-sdk-typescript",
+      "projectFolder": "libs/sdk"
+    }
   ]
 }

@@ -40,15 +40,11 @@ export default class JwsToken implements IJwsGeneralJson {
    */
   public format: ProtectionFormat = ProtectionFormat.JwsGeneralJson;
 
-  // Options passed into the constructor
-  private options: IJwsSigningOptions | undefined;
-
   /**
    * Create an Jws token object
    * @param options Set of jws token options
    */
-  constructor(options?: IJwsSigningOptions) {
-    this.options = options;
+  constructor(public options?: IJwsSigningOptions) {
   }
 
   //#region serialization
@@ -306,7 +302,7 @@ export default class JwsToken implements IJwsGeneralJson {
    * @param newOptions Options passed in after the constructure
    * @param mandatory True if property needs to be defined
    */
-  private getKeyStore(newOptions?: IJwsSigningOptions, mandatory: boolean = true): IKeyStore {
+  public getKeyStore(newOptions?: IJwsSigningOptions, mandatory: boolean = true): IKeyStore {
     return this.getCryptoFactory(newOptions, mandatory).keyStore;
   }
 
@@ -315,7 +311,7 @@ export default class JwsToken implements IJwsGeneralJson {
    * @param newOptions Options passed in after the constructure
    * @param mandatory True if property needs to be defined
    */
-  private getCryptoFactory(newOptions?: IJwsSigningOptions, mandatory: boolean = true): CryptoFactory {
+  public getCryptoFactory(newOptions?: IJwsSigningOptions, mandatory: boolean = true): CryptoFactory {
     return JoseHelpers.getOptionsProperty<CryptoFactory>('cryptoFactory', this.options, newOptions, mandatory);
   }
 

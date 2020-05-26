@@ -40,12 +40,13 @@
   "dependencies": {
     "verifiablecredentials-crypto-sdk-typescript-keys": "1.1.0",
     "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.0",
-    "verifiablecredentials-crypto-sdk-typescript-subtle-plugin": "1.1.0",
-    "verifiablecredentials-crypto-sdk-typescript-subtle-plugin-elliptic": "1.1.0",
-    "verifiablecredentials-crypto-sdk-typescript-subtle-plugin-factory": "1.1.0",
-    "verifiablecredentials-crypto-sdk-typescript-subtle-plugin-keyvault": "1.1.0",
+    "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.0",
+    "verifiablecredentials-crypto-sdk-typescript-plugin-elliptic": "1.1.0",
+    "verifiablecredentials-crypto-sdk-typescript-plugin-factory": "1.1.0",
+    "verifiablecredentials-crypto-sdk-typescript-plugin-keyvault": "1.1.0",
     "verifiablecredentials-crypto-sdk-typescript-protocol-jose": "1.1.0",
     "verifiablecredentials-crypto-sdk-typescript-protocols-common": "1.1.0",
+    "verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites": "1.1.0",
     "@types/node": "12.12.16",
     "webcrypto-core": "1.0.1"
   },
