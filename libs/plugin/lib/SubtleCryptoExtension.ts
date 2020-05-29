@@ -87,7 +87,7 @@ export default class SubtleCryptoExtension extends SubtleCrypto implements ISubt
    * format the signature output to DER format
    * @param elements Array of elements to encode in DER
    */
-  private static toDer(elements: ArrayBuffer[]): ArrayBuffer {
+  public static toDer(elements: ArrayBuffer[]): ArrayBuffer {
     let index: number = 0;
     // calculate total size. 
     let lengthOfRemaining = 0;
@@ -153,7 +153,7 @@ export default class SubtleCryptoExtension extends SubtleCrypto implements ISubt
    * format the signature output from DER format
    * @param signature to decode from DER
    */
-   private static fromDer(signature: Uint8Array): Uint8Array[] {
+   public static fromDer(signature: Uint8Array): Uint8Array[] {
     if (signature[0] !== 0x30) {
       throw new Error('No DER format to decode');
     }

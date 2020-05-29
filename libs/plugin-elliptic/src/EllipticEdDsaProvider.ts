@@ -7,6 +7,7 @@ import EllipticDsaProvider from './EllipticDsaProvider';
 import { SubtleCrypto, CryptoKey } from 'webcrypto-core';
 import EllipticCurveKey from './EllipticCurveKey';
 import base64url from 'base64url';
+import { SubtleCryptoExtension } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 const clone = require('clone');
 const utils = require('minimalistic-crypto-utils');
 const EC = require('elliptic');
@@ -70,7 +71,7 @@ export default class EllipticEdDsaProvider extends EllipticDsaProvider {
     const r = signature.slice(0, 32);
     const s = signature.slice(32);
     if ((<any>algorithm).format === 'DER') {
-      return EllipticDsaProvider.toDer([r, s]);
+      return SubtleCryptoExtension.toDer([r, s]);
     }
 
     return new Uint8Array(Buffer.concat([r, s]));  
@@ -90,7 +91,7 @@ export default class EllipticEdDsaProvider extends EllipticDsaProvider {
     let signed = new Uint8Array(signature);
     if (signature.byteLength > 65) {
       // DER formatted
-      const decodedSignature = EllipticDsaProvider.fromDer(signed);
+      const decodedSignature = SubtleCryptoExtension.fromDer(signed);
       signed = new Uint8Array(decodedSignature[0].length + decodedSignature[1].length);
       signed.set(decodedSignature[0]);
       signed.set(decodedSignature[1], decodedSignature[1].length);
