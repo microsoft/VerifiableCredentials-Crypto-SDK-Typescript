@@ -15,7 +15,7 @@
     "JWE",
     "JWS",
     "JWT"
-    ],
+  ],
   "author": "Microsoft Corporation",
   "license": "MIT",
   "main": "./dist/lib/index.js",
@@ -38,6 +38,7 @@
     "typescript": "3.9.2"
   },
   "dependencies": {
+    "@azure/identity": "1.0.0",
     "verifiablecredentials-crypto-sdk-typescript-keys": "1.1.0",
     "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.0",
     "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.0",
@@ -48,7 +49,7 @@
     "verifiablecredentials-crypto-sdk-typescript-protocols-common": "1.1.0",
     "verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites": "1.1.0",
     "@types/node": "12.12.16",
-    "webcrypto-core": "1.0.1"
+    "webcrypto-core": "1.1.1"
   },
   "nyc": {
     "extension": [
@@ -56,7 +57,7 @@
       ".tsx"
     ],
     "include": [
-      "lib/**"
+      "src/**"
     ],
     "reporter": [
       "text",

@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { EllipticCurveSubtleKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
+import { EllipticCurveSubtleKey, KeyType } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import base64url from 'base64url';
 import { SubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import { CryptoKey } from 'webcrypto-core';
 import KeyVaultProvider from './KeyVaultProvider';
 import KeyStoreKeyVault from '../keyStore/KeyStoreKeyVault';
-import { IKeyStore } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { IKeyStore, KeyStoreInMemory } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 
 /**
  * Wrapper class for key vault plugin
@@ -25,7 +25,7 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
    * Different usages supported by the provider
    */
   public usages: any = {
-    privateKey: ['sign']
+    privateKey: ['sign', 'verify']
   };
 
   /**
@@ -33,7 +33,7 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
    * @param crypto A default subtle crypto object. Can be used for local crypto functions
    * @param keyStore The key vault key store
    */
-  constructor (
+  constructor(
     subtle: SubtleCrypto,
     keyStore: IKeyStore) {
     super(subtle, keyStore);
@@ -45,7 +45,7 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
    * @param key used for signing
    * @param data to sign
    */
-  async onSign (algorithm: EcdsaParams, key: CryptoKey, data: ArrayBuffer): Promise<ArrayBuffer> {
+  async onSign(algorithm: EcdsaParams, key: CryptoKey, data: ArrayBuffer): Promise<ArrayBuffer> {
     let hashAlgorithm = (typeof algorithm.hash === 'object' ? algorithm.hash.name || 'SHA-256' : algorithm.hash || 'SHA-256');
     const hash = await this.subtle.digest({ name: hashAlgorithm }, data);
 
@@ -61,15 +61,15 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
    * @param extractable is true if the key is exportable
    * @param keyUsages sign or verify
    */
-  async onGenerateKey (algorithm: EcKeyGenParams, extractable: boolean, keyUsages: KeyUsage[], options?: any): Promise<CryptoKey> {
+  async onGenerateKey(algorithm: EcKeyGenParams, extractable: boolean, keyUsages: KeyUsage[], options?: any): Promise<CryptoKeyPair> {
     if (!options) {
       options = { curve: 'SECP256K1' }
     } else {
       options.curve = 'SECP256K1';
     }
 
-    const key = await this.generate('EC', algorithm, extractable, keyUsages, options);
-    return new EllipticCurveSubtleKey(algorithm, extractable, keyUsages, 'public', key);
+    const keyPair = await this.generate('EC', algorithm, extractable, keyUsages, options);
+    return keyPair;
   }
 
   /**
@@ -80,13 +80,13 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
    * @param extractable is true if the key is exportable
    * @param keyUsages sign or verify
    */
-  async onImportKey (format: KeyFormat,
+  async onImportKey(format: KeyFormat,
     keyData: JsonWebKey, algorithm: EcKeyImportParams, extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKey> {
     if (format !== 'jwk') {
       throw new Error(`Import key only supports jwk`);
     }
 
-    let keyType = 'public';
+    let keyType: 'public' | 'private' = 'public';
     // Make sure the key elements are buffers
     if (typeof (keyData as any).x === 'string') {
       (keyData as any).x = base64url.toBuffer((keyData as any).x);
@@ -100,7 +100,7 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
     }
 
     return new Promise((resolve) => {
-      resolve(new EllipticCurveSubtleKey(algorithm, extractable, keyUsages, keyType as any, keyData));
+      resolve(KeyVaultEcdsaProvider.toCryptoKey(this.subtle, algorithm, keyType, extractable, keyUsages, keyData));
     });
   }
 
@@ -109,7 +109,7 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
    * @param format must be 'jwk'
    * @param key Key to export in jwk
    */
-  async onExportKey (format: KeyFormat, key: CryptoKey): Promise<JsonWebKey> {
+  async onExportKey(format: KeyFormat, key: CryptoKey): Promise<JsonWebKey> {
     if (format !== 'jwk') {
       throw new Error(`Export key only supports jwk`);
     }
@@ -138,4 +138,39 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
     return new Promise((resolve) => resolve(jwk as JsonWebKey));
   }
 
+
+  /**
+   * Convert to CryptoKey
+   * @param algorithm for key generation
+   * @param extractable is true if the key is exportable
+   * @param keyUsages sign or verify
+   * @param key to convert
+   */
+  public static async toCryptoKey(subtle: SubtleCrypto, algorithm: EcKeyGenParams, type: 'public' | 'private', extractable: boolean, keyUsages: KeyUsage[], key: any): Promise<CryptoKey> {
+    const cryptoKey: any = CryptoKey.create(algorithm, type, extractable, keyUsages);
+    cryptoKey.key = key;
+
+    // import/export key to make sure subtlecrypto is aware of the key.
+    subtle.importKey('jwk',
+      await subtle.exportKey('jwk', cryptoKey),
+      algorithm,
+      true,
+      keyUsages);
+    return cryptoKey;
+  }
+
+  /**
+   * Convert to CryptoKeyPair
+   * @param algorithm for key generation
+   * @param extractable is true if the key is exportable
+   * @param keyUsages sign or verify
+   * @param key to convert
+   */
+  public static async toCryptoKeyPair(subtle: SubtleCrypto, algorithm: EcKeyGenParams, extractable: boolean, keyUsages: KeyUsage[], key: any): Promise<CryptoKeyPair> {
+    const cryptoKey = await KeyVaultEcdsaProvider.toCryptoKey(subtle, algorithm, 'public', extractable, keyUsages, key);
+    const pair = {
+      publicKey: cryptoKey
+    };
+    return <CryptoKeyPair>pair;
+  }
 }

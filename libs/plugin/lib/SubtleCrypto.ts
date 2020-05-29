@@ -1,5 +1,5 @@
 import { CryptoFactory } from './index';
-import { CryptoKeyPair, CryptoKey } from 'webcrypto-core';
+import {  CryptoKey } from 'webcrypto-core';
 import { CryptoFactoryScope } from './CryptoFactory';
 const { Crypto } = require("@peculiar/webcrypto");
 const clone = require('clone');
@@ -126,8 +126,9 @@ export default class SubtleCrypto {
     public async importKey(format: KeyFormat, keyData: JsonWebKey | BufferSource, algorithm: Algorithm, extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKey> {
         algorithm = this.algorithmTransform(algorithm);
         keyData = format === 'jwk' ? this.keyImportTransform(keyData): keyData;
-        const result = await this.subtle.importKey(format, keyData, algorithm, extractable, keyUsages);
-
-        return result;
+        const key: CryptoKey = await this.subtle.importKey(format, keyData, algorithm, extractable, keyUsages);
+        const cryptoKey = CryptoKey.create(algorithm, key.type, extractable, keyUsages);
+        (<any>cryptoKey).key = key;
+        return cryptoKey;
     }
 }

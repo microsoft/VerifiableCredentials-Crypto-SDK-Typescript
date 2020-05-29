@@ -8,6 +8,7 @@ import { SubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript-plugin
 import { ProviderCrypto } from 'webcrypto-core';
 import { IKeyStore, KeyStoreOptions } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import KeyStoreKeyVault from '../keyStore/KeyStoreKeyVault';
+import KeyVaultEcdsaProvider from './KeyVaultEcdsaProvider';
 
 /**
  * Wrapper class for key vault plugin
@@ -31,15 +32,16 @@ export default abstract class KeyVaultProvider extends ProviderCrypto {
    * @param extractable is true if the key is exportable
    * @param keyUsages sign or verify
    */
-  async generate(kty: KeyType, algorithm: Algorithm, _extractable: boolean, keyUsages: KeyUsage[], options?: any): Promise<JsonWebKey> {
+  async generate(kty: KeyType, algorithm: Algorithm, extractable: boolean, keyUsages: KeyUsage[], options?: any): Promise<CryptoKeyPair> {
     let name: string = this.generateKeyName(algorithm, keyUsages, kty);
     if (options && options.name) {
       name = options.name;
     }
 
     const client = <KeyClient>(<KeyStoreKeyVault>this.keyStore).getKeyStoreClient(new KeyStoreOptions({ extractable: false }));
-    const keyPair = await client.createKey(name, kty, options);
-    return (<any>keyPair).key as JsonWebKey;
+    const publicKey = await client.createKey(name, kty, options);
+    const pair = await KeyVaultEcdsaProvider.toCryptoKeyPair(this.subtle, <any>algorithm, extractable, keyUsages, publicKey);
+    return pair;
   }
 
   /**

@@ -9,6 +9,7 @@ import { IKeyStore } from 'verifiablecredentials-crypto-sdk-typescript-keystore'
 import base64url from 'base64url';
 import KeyVaultProvider from './KeyVaultProvider';
 import KeyStoreKeyVault from '../keyStore/KeyStoreKeyVault';
+import KeyVaultEcdsaProvider from './KeyVaultEcdsaProvider';
 
 /**
  * Wrapper class for key vault plugin
@@ -63,9 +64,9 @@ export default class KeyVaultRsaOaepProvider extends KeyVaultProvider {
    * @param extractable is true if the key is exportable
    * @param keyUsages sign or verify
    */
-  async onGenerateKey (algorithm: RsaKeyGenParams, extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKey> {
-    const key = await this.generate('RSA', algorithm, extractable, keyUsages);
-    return new RsaSubtleKey(algorithm, extractable, keyUsages, 'public', key);
+  async onGenerateKey (algorithm: RsaKeyGenParams, extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKeyPair> {
+    const keyPair = await this.generate('RSA', algorithm, extractable, keyUsages);
+    return keyPair;
   }
 
   /**
@@ -81,7 +82,7 @@ export default class KeyVaultRsaOaepProvider extends KeyVaultProvider {
     if (format !== 'jwk') {
       throw new Error(`Import key only supports jwk`);
     }
-    let keyType = 'public';
+    let keyType: 'public' | 'private' = 'public';
     // Make sure the key elements are buffers
     if (typeof (keyData as any).e === 'string') {
       (keyData as any).e = base64url.toBuffer((keyData as any).e);
@@ -91,7 +92,7 @@ export default class KeyVaultRsaOaepProvider extends KeyVaultProvider {
     }
 
     return new Promise((resolve) => {
-      resolve(new RsaSubtleKey(algorithm, extractable, keyUsages, keyType as any, keyData));
+      resolve(KeyVaultEcdsaProvider.toCryptoKey(this.subtle, <any>algorithm, keyType, extractable, keyUsages, keyData));
     });
   }
 
@@ -127,18 +128,5 @@ export default class KeyVaultRsaOaepProvider extends KeyVaultProvider {
     };
 
     return new Promise((resolve) => resolve(jwk as JsonWebKey));
-  }
-
-  /**
-   * Import jwk key
-   * @param format must be 'jwk'
-   * @param key Key to export in jwk
-   * @param algorithm for key generation
-   * @param extractable is true if the key is exportable
-   * @param keyUsages sign or verify
-   */
-  public async toRsaKey (keyData: JsonWebKey, algorithm: RsaKeyGenParams, extractable: boolean, keyUsages: KeyUsage[]): Promise<RsaSubtleKey> {
-    const jwkKey: any = keyData;
-    return new RsaSubtleKey(algorithm, extractable,keyUsages, 'public', await this.onExportKey('jwk', jwkKey));
   }
 }
