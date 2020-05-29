@@ -68,8 +68,19 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
       options.curve = 'SECP256K1';
     }
 
-    const keyPair = await this.generate('EC', algorithm, extractable, keyUsages, options);
-    return keyPair;
+    const publicKey: any = await this.generate('EC', algorithm, extractable, keyUsages, options);
+    const jwk = {
+      kid: publicKey.id,
+      id: publicKey.id,
+      kty: 'EC',
+      use: 'sig',
+      x: base64url.encode(publicKey.key.x),
+      y: base64url.encode(publicKey.key.y)
+    };
+    const cryptoKey: any = await this.subtle.importKey('jwk', jwk, algorithm, extractable, keyUsages);
+    //cryptoKey.key = publicKey;
+    const pair = await this.toCryptoKeyPair(algorithm, extractable, keyUsages, publicKey);
+    return pair;
   }
 
   /**
@@ -100,7 +111,7 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
     }
 
     return new Promise((resolve) => {
-      resolve(KeyVaultEcdsaProvider.toCryptoKey(this.subtle, algorithm, keyType, extractable, keyUsages, keyData));
+      resolve(this.toCryptoKey(algorithm, keyType, extractable, keyUsages, keyData));
     });
   }
 
@@ -136,41 +147,5 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
     };
 
     return new Promise((resolve) => resolve(jwk as JsonWebKey));
-  }
-
-
-  /**
-   * Convert to CryptoKey
-   * @param algorithm for key generation
-   * @param extractable is true if the key is exportable
-   * @param keyUsages sign or verify
-   * @param key to convert
-   */
-  public static async toCryptoKey(subtle: SubtleCrypto, algorithm: EcKeyGenParams, type: 'public' | 'private', extractable: boolean, keyUsages: KeyUsage[], key: any): Promise<CryptoKey> {
-    const cryptoKey: any = CryptoKey.create(algorithm, type, extractable, keyUsages);
-    cryptoKey.key = key;
-
-    // import/export key to make sure subtlecrypto is aware of the key.
-    subtle.importKey('jwk',
-      await subtle.exportKey('jwk', cryptoKey),
-      algorithm,
-      true,
-      keyUsages);
-    return cryptoKey;
-  }
-
-  /**
-   * Convert to CryptoKeyPair
-   * @param algorithm for key generation
-   * @param extractable is true if the key is exportable
-   * @param keyUsages sign or verify
-   * @param key to convert
-   */
-  public static async toCryptoKeyPair(subtle: SubtleCrypto, algorithm: EcKeyGenParams, extractable: boolean, keyUsages: KeyUsage[], key: any): Promise<CryptoKeyPair> {
-    const cryptoKey = await KeyVaultEcdsaProvider.toCryptoKey(subtle, algorithm, 'public', extractable, keyUsages, key);
-    const pair = {
-      publicKey: cryptoKey
-    };
-    return <CryptoKeyPair>pair;
   }
 }

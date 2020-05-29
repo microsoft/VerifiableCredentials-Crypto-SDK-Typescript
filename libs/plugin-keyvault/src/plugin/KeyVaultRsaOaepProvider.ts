@@ -65,8 +65,16 @@ export default class KeyVaultRsaOaepProvider extends KeyVaultProvider {
    * @param keyUsages sign or verify
    */
   async onGenerateKey (algorithm: RsaKeyGenParams, extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKeyPair> {
-    const keyPair = await this.generate('RSA', algorithm, extractable, keyUsages);
-    return keyPair;
+    const publicKey: any = await this.generate('RSA', algorithm, extractable, keyUsages);
+    const jwk = {
+      kty: 'RSA',
+      use: 'enc',
+      x: publicKey.key.e,
+      y: publicKey.key.n
+    };
+    const cryptoKey = await this.subtle.importKey('jwk', jwk, algorithm, extractable, keyUsages);
+    const pair = await this.toCryptoKeyPair(algorithm, extractable, keyUsages, cryptoKey);
+    return pair;
   }
 
   /**
@@ -92,7 +100,7 @@ export default class KeyVaultRsaOaepProvider extends KeyVaultProvider {
     }
 
     return new Promise((resolve) => {
-      resolve(KeyVaultEcdsaProvider.toCryptoKey(this.subtle, <any>algorithm, keyType, extractable, keyUsages, keyData));
+      resolve(this.toCryptoKey(algorithm, keyType, extractable, keyUsages, keyData));
     });
   }
 

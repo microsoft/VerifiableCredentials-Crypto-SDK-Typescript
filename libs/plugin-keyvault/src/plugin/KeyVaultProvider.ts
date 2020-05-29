@@ -5,7 +5,7 @@
 
 import { KeyClient, JsonWebKey, KeyType } from '@azure/keyvault-keys';
 import { SubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
-import { ProviderCrypto } from 'webcrypto-core';
+import { ProviderCrypto, CryptoKey } from 'webcrypto-core';
 import { IKeyStore, KeyStoreOptions } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import KeyStoreKeyVault from '../keyStore/KeyStoreKeyVault';
 import KeyVaultEcdsaProvider from './KeyVaultEcdsaProvider';
@@ -32,7 +32,7 @@ export default abstract class KeyVaultProvider extends ProviderCrypto {
    * @param extractable is true if the key is exportable
    * @param keyUsages sign or verify
    */
-  async generate(kty: KeyType, algorithm: Algorithm, extractable: boolean, keyUsages: KeyUsage[], options?: any): Promise<CryptoKeyPair> {
+  async generate(kty: KeyType, algorithm: Algorithm, _extractable: boolean, keyUsages: KeyUsage[], options?: any): Promise<object> {
     let name: string = this.generateKeyName(algorithm, keyUsages, kty);
     if (options && options.name) {
       name = options.name;
@@ -40,8 +40,7 @@ export default abstract class KeyVaultProvider extends ProviderCrypto {
 
     const client = <KeyClient>(<KeyStoreKeyVault>this.keyStore).getKeyStoreClient(new KeyStoreOptions({ extractable: false }));
     const publicKey = await client.createKey(name, kty, options);
-    const pair = await KeyVaultEcdsaProvider.toCryptoKeyPair(this.subtle, <any>algorithm, extractable, keyUsages, publicKey);
-    return pair;
+    return publicKey;
   }
 
   /**
@@ -53,4 +52,33 @@ export default abstract class KeyVaultProvider extends ProviderCrypto {
   generateKeyName(algorithm: Algorithm, keyUsages: KeyUsage[], keyType: string): string {
     return `${algorithm.name}-${keyUsages[0]}-${keyType}`;
   }
+
+  /**
+   * Convert to CryptoKey
+   * @param algorithm for key generation
+   * @param extractable is true if the key is exportable
+   * @param keyUsages sign or verify
+   * @param key to convert
+   */
+  public async toCryptoKey(algorithm: Algorithm, type: 'public' | 'private', extractable: boolean, keyUsages: KeyUsage[], key: any): Promise<CryptoKey> {
+    const cryptoKey: any = CryptoKey.create(algorithm, type, extractable, keyUsages);
+    cryptoKey.key = key;
+    return cryptoKey;
+  }
+
+  /**
+   * Convert to CryptoKeyPair
+   * @param algorithm for key generation
+   * @param extractable is true if the key is exportable
+   * @param keyUsages sign or verify
+   * @param key to convert
+   */
+  public async toCryptoKeyPair(algorithm: Algorithm, extractable: boolean, keyUsages: KeyUsage[], key: any): Promise<CryptoKeyPair> {
+    const cryptoKey = await this.toCryptoKey(algorithm, 'public', extractable, keyUsages, key);
+    const pair = {
+      publicKey: cryptoKey
+    };
+    return <CryptoKeyPair>pair;
+  }
+
 }
