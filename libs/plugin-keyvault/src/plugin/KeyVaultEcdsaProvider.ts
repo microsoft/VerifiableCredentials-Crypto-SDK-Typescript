@@ -3,13 +3,12 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { EllipticCurveSubtleKey, KeyType } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import base64url from 'base64url';
 import { SubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import { CryptoKey } from 'webcrypto-core';
 import KeyVaultProvider from './KeyVaultProvider';
 import KeyStoreKeyVault from '../keyStore/KeyStoreKeyVault';
-import { IKeyStore, KeyStoreInMemory, CryptoError } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { IKeyStore, CryptoError } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 
 /**
  * Wrapper class for key vault plugin
@@ -76,13 +75,19 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
     const publicKey: any = await this.generate('EC', algorithm, extractable, keyUsages, options);
     const jwk = {
       kid: publicKey.id,
-      id: publicKey.id,
       kty: 'EC',
       use: 'sig',
       x: base64url.encode(publicKey.key.x),
       y: base64url.encode(publicKey.key.y)
     };
-    const cryptoKey: CryptoKey = await this.subtle.importKey('jwk', jwk, algorithm, extractable, keyUsages);
+    const cryptoKey: CryptoKey = await this.subtle.importKey(
+      'jwk', 
+      jwk, <EcKeyAlgorithm>{   //these are the algorithm options
+      name: "ECDSA",
+      namedCurve: "secp256k1", 
+    }, 
+    extractable, 
+    keyUsages);
 
     // need to keep track of kid. cryptoKey is not extensible
     (<any>cryptoKey.algorithm).kid = jwk.kid;
@@ -91,7 +96,7 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
   }
 
   /**
-   * Import jwk key. Return @class EllipticCurveSubtleKey as the internal format of a key.
+   * Import jwk key. Return @class CryptoKey as the internal format of a key.
    * @param format must be 'jwk'
    * @param key Key to export in jwk
    * @param algorithm for key generation
@@ -104,22 +109,7 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
       throw new Error(`Import key only supports jwk`);
     }
 
-    let keyType: 'public' | 'private' = 'public';
-    // Make sure the key elements are buffers
-    if (typeof (keyData as any).x === 'string') {
-      (keyData as any).x = base64url.toBuffer((keyData as any).x);
-    }
-    if (typeof (keyData as any).y === 'string') {
-      (keyData as any).y = base64url.toBuffer((keyData as any).y);
-    }
-    if (typeof (keyData as any).d === 'string') {
-      keyType = 'private';
-      (keyData as any).d = base64url.toBuffer((keyData as any).d);
-    }
-
-    return new Promise((resolve) => {
-      resolve(this.toCryptoKey(algorithm, keyType, extractable, keyUsages, keyData));
-    });
+    return this.subtle.importKey(format, keyData, algorithm, extractable,keyUsages);
   }
 
   /**
@@ -131,28 +121,6 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
     if (format !== 'jwk') {
       throw new Error(`Export key only supports jwk`);
     }
-
-    const jwkKey = (key as EllipticCurveSubtleKey).key;
-    const kid = jwkKey.kid;
-    const crv = jwkKey.crv;
-    let x = jwkKey.x;
-    if (typeof x !== 'string') {
-      x = base64url.encode(x);
-    }
-    let y = jwkKey.y;
-    if (typeof y !== 'string') {
-      y = base64url.encode(y);
-    }
-
-    const jwk = {
-      kid,
-      kty: 'EC',
-      use: 'sig',
-      crv,
-      x,
-      y
-    };
-
-    return new Promise((resolve) => resolve(jwk as JsonWebKey));
+    return <JsonWebKey>this.subtle.exportKey(format, key);
   }
 }
