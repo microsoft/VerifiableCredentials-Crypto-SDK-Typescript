@@ -176,23 +176,4 @@ describe('KeyStoreKeyVault without credentials', () => {
     kvKey = KeyStoreKeyVault.toKeyVaultKey(container);
     expect(kvKey).toBeDefined();
   });
-  it('should convert Rsa Key', async () => {
-    const subtle = new SubtleCrypto();
-    const alg = <RsaKeyGenParams>{
-      name: "RSASSA-PKCS1-v1_5",
-      modulusLength: 2048,
-      publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-      hash: { name: "SHA-256" }
-    };
-
-    let cryptokey = <CryptoKeyPair>await subtle.generateKey(alg,
-      true,
-      ["sign", "verify"]);
-    let key = await subtle.exportKey('jwk', cryptokey.privateKey);
-    let container = new KeyContainer(<any>key);
-    let kvKey = new KeyVaultRsaOaepProvider(subtle, new KeyStoreInMemory()).toRsaKey(<any>key, alg, true, ["sign", "verify"]);
-    expect(kvKey).toBeDefined();
-  });
-
-
 });

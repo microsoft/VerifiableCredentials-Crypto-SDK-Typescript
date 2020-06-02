@@ -46,7 +46,7 @@
     "verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites": "^1.0.0",
     "base64url": "^3.0.1",
     "typescript-map": "0.0.7",
-    "webcrypto-core": "1.0.1"
+    "webcrypto-core": "1.1.1"
   },
   "nyc": {
     "extension": [

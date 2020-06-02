@@ -352,7 +352,7 @@
     {
       "shouldPublish": true,
       "packageName": "verifiablecredentials-crypto-sdk-typescript",
-      "projectFolder": "libs/sdk"
+      "projectFolder": "./"
     }
   ]
 }
