@@ -1,7 +1,7 @@
 {
   "name": "verifiablecredentials-crypto-sdk-typescript-plugin-factory",
   "description": "Factory Package for crypto plugins.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/microsoft/VerifiableCredentials-Crypto-SDK-Typescript.git"
