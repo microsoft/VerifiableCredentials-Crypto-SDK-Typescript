@@ -9,7 +9,7 @@ import { SubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript-plugin
 import { CryptoKey } from 'webcrypto-core';
 import KeyVaultProvider from './KeyVaultProvider';
 import KeyStoreKeyVault from '../keyStore/KeyStoreKeyVault';
-import { IKeyStore, KeyStoreInMemory } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { IKeyStore, KeyStoreInMemory, CryptoError } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 
 /**
  * Wrapper class for key vault plugin
@@ -49,7 +49,12 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
     let hashAlgorithm = (typeof algorithm.hash === 'object' ? algorithm.hash.name || 'SHA-256' : algorithm.hash || 'SHA-256');
     const hash = await this.subtle.digest({ name: hashAlgorithm }, data);
 
-    const client = (<KeyStoreKeyVault>this.keyStore).getCryptoClient((<any>key).key.kid);
+    const kid = (<any>key.algorithm).kid;
+    if (!kid) {
+      throw new CryptoError(algorithm, 'Missing kid in algortihm');
+    }
+
+    const client = (<KeyStoreKeyVault>this.keyStore).getCryptoClient(kid);
     const signature = await client.sign(<any>'ECDSA256', new Uint8Array(hash));
     return signature.result;
   }
@@ -77,9 +82,11 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
       x: base64url.encode(publicKey.key.x),
       y: base64url.encode(publicKey.key.y)
     };
-    //const cryptoKey: any = await this.subtle.importKey('jwk', jwk, algorithm, extractable, keyUsages);
-    //cryptoKey.key = publicKey.key;
-    const pair = await this.toCryptoKeyPair(algorithm, extractable, keyUsages, jwk);
+    const cryptoKey: CryptoKey = await this.subtle.importKey('jwk', jwk, algorithm, extractable, keyUsages);
+
+    // need to keep track of kid. cryptoKey is not extensible
+    (<any>cryptoKey.algorithm).kid = jwk.kid;
+    const pair = <CryptoKeyPair> {publicKey: cryptoKey};
     return pair;
   }
 

@@ -55,13 +55,9 @@ describe('signing', () => {
             if (!isKeyVault) {
                 const jwk = await subtleSecure.exportKey(
                     'jwk',
-                    (<CryptoKeyPair>key).privateKey);
+                    key.privateKey);
                 console.log(`Exported private key: ${JSON.stringify(jwk)}`);
             }
-
-            const jwk = await subtleSecure.exportKey(
-                'jwk',
-                (<CryptoKeyPair>key).publicKey);
 
             // Create ECDSA signature. In case of key vault, we only pass the key reference. 
             // Private key stays on key vault. 
@@ -74,13 +70,13 @@ describe('signing', () => {
                 Buffer.from('Payload to sign'));
 
             // Verify the signature
-            const cryptoKey = await subtle.importKey('jwk', jwk, algorithm, true,  ['sign', 'verify']);
+            //const cryptoKey = await subtle.importKey('jwk', jwk, algorithm, true,  ['sign', 'verify']);
             const result = await subtle.verify(
                 <EcdsaParams>{
                     name: 'ECDSA',
                     hash: { name: 'SHA-256' }
                 },
-                cryptoKey,
+                key.publicKey,
                 signature,
                 Buffer.from('Payload to sign'));
             expect(result).toBeTruthy();

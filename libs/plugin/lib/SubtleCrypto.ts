@@ -127,8 +127,6 @@ export default class SubtleCrypto {
         algorithm = this.algorithmTransform(algorithm);
         keyData = format === 'jwk' ? this.keyImportTransform(keyData): keyData;
         const key: CryptoKey = await this.subtle.importKey(format, keyData, algorithm, extractable, keyUsages);
-        const cryptoKey = CryptoKey.create(algorithm, key.type, extractable, keyUsages);
-        (<any>cryptoKey).key = key;
-        return cryptoKey;
+        return key;
     }
 }
