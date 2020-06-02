@@ -77,9 +77,9 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
       x: base64url.encode(publicKey.key.x),
       y: base64url.encode(publicKey.key.y)
     };
-    const cryptoKey: any = await this.subtle.importKey('jwk', jwk, algorithm, extractable, keyUsages);
-    //cryptoKey.key = publicKey;
-    const pair = await this.toCryptoKeyPair(algorithm, extractable, keyUsages, publicKey);
+    //const cryptoKey: any = await this.subtle.importKey('jwk', jwk, algorithm, extractable, keyUsages);
+    //cryptoKey.key = publicKey.key;
+    const pair = await this.toCryptoKeyPair(algorithm, extractable, keyUsages, jwk);
     return pair;
   }
 

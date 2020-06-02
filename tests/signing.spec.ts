@@ -42,11 +42,12 @@ describe('signing', () => {
             const subtle = factories[inx].defaultCrypto;
 
             // Generate a secp256k1 key pair
+            const algorithm = <EcKeyGenParams>{
+                name: 'ECDSA',
+                namedCurve: 'secp256k1'
+            };
             const key: CryptoKeyPair = <CryptoKeyPair>await subtleSecure.generateKey(
-                <EcKeyGenParams>{
-                    name: 'ECDSA',
-                    namedCurve: 'secp256k1'
-                },
+                algorithm,
                 true,
                 ['sign', 'verify']);
 
@@ -55,9 +56,13 @@ describe('signing', () => {
                 const jwk = await subtleSecure.exportKey(
                     'jwk',
                     (<CryptoKeyPair>key).privateKey);
-                console.log(`Exported key: ${JSON.stringify(jwk)}`);
+                console.log(`Exported private key: ${JSON.stringify(jwk)}`);
             }
-            
+
+            const jwk = await subtleSecure.exportKey(
+                'jwk',
+                (<CryptoKeyPair>key).publicKey);
+
             // Create ECDSA signature. In case of key vault, we only pass the key reference. 
             // Private key stays on key vault. 
             const signature = await subtleSecure.sign(
@@ -69,12 +74,13 @@ describe('signing', () => {
                 Buffer.from('Payload to sign'));
 
             // Verify the signature
+            const cryptoKey = await subtle.importKey('jwk', jwk, algorithm, true,  ['sign', 'verify']);
             const result = await subtle.verify(
                 <EcdsaParams>{
                     name: 'ECDSA',
                     hash: { name: 'SHA-256' }
                 },
-                key.publicKey,
+                cryptoKey,
                 signature,
                 Buffer.from('Payload to sign'));
             expect(result).toBeTruthy();
