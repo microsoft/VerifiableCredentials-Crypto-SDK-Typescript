@@ -4,12 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 import { SubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import { CryptoKey } from 'webcrypto-core';
-import { RsaSubtleKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
-import { IKeyStore } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { IKeyStore, CryptoError } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import base64url from 'base64url';
 import KeyVaultProvider from './KeyVaultProvider';
 import KeyStoreKeyVault from '../keyStore/KeyStoreKeyVault';
-import KeyVaultEcdsaProvider from './KeyVaultEcdsaProvider';
 
 /**
  * Wrapper class for key vault plugin
@@ -25,7 +23,7 @@ export default class KeyVaultRsaOaepProvider extends KeyVaultProvider {
    * Different usages supported by the provider
    */
   public usages: any = {
-    privateKey: ['decrypt']
+    privateKey: ['decrypt', 'encrypt']
   };
 
   /**
@@ -45,11 +43,10 @@ export default class KeyVaultRsaOaepProvider extends KeyVaultProvider {
    * @param key used for decryption
    * @param data to decrypt
    */
-  async onDecrypt (_algorithm: Algorithm, key: RsaSubtleKey, data: ArrayBuffer): Promise<ArrayBuffer> {
-    const rsaKey: JsonWebKey = key.key;
-    const kid = (<any>rsaKey).kid;
+  async onDecrypt (algorithm: Algorithm, key: CryptoKey, data: ArrayBuffer): Promise<ArrayBuffer> {
+    const kid = (<any>key.algorithm).kid;
     if (!kid) {
-      throw new Error('kid is missing in the CryptoKey');
+      throw new CryptoError(algorithm, 'Missing kid in algortihm');
     }
 
     const client = (<KeyStoreKeyVault>this.keyStore).getCryptoClient(kid);
@@ -67,41 +64,34 @@ export default class KeyVaultRsaOaepProvider extends KeyVaultProvider {
   async onGenerateKey (algorithm: RsaKeyGenParams, extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKeyPair> {
     const publicKey: any = await this.generate('RSA', algorithm, extractable, keyUsages);
     const jwk = {
+      kid: publicKey.id,
       kty: 'RSA',
       use: 'enc',
-      x: publicKey.key.e,
-      y: publicKey.key.n
+      e: base64url.encode(publicKey.key.e),
+      n: base64url.encode(publicKey.key.n)
     };
     const cryptoKey = await this.subtle.importKey('jwk', jwk, algorithm, extractable, keyUsages);
-    const pair = await this.toCryptoKeyPair(algorithm, extractable, keyUsages, cryptoKey);
+
+    // need to keep track of kid. cryptoKey is not extensible
+    (<any>cryptoKey.algorithm).kid = jwk.kid;
+    const pair = <CryptoKeyPair> {publicKey: cryptoKey};
     return pair;
   }
-
   /**
-   * Import jwk key
+   * Import jwk key. Return @class CryptoKey as the internal format of a key.
    * @param format must be 'jwk'
    * @param key Key to export in jwk
    * @param algorithm for key generation
    * @param extractable is true if the key is exportable
    * @param keyUsages sign or verify
    */
-  async onImportKey (format: KeyFormat,
-    keyData: JsonWebKey, algorithm: RsaKeyGenParams, extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKey> {
+  async onImportKey(format: KeyFormat,
+    keyData: JsonWebKey, algorithm: EcKeyImportParams, extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKey> {
     if (format !== 'jwk') {
       throw new Error(`Import key only supports jwk`);
     }
-    let keyType: 'public' | 'private' = 'public';
-    // Make sure the key elements are buffers
-    if (typeof (keyData as any).e === 'string') {
-      (keyData as any).e = base64url.toBuffer((keyData as any).e);
-    }
-    if (typeof (keyData as any).n === 'string') {
-      (keyData as any).n = base64url.toBuffer((keyData as any).n);
-    }
 
-    return new Promise((resolve) => {
-      resolve(this.toCryptoKey(algorithm, keyType, extractable, keyUsages, keyData));
-    });
+    return this.subtle.importKey(format, keyData, algorithm, extractable,keyUsages);
   }
 
   /**
@@ -109,32 +99,10 @@ export default class KeyVaultRsaOaepProvider extends KeyVaultProvider {
    * @param format must be 'jwk'
    * @param key Key to export in jwk
    */
-  async onExportKey (format: KeyFormat, key: CryptoKey): Promise<JsonWebKey> {
+  async onExportKey(format: KeyFormat, key: CryptoKey): Promise<JsonWebKey> {
     if (format !== 'jwk') {
       throw new Error(`Export key only supports jwk`);
     }
-
-    const jwkKey = (key as RsaSubtleKey).key || (key as RsaSubtleKey);
-    const kid = jwkKey.kid;
-
-    let e = jwkKey.e;
-    if (typeof e !== 'string') {
-      e = base64url.encode(e);
-    }
-
-    let n = jwkKey.n;
-    if (typeof n !== 'string') {
-      n = base64url.encode(n);
-    }
-
-    const jwk = {
-      kty: 'RSA',
-      use: 'enc',
-      kid,
-      e,
-      n
-    };
-
-    return new Promise((resolve) => resolve(jwk as JsonWebKey));
+    return <JsonWebKey>this.subtle.exportKey(format, key);
   }
 }
