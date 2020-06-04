@@ -1,6 +1,6 @@
 {
   "name": "verifiablecredentials-crypto-sdk-typescript-protocol-jose",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/microsoft/VerifiableCredentials-Crypto-SDK-Typescript.git"
@@ -46,7 +46,7 @@
     "verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites": "^1.0.0",
     "base64url": "^3.0.1",
     "typescript-map": "0.0.7",
-    "webcrypto-core": "1.0.1"
+    "webcrypto-core": "1.1.1"
   },
   "nyc": {
     "extension": [

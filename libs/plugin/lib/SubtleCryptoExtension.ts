@@ -14,7 +14,7 @@ import { KeyReferenceOptions, IKeyStore, CryptoAlgorithm, CryptoError } from 've
  */
 export default class SubtleCryptoExtension extends SubtleCrypto implements ISubtleCryptoExtension {
   private keyStore: IKeyStore;
-  
+
   constructor(public cryptoFactory: CryptoFactory) {
     super();
     this.keyStore = cryptoFactory.keyStore;
@@ -32,7 +32,7 @@ export default class SubtleCryptoExtension extends SubtleCrypto implements ISubt
   public async generatePairwiseKey(algorithm: EcKeyGenParams | RsaHashedKeyGenParams, seedReference: string, personaId: string, peerId: string): Promise<PrivateKey> {
     const pairwiseKey = new PairwiseKey(this.cryptoFactory);
     return pairwiseKey.generatePairwiseKey(algorithm, seedReference, personaId, peerId);
-   } 
+  }
 
   /**
    * Sign with a key referenced in the key store
@@ -44,21 +44,21 @@ export default class SubtleCryptoExtension extends SubtleCrypto implements ISubt
   public async signByKeyStore(algorithm: CryptoAlgorithm, keyReference: string | KeyReferenceOptions, data: BufferSource): Promise<ArrayBuffer> {
     const keyReferenceInStore = typeof keyReference === 'object' ? keyReference.keyReference : keyReference;
     const extractable = typeof keyReference === 'object' ? keyReference.extractable : true;
-    
-    let jwk: PrivateKey = (await <Promise<IKeyContainer>>this.keyStore.get(keyReferenceInStore, {publicKeyOnly: false, extractable})).getKey<PrivateKey>();
+
+    let jwk: PrivateKey = (await <Promise<IKeyContainer>>this.keyStore.get(keyReferenceInStore, { publicKeyOnly: false, extractable })).getKey<PrivateKey>();
 
     const crypto: SubtleCrypto = CryptoHelpers.getSubtleCryptoForAlgorithm(this.cryptoFactory, algorithm, CryptoFactoryScope.Private);
     const keyImportAlgorithm: any = CryptoHelpers.getKeyImportAlgorithm(algorithm, jwk);
-    
+
     const key = await crypto.importKey('jwk', jwk, keyImportAlgorithm, true, ['sign']);
-    const signature = await <PromiseLike<ArrayBuffer>>crypto.sign(jwk.kty === KeyType.EC || jwk.kty === KeyType.OKP ? <EcdsaParams>algorithm: <RsaPssParams>algorithm, 
-      key, 
+    const signature = await <PromiseLike<ArrayBuffer>>crypto.sign(jwk.kty === KeyType.EC || jwk.kty === KeyType.OKP ? <EcdsaParams>algorithm : <RsaPssParams>algorithm,
+      key,
       <ArrayBuffer>data);
-      
+
     // only applicable for EC algorithms and when no encoding is applied
     const isElliptic = algorithm.name === 'ECDSA' || algorithm.name === 'EDDSA';
     // EDDSA/ECDSA returns two 32 bit values R & S. Some API's will encode these values in DER
-    const format: string =  (<any>algorithm).format;
+    const format: string = (<any>algorithm).format;
     if (isElliptic && signature.byteLength <= 64 && format) {
       if (format.toUpperCase() !== 'DER') {
         throw new CryptoError(algorithm, 'Only DER format supported for signature');
@@ -68,7 +68,7 @@ export default class SubtleCryptoExtension extends SubtleCrypto implements ISubt
       const r = signature.slice(0, signature.byteLength / 2);
       const s = signature.slice(signature.byteLength / 2, signature.byteLength)
       return SubtleCryptoExtension.toDer([r, s]);
-    } 
+    }
 
     if (isElliptic && signature.byteLength > 64 && format) {
       // DER encoded is not requested and signature is DER encoded
@@ -82,42 +82,53 @@ export default class SubtleCryptoExtension extends SubtleCrypto implements ISubt
 
     return signature;
   }
-  
+
   /**
    * format the signature output to DER format
    * @param elements Array of elements to encode in DER
    */
-  private static toDer(elements: ArrayBuffer[]): ArrayBuffer {
-    let index: number = 0;
-    // calculate total size. 
-    let lengthOfRemaining = 0;
-    for (let element = 0 ; element < elements.length; element++) {
-      // Add element format bytes
-      lengthOfRemaining += 2;
-      const buffer = new Uint8Array(elements[element]);
-      const size = (buffer[0] & 0x80) === 0x80 ? buffer.length + 1 : buffer.length;
-      lengthOfRemaining += size;
-    }
-    // Prepare output
-    index = 0;
-    const result = new Uint8Array(lengthOfRemaining + 2);
-    result.set([0x30, lengthOfRemaining], index);
-    index += 2;
-    for (let element = 0 ; element < elements.length; element++) {
-      // Add element format bytes
-      const buffer = new Uint8Array(elements[element]);
-      const size = (buffer[0] & 0x80) === 0x80 ? buffer.length + 1 : buffer.length;
-      result.set([0x02, size], index);
-      index += 2;
-      if (size > buffer.length) {
-        result.set([0x0], index++);
+  public static toDer(elements: ArrayBuffer[]): ArrayBuffer {
+    const lengthIndex = 1;
+    const sequenceBytes = 2;
+    const result = new Uint8Array(254);
+    result.set([0x30, 0x00], 0);
+    let bytesWritten = sequenceBytes;
+
+    for (let element of elements) {
+      let buffer = new Uint8Array(element);
+      let zeroPadBytes = 0;
+      let paddingByteCount = 0;
+
+      // write the length byte and the integer marker
+      result.set([0x02, 0x00], bytesWritten++);
+      let currentNumberLengthIndex = bytesWritten++;
+
+      // zero padded bytes do not get encoded in DER
+      while (buffer[zeroPadBytes] === 0x0) {
+        zeroPadBytes++;
       }
-      
-      result.set(buffer, index);
-      index += buffer.length;
+
+      // if the most significant bit is 1, the number must be padded
+      if ((buffer[zeroPadBytes] & 0x80) === 0x80) {
+        paddingByteCount = 1;
+        result.set([0x0], bytesWritten++);
+      }
+
+      // don't copy zero pad bytes
+      if (zeroPadBytes > 0) {
+        buffer = new Uint8Array(buffer.buffer, zeroPadBytes, buffer.length - zeroPadBytes);
+      }
+
+      // the length of the resulting buffer plus the paddingByteCount is the encoded length
+      result[currentNumberLengthIndex] = buffer.length + paddingByteCount;
+
+      // write the buffer and increment the amount of bytes written
+      result.set(buffer, bytesWritten);
+      bytesWritten += buffer.length;
     }
 
-    return result;
+    result[lengthIndex] = bytesWritten - sequenceBytes;
+    return new Uint8Array(result.buffer, 0, bytesWritten);
   }
 
   /**
@@ -139,21 +150,37 @@ export default class SubtleCryptoExtension extends SubtleCrypto implements ISubt
       const elements = SubtleCryptoExtension.fromDer(<Uint8Array>signature);
       signature = new Uint8Array(elements[0].length + elements[1].length);
       (<Uint8Array>signature).set(elements[0]);
-      (<Uint8Array>signature).set(elements[1], elements[1].length);      
+      (<Uint8Array>signature).set(elements[1], elements[1].length);
     } else {
       signature = new Uint8Array(<Buffer>signature);
     }
 
-    return crypto.verify(isElliptic? 
-      algorithm: 
+    return crypto.verify(isElliptic ?
+      algorithm :
       <RsaPssParams>algorithm, key, <ArrayBuffer>signature, <ArrayBuffer>payload);
-   }  
+  }
+
+  /**
+   * For some standards, like JWS R||S expects each part to be padded
+   * @param value The byte array representing an number
+   * @param length The expected length
+   */
+  public static toPaddedNumber(value: Uint8Array, length: number = 32){
+    
+    if(value.length >= length){
+      return value; 
+    }
+
+    var arr = new Uint8Array(length);
+    arr.set(value, length - value.length);
+    return arr;
+  }
 
   /**
    * format the signature output from DER format
    * @param signature to decode from DER
    */
-   private static fromDer(signature: Uint8Array): Uint8Array[] {
+  public static fromDer(signature: Uint8Array): Uint8Array[] {
     if (signature[0] !== 0x30) {
       throw new Error('No DER format to decode');
     }
@@ -164,13 +191,13 @@ export default class SubtleCryptoExtension extends SubtleCrypto implements ISubt
     while (index < lengthOfRemaining) {
       const marker = signature[index++];
       if (marker !== 0x02) {
-        throw new Error(`Marker on index ${index-1} must be 0x02`);
+        throw new Error(`Marker on index ${index - 1} must be 0x02`);
       }
 
       let length = signature[index++];
       while (signature[index] === 0) {
-        index ++;
-        length --;
+        index++;
+        length--;
       }
       const data = signature.slice(index, index + length);
       results.push(data);
@@ -178,7 +205,7 @@ export default class SubtleCryptoExtension extends SubtleCrypto implements ISubt
     }
     return results;
   }
-          
+
   /**
    * Decrypt with a key referenced in the key store.
    * The referenced key must be a jwk key.
@@ -186,29 +213,29 @@ export default class SubtleCryptoExtension extends SubtleCrypto implements ISubt
    * @param keyReference points to key in the key store
    * @param cipher to decrypt
    */
-   public async decryptByKeyStore(algorithm: CryptoAlgorithm, keyReference: string, cipher: BufferSource): Promise<ArrayBuffer> {
+  public async decryptByKeyStore(algorithm: CryptoAlgorithm, keyReference: string, cipher: BufferSource): Promise<ArrayBuffer> {
 
-    let jwk: PrivateKey = (await this.keyStore.get(keyReference, {publicKeyOnly: false})).getKey<PrivateKey>();
+    let jwk: PrivateKey = (await this.keyStore.get(keyReference, { publicKeyOnly: false })).getKey<PrivateKey>();
     const crypto: SubtleCrypto = CryptoHelpers.getSubtleCryptoForAlgorithm(this.cryptoFactory, algorithm, CryptoFactoryScope.Private);
     const keyImportAlgorithm: any = CryptoHelpers.getKeyImportAlgorithm(algorithm, jwk);
 
     const key = await crypto.importKey('jwk', jwk, keyImportAlgorithm, true, ['decrypt']);
     return crypto.decrypt(algorithm, key, <ArrayBuffer>cipher);
-   }  
-          
+  }
+
   /**
    * Decrypt with JWK.
    * @param algorithm used for decryption
    * @param jwk Json web key to decrypt
    * @param cipher to decrypt
    */
-   public async decryptByJwk(algorithm: CryptoAlgorithm, jwk: JsonWebKey, cipher: BufferSource): Promise<ArrayBuffer> {
+  public async decryptByJwk(algorithm: CryptoAlgorithm, jwk: JsonWebKey, cipher: BufferSource): Promise<ArrayBuffer> {
     const crypto: SubtleCrypto = CryptoHelpers.getSubtleCryptoForAlgorithm(this.cryptoFactory, algorithm, CryptoFactoryScope.Private);
     const keyImportAlgorithm: any = CryptoHelpers.getKeyImportAlgorithm(algorithm, jwk);
 
     const key = await crypto.importKey('jwk', jwk, keyImportAlgorithm, true, ['decrypt']);
     return crypto.decrypt(algorithm, key, <ArrayBuffer>cipher);
-   }  
+  }
 
   /**
    * Encrypt with a jwk key referenced in the key store
@@ -222,7 +249,7 @@ export default class SubtleCryptoExtension extends SubtleCrypto implements ISubt
     const crypto: SubtleCrypto = CryptoHelpers.getSubtleCryptoForAlgorithm(this.cryptoFactory, algorithm, CryptoFactoryScope.Public);
     const key = await crypto.importKey('jwk', jwk, keyImportAlgorithm, true, ['encrypt']);
     return <PromiseLike<ArrayBuffer>>crypto.encrypt(algorithm, key, <ArrayBuffer>data);
-  }        
+  }
 
   /**
    * Export the key for the selected plugin

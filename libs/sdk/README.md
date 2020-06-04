@@ -1,16 +1,4 @@
-Crypto SDK Status
 
-# Github SDK is published
-
- 
-
-Last Friday we published the first version of the new crypto package: 
-
-verifiablecredentials\-crypto\-sdk\-typescript v1\.1\.0
-
-This package is published on the Visual Studio package library\.
-
- 
 
 # Repo
 

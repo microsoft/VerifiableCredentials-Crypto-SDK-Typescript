@@ -1,4 +1,3 @@
-Crypto SDK Status
 
 # Github SDK is published
 
