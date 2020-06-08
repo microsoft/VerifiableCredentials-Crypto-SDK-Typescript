@@ -3,19 +3,23 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { JoseBuilder, IJwsSigningOptions, JwsToken, ProtectionFormat } from './index';
-import { ICryptoToken } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
+import { IJwsSigningOptions, JwsToken, ProtectionFormat } from 'verifiablecredentials-crypto-sdk-typescript-protocol-jose/lib';
+import { IPayloadProtectionSigning, CryptoProtocolError, IProtocolCryptoToken } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
+import { PublicKey, JoseConstants } from 'verifiablecredentials-crypto-sdk-typescript-keys';
+import { JoseBuilder } from './index';
+import { JoseToken } from 'verifiablecredentials-crypto-sdk-typescript-protocol-jose';
 
-export default class Jose {
+export default class Jose implements IPayloadProtectionSigning {
 
-    /**
-     * Create instance of <see @class Jose>
-     * @param _builder The builder object
-     */
+  /**
+   * Create instance of <see @class Jose>
+   * @param builder The builder object
+   */
   constructor(
-    private _builder: JoseBuilder) {
-    }
-    
+    public builder: JoseBuilder) {
+  }
+
+  private _token: JwsToken | undefined;
   /**
    * Signs contents using the given private key reference.
    *
@@ -25,12 +29,14 @@ export default class Jose {
    * @param options used for the signature. These options override the options provided in the constructor.
    * @returns Signed payload in requested format.
    */
-  public async sign (payload: Buffer | object): Promise<ICryptoToken> {
-    const jwsOptions: IJwsSigningOptions = JwsToken.frombuilder(this._builder);
+  public async sign(payload: Buffer | object): Promise<IPayloadProtectionSigning> {
+    const jwsOptions: IJwsSigningOptions = Jose.optionsFromBuilder(this.builder);
     const token: JwsToken = new JwsToken(jwsOptions);
-    const protectionFormat: ProtectionFormat = this.getProtectionFormat(this._builder.serializationFormat);
-    return JwsToken.toCryptoToken(protectionFormat, await token.sign(this._builder.crypto.signingKeyReference, payload, protectionFormat), options);
-   }
+    const protectionFormat = this.getProtectionFormat(this.builder.serializationFormat);
+
+    this._token = await token.sign(this.builder.crypto.builder.signingKeyReference!, <Buffer>payload, protectionFormat);
+    return this;
+  }
 
   /**
    * Verify the signature.
@@ -41,43 +47,37 @@ export default class Jose {
    * @param options used for the signature. These options override the options provided in the constructor.
    * @returns True if signature validated.
    */
-   public async verify (validationKeys: PublicKey[], _payload: Buffer, signature: ICryptoToken, options?: IPayloadProtectionOptions): Promise<IVerificationResult> {
-    const jwsOptions: IJwsSigningOptions = JwsToken.fromPayloadProtectionOptions(<IPayloadProtectionOptions>options);
-    const token: JwsToken = JwsToken.fromCryptoToken(signature, <IPayloadProtectionOptions>options);
-    const result = await token.verify(validationKeys);
-    return {
-      result: result,
-      reason: '',
-      statusCode: 0,
-      payload: null,
-      alg: '',
-    };
-   }
+  public async verify(validationKeys: PublicKey[]): Promise<boolean> {
+    const jwsOptions: IJwsSigningOptions = Jose.optionsFromBuilder(this.builder);
+    if (!this._token) {
+      return Promise.reject('Import a token by deserialize');
+    }
 
-   /**
-   * Serialize a cryptographic token
-   * @param token The crypto token to serialize.
-   * @param format Specify the serialization format. If not specified, use default format.
-   * @param options used for the decryption. These options override the options provided in the constructor.
-   */
-   public serialize (token: ICryptoToken, format: string, options: IPayloadProtectionOptions): string {
-    const protocolFormat: ProtectionFormat = this.getProtectionFormat(format);
-    
+    const result = await this._token.verify(validationKeys, jwsOptions);
+    return result;
+  }
+
+  /**
+  * Serialize a cryptographic token
+  * @param token The crypto token to serialize.
+  * @param format Specify the serialization format. If not specified, use default format.
+  * @param options used for the decryption. These options override the options provided in the constructor.
+  */
+  public serialize(): string {
+    const protocolFormat: ProtectionFormat = this.getProtectionFormat(this.builder.serializationFormat);
+    if (!this._token) {
+      throw new CryptoProtocolError(JoseConstants.Jose, `No token to serialize.`);
+    }
+
     switch (protocolFormat) {
       case ProtectionFormat.JwsFlatJson:
       case ProtectionFormat.JwsCompactJson:
       case ProtectionFormat.JwsGeneralJson:
-        const signature: JwsToken = JwsToken.fromCryptoToken(token, options);
-        return signature.serialize(protocolFormat);
-      case ProtectionFormat.JweFlatJson:
-      case ProtectionFormat.JweCompactJson:
-      case ProtectionFormat.JweGeneralJson:
-        const cipher: JweToken = JweToken.fromCryptoToken(token, options);
-        return cipher.serialize(protocolFormat);
-    default:
-        throw new CryptoProtocolError(JoseConstants.Jose, `Serialization format '${format}' is not supported`);
+        return this._token.serialize(protocolFormat);
+      default:
+        throw new CryptoProtocolError(JoseConstants.Jose, `Serialization format '${this.builder.serializationFormat}' is not supported`);
     }
-   }
+  }
 
   /**
    * Deserialize a cryptographic token
@@ -85,30 +85,29 @@ export default class Jose {
    * @param format Specify the serialization format. If not specified, use default format.
    * @param options used for the decryption. These options override the options provided in the constructor.
    */
-   public deserialize (token: string, format: string, options: IPayloadProtectionOptions): ICryptoToken {
-    const protocolFormat: ProtectionFormat = this.getProtectionFormat(format);
+  public deserialize(token: string): IPayloadProtectionSigning {
+    const protocolFormat: ProtectionFormat = this.getProtectionFormat(this.builder.serializationFormat);
+    const jwsOptions: IJwsSigningOptions = Jose.optionsFromBuilder(this.builder);
+
     switch (protocolFormat) {
       case ProtectionFormat.JwsFlatJson:
       case ProtectionFormat.JwsCompactJson:
       case ProtectionFormat.JwsGeneralJson:
-        const jwsProtectOptions = JwsToken.fromPayloadProtectionOptions(options);
-        return JwsToken.toCryptoToken(protocolFormat, JwsToken.deserialize(token, jwsProtectOptions), options);
-      case ProtectionFormat.JweFlatJson:
-      case ProtectionFormat.JweCompactJson:
-      case ProtectionFormat.JweGeneralJson:
-        const jweProtectOptions = JweToken.fromPayloadProtectionOptions(options);
-        return JweToken.toCryptoToken(protocolFormat, JweToken.deserialize(token, jweProtectOptions), options);
+        const jwsProtectOptions = Jose.optionsFromBuilder(this.builder);
+        this._token = JwsToken.deserialize(token, jwsProtectOptions);
+        return this;
       default:
-        throw new CryptoProtocolError(JoseConstants.Jose, `Serialization format '${format}' is not supported`);
+        throw new CryptoProtocolError(JoseConstants.Jose, `Serialization format '${this.builder.serializationFormat}' is not supported`);
     }
-   }
+  }
 
   /**
    * Deserialize a cryptographic token
    * @param token The crypto token to deserialize.
    * @param options used for the token. These options override the options provided in the constructor.
    */
-   public static deserialize (token: string, options?: IPayloadProtectionOptions): ICryptoToken {
+  /*
+  public static deserialize(token: string, options?: IPayloadProtectionOptions): ICryptoToken {
     const parts = token.split('.');
     const protocol = new JoseProtocol();
 
@@ -130,11 +129,12 @@ export default class Jose {
     }
 
     throw new CryptoProtocolError(JoseConstants.Jose, 'Unrecognised token to deserialize');
-   }
+  }
+*/
 
-   // Map string to protection format
+  // Map string to protection format
   public getProtectionFormat(format: string): ProtectionFormat {
-    switch(format.toLocaleLowerCase()) {
+    switch (format.toLocaleLowerCase()) {
       case 'jwsflatjson': return ProtectionFormat.JwsFlatJson;
       case 'jwscompactjson': return ProtectionFormat.JwsCompactJson;
       case 'jwsgeneraljson': return ProtectionFormat.JwsGeneralJson;
@@ -144,6 +144,18 @@ export default class Jose {
       default:
         throw new CryptoProtocolError(JoseConstants.Jose, `Format '${format}' is not supported`);
     }
+  }
+
+  /**
+   * Convert a @class IPayloadProtectionOptions into a @class IJwsSigningOptions
+   * @param protectOptions to convert
+   */
+  public static optionsFromBuilder(builder: JoseBuilder): IJwsSigningOptions {
+    return <IJwsSigningOptions> {
+      cryptoFactory: builder.crypto.builder.cryptoFactory,
+      protectedHeader: builder.protectedHeader, 
+      unprotectedHeader: builder.unprotectedHeader
+    };
   }
 
 }

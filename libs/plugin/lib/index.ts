@@ -4,8 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import CryptoFactory, { CryptoFactoryScope } from './CryptoFactory';
-import CryptoBuilder from './CryptoBuilder';
-import Crypto from './Crypto';
 import ISubtleCryptoExtension from './ISubtleCryptoExtension';
 import ISubtleCrypto from './ISubtleCrypto';
 import SubtleCrypto from './SubtleCrypto';
@@ -15,5 +13,5 @@ import SubtleCryptoExtension from './SubtleCryptoExtension';
 import CryptoHelpers from './CryptoHelpers';
 import PairwiseKey from './Pairwise/PairwiseKey';
 
-export { CryptoBuilder, Crypto, PairwiseKey, ISubtleCrypto, SubtleCrypto, SubtleCryptoNode, ISubtleCryptoExtension, SubtleCryptoExtension, SubtleCryptoBrowser, CryptoFactory, CryptoFactoryScope, CryptoHelpers };
+export { PairwiseKey, ISubtleCrypto, SubtleCrypto, SubtleCryptoNode, ISubtleCryptoExtension, SubtleCryptoExtension, SubtleCryptoBrowser, CryptoFactory, CryptoFactoryScope, CryptoHelpers };
 

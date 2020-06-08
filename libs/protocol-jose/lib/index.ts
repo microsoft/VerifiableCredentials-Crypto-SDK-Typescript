@@ -11,7 +11,6 @@
  import { IJweEncryptionOptions, IJwsSigningOptions } from './IJoseOptions';
  import JoseConstants from './JoseConstants';
  import JweHeader from './jwe/IJweBase';
- import JoseBuilder from './JoseBuilder';
- export { JoseBuilder, JoseToken, JweHeader, JoseProtocol, JweToken, JwsToken, JoseHelpers, IJweEncryptionOptions, JoseConstants, IJwsSigningOptions };
+ export { JoseToken, JweHeader, JoseProtocol, JweToken, JwsToken, JoseHelpers, IJweEncryptionOptions, JoseConstants, IJwsSigningOptions };
  export { ProtectionFormat } from 'verifiablecredentials-crypto-sdk-typescript-keyStore';
  

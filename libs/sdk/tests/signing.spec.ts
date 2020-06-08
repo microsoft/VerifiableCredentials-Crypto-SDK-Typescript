@@ -1,5 +1,5 @@
 import { ClientSecretCredential } from '@azure/identity';
-import { CryptoFactoryManager, KeyStoreInMemory, SubtleCrypto, KeyStoreFactory, CryptoFactory, CryptoFactoryScope } from '../src/index';
+import { CryptoFactoryManager, KeyStoreInMemory, SubtleCrypto, KeyStoreFactory, CryptoFactory, CryptoFactoryScope } from '../lib/index';
 import Credentials from './Credentials';
 import { isWorker } from 'cluster';
 

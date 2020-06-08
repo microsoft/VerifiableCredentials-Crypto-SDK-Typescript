@@ -3,37 +3,35 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
- import { Crypto, SubtleCrypto } from './index';
-import { IKeyStore, CryptoFactory, KeyStoreFactory, CryptoFactoryManager, SubtleCryptoNode, IPayloadProtection, IPayloadProtectionOptions, JoseProtocol, JoseConstants, KeyStoreInMemory } from 'verifiablecredentials-crypto-sdk-typescript';
+import { JoseBuilder, CryptoFactory, Crypto, SubtleCrypto, IKeyStore, KeyStoreFactory, CryptoFactoryManager, SubtleCryptoNode, IPayloadProtection, IPayloadProtectionOptions, KeyStoreInMemory, IPayloadProtectionSigning, TokenCredential } from './index';
 
 export default class CryptoBuilder {
   // Set the default state
   private _keyStore: IKeyStore = new KeyStoreInMemory();
   private _subtle: SubtleCrypto = new SubtleCryptoNode().getSubtleCrypto();
-  private _cryptoFactory: CryptoFactory = CryptoFactoryManager.create(
-    'CryptoFactoryNode',
-    this.keyStore,
-    this.subtle);
-  
+  private _cryptoFactory: CryptoFactory = new CryptoFactory(this.keyStore, this.subtle);
+
+  private _payloadProtectionProtocol: IPayloadProtectionSigning = new JoseBuilder(this.build()).build();
+  private _signingKeyReference: string | undefined;
 
   /**
    * Create a crypto builder to provide crypto capabilities
    * @param signingKeyReference Reference in the key store to the signing key
    */
-  constructor(private _signingKeyReference: string) {
+  constructor() {
   }
 
   /**
    * Get the reference in the key store to the signing key
    */
-  public get signingKeyReference() {
+  public get signingKeyReference(): string | undefined {
     return this._signingKeyReference;
   }
 
   /**
    * Set the reference in the key store to the signing key
    */
-  public set signingKeyReference(signingKeyReference: string) {
+  public set signingKeyReference(signingKeyReference: string | undefined) {
     this._signingKeyReference = signingKeyReference;
   }
 
@@ -69,15 +67,8 @@ export default class CryptoBuilder {
   /**
    * Gets the payload protect protocol
    */
-  public get payloadProtectionProtocol(): IPayloadProtection {
+  public get payloadProtectionProtocol(): IPayloadProtectionSigning {
     return this._payloadProtectionProtocol;
-  }
-
-  /**
-   * Gets the options for the payload protect protocol
-   */
-  public get payloadProtectionOptions(): IPayloadProtectionOptions {
-    return this._payloadProtectionOptions;
   }
 
   /**
@@ -98,21 +89,14 @@ export default class CryptoBuilder {
     credential: TokenCredential,
     vaultUri: string
   ): CryptoBuilder {
-    
+
 
     this._keyStore = KeyStoreFactory.create('KeyStoreKeyVault', credential, vaultUri);
-      this._subtle = new SubtleCryptoNode().getSubtleCrypto();
-      this._cryptoFactory = CryptoFactoryManager.create(
-        'CryptoFactoryKeyVault',
-        this.keyStore!,
-        this.subtle!);
-    this._payloadProtectionOptions = {
-      cryptoFactory: this.cryptoFactory!,
-      payloadProtection: this.payloadProtectionProtocol,
-      options: this.payloadProtectionOptions.options
-    };
-    
-    //this._payloadProtectionOptions.options.set(JoseConstants.optionProtectedHeader, new TSMap([['kid', `${this.did}`]]));
+    this._subtle = new SubtleCryptoNode().getSubtleCrypto();
+    this._cryptoFactory = CryptoFactoryManager.create(
+      'CryptoFactoryKeyVault',
+      this.keyStore!,
+      this.subtle!);
 
     return this;
   }

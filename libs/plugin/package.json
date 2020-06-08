@@ -1,6 +1,6 @@
 {
   "name": "verifiablecredentials-crypto-sdk-typescript-plugin",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Package for plugeable crypto based on subtle crypto.",
   "repository": {
     "type": "git",
@@ -32,8 +32,7 @@
     "prettier": "^1.18.2",
     "ts-node": "8.5.4",
     "tslint": "^5.20.0",
-    "typescript": "3.9.2",
-    "typescript-map": "0.0.7"
+    "typescript": "3.9.2"
   },
   "dependencies": {
     "verifiablecredentials-crypto-sdk-typescript-keys": "^1.0.0",

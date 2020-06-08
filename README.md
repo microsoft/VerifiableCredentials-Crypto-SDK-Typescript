@@ -1,15 +1,4 @@
 
-# Github SDK is published
-
- 
-
-Last Friday we published the first version of the new crypto package: 
-
-verifiablecredentials-crypto-sdk-typescript v1.1.0
-
-This package is published on the Visual Studio package library.
-
- 
 
 # Repo
 
@@ -119,11 +108,7 @@ And finally verify the signature
         signature,   
         Buffer.from('Payload to sign')); 
 
-The SDK package in the repo has the above sequences as a test working on Key Vault and nodejs.
-
-SubtleCrypto can work with (JSON Web Keys (jwk))[https://tools.ietf.org/html/rfc7517]. JWKs need to be imported before they can be used by a sign or verify operation. The imported key is called a CryptoKey. In order to get CryptoKey back into JWK format, one needs to export the CrytoKey.
-
-Have a look at the subtle API examples on github [diafygi](https://github.com/diafygi/webcrypto-examples/)[/](https://github.com/diafygi/webcrypto-examples/)[webcrypto](https://github.com/diafygi/webcrypto-examples/)[-examples](https://github.com/diafygi/webcrypto-examples/).
+Checkout the /samples folder for samples. Have a look at the subtle API examples on github [diafygi](https://github.com/diafygi/webcrypto-examples/)[/](https://github.com/diafygi/webcrypto-examples/)[webcrypto](https://github.com/diafygi/webcrypto-examples/)[-examples](https://github.com/diafygi/webcrypto-examples/).
 
 Use the SubtleCryptoFactory.create('SubtleCryptoNode') factory method to create the default SubtleCrypto API.
 
@@ -153,23 +138,6 @@ Use the CryptoFactoryManager.create('CryptoFactoryNode', new SubtleCrypto()) fac
 Pairwise keys are a special set of key generation algorithms which allows you to generate a deterministic key that can be used between two parties. This means that these keys can be generated on the fly when needed and they do not need to be stored.
 
 Pairwise keys are supported for ECDSA and RSA signatures.
-
-## Protocol API
-
-We previously discussed the subtle low level crypto API used for primitive functions.
-The SDK also has a higher level protocol API build on top of the pluggeable subtle API.
-
-        // Set a JWS builder
-        const jose: Jose = 
-            new JoseBuilder(crypto)
-                .useProtectedHeader({typ: 'JWT', kid: 'did:test:12345678#signing'})
-                .useUnprotectedHeader({key: 'value'})
-                .useSerialization('JwsCompact')
-                .useJwtFormat({sub: '1234567890', aud: 'https://example.com'})
-                .build();
-
-        let token = jose.sign(Buffer.from('My payload to sign'));
-
 
 # Getting started
 
