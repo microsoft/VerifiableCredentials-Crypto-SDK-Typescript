@@ -57,7 +57,7 @@
       ".tsx"
     ],
     "include": [
-      "src/**"
+      "lib/**"
     ],
     "reporter": [
       "text",

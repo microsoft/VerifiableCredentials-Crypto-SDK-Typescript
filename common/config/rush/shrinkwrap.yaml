@@ -3585,12 +3585,11 @@ packages:
       ts-node: /ts-node/8.5.4/typescript@3.9.2
       tslint: /tslint/5.20.1/typescript@3.9.2
       typescript: 3.9.2
-      typescript-map: 0.0.7
       webcrypto-core: 1.1.1
     dev: false
     name: '@rush-temp/verifiablecredentials-crypto-sdk-typescript-plugin'
     resolution:
-      integrity: sha512-9A05ei3rhuEypWOuqeVR/C0o7RJ6vHvVxXrzLbwYc9/5mJ5ectbfYvSNpkYV1tLj9SsImMKP2kMPMTfXD5zA9w==
+      integrity: sha512-+BS+PSCEiWRO81LvO01vUcP7KPp/dF82jYaerr+ogJpcdjtxjAPgkIJgoiTqWAJVO2/7WDW4oHkZk32ZsTEQfQ==
       tarball: 'file:projects/verifiablecredentials-crypto-sdk-typescript-plugin.tgz'
     version: 0.0.0
   'file:projects/verifiablecredentials-crypto-sdk-typescript-protocol-jose.tgz':

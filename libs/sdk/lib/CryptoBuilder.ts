@@ -31,8 +31,9 @@ export default class CryptoBuilder {
   /**
    * Set the reference in the key store to the signing key
    */
-  public set signingKeyReference(signingKeyReference: string | undefined) {
+  public  useSigningKeyReference(signingKeyReference: string): CryptoBuilder {
     this._signingKeyReference = signingKeyReference;
+    return this;
   }
 
   /**
@@ -52,7 +53,7 @@ export default class CryptoBuilder {
   /**
    * Sets the crypto factory
    */
-  public useCryptoFactory(value: CryptoFactory) {
+  public useCryptoFactory(value: CryptoFactory): CryptoBuilder {
     this._cryptoFactory = value;
     return this;
   }
