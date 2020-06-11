@@ -32,7 +32,7 @@ export default class Jose implements IPayloadProtectionSigning {
   public async sign(payload: Buffer | object): Promise<IPayloadProtectionSigning> {
     const jwsOptions: IJwsSigningOptions = Jose.optionsFromBuilder(this.builder);
     const token: JwsToken = new JwsToken(jwsOptions);
-    const protectionFormat = this.getProtectionFormat(this.builder.serializationFormat);
+    const protectionFormat = Jose.getProtectionFormat(this.builder.serializationFormat);
 
     this._token = await token.sign(this.builder.crypto.builder.signingKeyReference!, <Buffer>payload, protectionFormat);
     return this;
@@ -64,16 +64,16 @@ export default class Jose implements IPayloadProtectionSigning {
   * @param options used for the decryption. These options override the options provided in the constructor.
   */
   public serialize(): string {
-    const protocolFormat: ProtectionFormat = this.getProtectionFormat(this.builder.serializationFormat);
+    const protocolFormat: ProtectionFormat = Jose.getProtectionFormat(this.builder.serializationFormat);
     if (!this._token) {
-      throw new CryptoProtocolError(JoseConstants.Jose, `No token to serialize.`);
+      throw new CryptoProtocolError(JoseConstants.Jose, `No token to serialize`);
     }
 
     switch (protocolFormat) {
       case ProtectionFormat.JwsFlatJson:
       case ProtectionFormat.JwsCompactJson:
       case ProtectionFormat.JwsGeneralJson:
-        return this._token.serialize(protocolFormat);
+        return this._token.serialize(protocolFormat);``
       default:
         throw new CryptoProtocolError(JoseConstants.Jose, `Serialization format '${this.builder.serializationFormat}' is not supported`);
     }
@@ -86,7 +86,7 @@ export default class Jose implements IPayloadProtectionSigning {
    * @param options used for the decryption. These options override the options provided in the constructor.
    */
   public deserialize(token: string): IPayloadProtectionSigning {
-    const protocolFormat: ProtectionFormat = this.getProtectionFormat(this.builder.serializationFormat);
+    const protocolFormat: ProtectionFormat = Jose.getProtectionFormat(this.builder.serializationFormat);
     const jwsOptions: IJwsSigningOptions = Jose.optionsFromBuilder(this.builder);
 
     switch (protocolFormat) {
@@ -133,7 +133,7 @@ export default class Jose implements IPayloadProtectionSigning {
 */
 
   // Map string to protection format
-  public getProtectionFormat(format: string): ProtectionFormat {
+  public static getProtectionFormat(format: string): ProtectionFormat {
     switch (format.toLocaleLowerCase()) {
       case 'jwsflatjson': return ProtectionFormat.JwsFlatJson;
       case 'jwscompactjson': return ProtectionFormat.JwsCompactJson;

@@ -1,3 +1,8 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
 import { ClientSecretCredential } from '@azure/identity';
 import { CryptoFactoryManager, KeyStoreInMemory, SubtleCrypto, KeyStoreFactory, CryptoFactory, CryptoFactoryScope } from '../lib/index';
 import Credentials from './Credentials';

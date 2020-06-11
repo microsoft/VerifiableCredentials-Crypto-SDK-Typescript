@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { JoseBuilder, CryptoFactory, Crypto, SubtleCrypto, IKeyStore, KeyStoreFactory, CryptoFactoryManager, SubtleCryptoNode, IPayloadProtection, IPayloadProtectionOptions, KeyStoreInMemory, IPayloadProtectionSigning, TokenCredential } from './index';
+import { JoseBuilder, CryptoFactory, Crypto, SubtleCrypto, IKeyStore, KeyStoreFactory, CryptoFactoryManager, SubtleCryptoNode, IPayloadProtection, IPayloadProtectionOptions, KeyStoreInMemory, IPayloadProtectionSigning, TokenCredential, KeyStoreOptions } from './index';
 
 export default class CryptoBuilder {
   // Set the default state
@@ -13,6 +13,12 @@ export default class CryptoBuilder {
 
   private _payloadProtectionProtocol: IPayloadProtectionSigning = new JoseBuilder(this.build()).build();
   private _signingKeyReference: string | undefined;
+  private _signingKeyOptions: KeyStoreOptions = { 
+    extractable: false,    // use keys on key vault
+    publicKeyOnly: false,  // get private key, key vault only returns public key
+    latestVersion: true    // take last version of the key
+  };
+  private _signingAlgorithm: string = 'ES256K';
 
   /**
    * Create a crypto builder to provide crypto capabilities
@@ -29,10 +35,39 @@ export default class CryptoBuilder {
   }
 
   /**
+   * Get the options for retrieving and storing signing keys in the key store
+   */
+  public get signingKeyOptions(): KeyStoreOptions {
+    return this._signingKeyOptions;
+  }
+
+  /**
    * Set the reference in the key store to the signing key
    */
-  public  useSigningKeyReference(signingKeyReference: string): CryptoBuilder {
+  public  useSigningKeyReference(
+    signingKeyReference: string, 
+    options: KeyStoreOptions = { 
+      extractable: false,    // use keys on key vault
+      publicKeyOnly: false,  // get private key, key vault only returns public key
+      latestVersion: true    // take last version of the key
+    } ): CryptoBuilder {
     this._signingKeyReference = signingKeyReference;
+    this._signingKeyOptions = options;
+    return this;
+  }
+
+  /**
+   * Get the algorithm used for signing
+   */
+  public get signingAlgorithm(): string {
+    return this._signingAlgorithm;
+  }
+
+  /**
+   * Set the reference in the key store to the signing key
+   */
+  public  useSigningAlgorithm(signingAlgorithm: string): CryptoBuilder {
+    this._signingAlgorithm = signingAlgorithm;
     return this;
   }
 
