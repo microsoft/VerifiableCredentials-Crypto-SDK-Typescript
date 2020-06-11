@@ -30,7 +30,7 @@ export interface IPayloadProtectionSigning {
    * @param options used for the signature. These options override the options provided in the constructor.
    * @returns True if signature validated.
    */
-  verify(validationKeys: PublicKey[], payload: Buffer | object, signature: IProtocolCryptoToken): Promise<boolean>;
+  verify(validationKeys: PublicKey[]): Promise<boolean>;
 
   /**
    * Serialize a cryptographic token
