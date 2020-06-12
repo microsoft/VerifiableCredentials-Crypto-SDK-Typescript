@@ -14,6 +14,10 @@ describe('CryptoBuilder', () => {
         expect(builder.payloadProtectionProtocol.constructor.name).toEqual('Jose');
         expect(builder.subtle.constructor.name).toEqual('SubtleCrypto');
         expect(builder.signingKeyReference).toBeUndefined();
+        expect(builder.signingAlgorithm).toEqual('ES256K');
+
+        builder.useSigningAlgorithm('RSA-OAEP');
+        expect(builder.signingAlgorithm).toEqual('RSA-OAEP');
 
         const credential = new ClientSecretCredential('tenantId', 'clientId', 'clientSecret');
         const vault = 'https://keyvault.com';
@@ -26,8 +30,12 @@ describe('CryptoBuilder', () => {
 
         builder = builder.useSigningKeyReference('signing');
         expect(builder.signingKeyReference).toEqual('signing');
+        expect(builder.signingKeyOptions.extractable).toBeFalsy();
+        expect(builder.signingKeyOptions.latestVersion).toBeTruthy();
+        expect(builder.signingKeyOptions.publicKeyOnly).toBeFalsy();
 
         const crypto = builder.build();
         expect(crypto.builder).toEqual(builder);
+
     });
 });

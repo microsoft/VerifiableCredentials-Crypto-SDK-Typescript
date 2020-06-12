@@ -4,9 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ClientSecretCredential } from '@azure/identity';
-import { CryptoFactoryManager, KeyStoreInMemory, SubtleCrypto, KeyStoreFactory, CryptoFactory, CryptoFactoryScope } from '../lib/index';
+import { CryptoFactoryManager, KeyStoreInMemory, SubtleCrypto, KeyStoreFactory, CryptoFactoryScope } from '../lib/index';
 import Credentials from './Credentials';
-import { isWorker } from 'cluster';
 
 describe('signing', () => {
     let originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
