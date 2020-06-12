@@ -35,13 +35,13 @@
     "typescript": "3.9.2"
   },
   "dependencies": {
-    "verifiablecredentials-crypto-sdk-typescript-keys": "^1.0.0",
-    "verifiablecredentials-crypto-sdk-typescript-keystore": "^1.0.0",
+    "verifiablecredentials-crypto-sdk-typescript-keys": "1.1.10-preview.0",
+    "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.10-preview.0",
     "@peculiar/webcrypto": "1.1.1",
     "@types/node": "12.12.16",
     "base64url": "^3.0.1",
-    "big-integer": "^1.0.0",
-    "bn.js": "4.11.8",
+    "big-integer": "1.6.48",
+    "bn.js": "5.1.2",
     "clone": "2.1.2",
     "elliptic": "6.5.2",
     "node-jose": "1.0.0",

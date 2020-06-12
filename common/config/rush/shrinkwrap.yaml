@@ -36,12 +36,7 @@ dependencies:
   tslint-microsoft-contrib: 6.1.1
   typescript: 3.9.2
   typescript-map: 0.0.7
-  verifiablecredentials-crypto-sdk-typescript-keys: 1.1.1
-  verifiablecredentials-crypto-sdk-typescript-plugin: 1.1.1
-  verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites: 1.1.1
-  verifiablecredentials-crypto-sdk-typescript-plugin-elliptic: 1.1.1
-  verifiablecredentials-crypto-sdk-typescript-plugin-keyvault: 1.1.1
-  verifiablecredentials-crypto-sdk-typescript-protocols-common: 1.1.1
+  verifiablecredentials-crypto-sdk-typescript-keystore: 1.1.1
   webcrypto-core: 1.1.1
 packages:
   /@azure/abort-controller/1.0.1:
@@ -537,14 +532,14 @@ packages:
     dev: false
     resolution:
       integrity: sha512-vyL2OymJxmarO8gxMr0mhChsO9QGwhynfuu4+MHTAW6czfq9humCB7rKpUjDd9YUiDPU4mzpyupFSvOClAwbmQ==
-  /bn.js/4.11.8:
-    dev: false
-    resolution:
-      integrity: sha512-ItfYfPLkWHUjckQCk8xC+LwxgK8NYcXywGigJgSwOP8Y2iyWT4f2vsZnoOXTTbo+o5yXmIUJ4gn5538SO5S3gA==
   /bn.js/4.11.9:
     dev: false
     resolution:
       integrity: sha512-E6QoYqCKZfgatHTdHzs1RRKP7ip4vvm+EyRUeE2RF0NblwVvb0p6jSVeNTOFxPn26QXN2o6SMfNxKp6kU8zQaw==
+  /bn.js/5.1.2:
+    dev: false
+    resolution:
+      integrity: sha512-40rZaf3bUNKTVYu9sIeeEGOg7g14Yvnj9kH7b50EiwX0Q7A6umbvfI5tvHaOERH0XigqKkfLkFQxzb4e6CIXnA==
   /brace-expansion/1.1.11:
     dependencies:
       balanced-match: 1.0.0
@@ -3260,73 +3255,6 @@ packages:
     dev: false
     resolution:
       integrity: sha512-co6LI9lfa+oUUrvLJzd/HhQoCMs9OJdDFWTNVEUf3qxVWOqFSPjQ54zPjk+Q5yr7Wd10UVcbOPatx5gnz608Hw==
-  /verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites/1.1.1:
-    dependencies:
-      base64url: 3.0.1
-      clone: 2.1.2
-      node-jose: 1.0.0
-      verifiablecredentials-crypto-sdk-typescript-keystore: 1.1.1
-      verifiablecredentials-crypto-sdk-typescript-plugin: 1.1.1
-      verifiablecredentials-crypto-sdk-typescript-plugin-elliptic: 1.1.1
-      webcrypto-core: 1.1.1
-    dev: false
-    resolution:
-      integrity: sha512-KGN+ptDIofFicpJTiqPL1yUjWU5ALighChtMWXLIDYYZXbwpnyTtZv2aU+2OLqmxsXWYGeEKhZTKVvBwGcvPBQ==
-  /verifiablecredentials-crypto-sdk-typescript-plugin-elliptic/1.1.1:
-    dependencies:
-      base64url: 3.0.1
-      bn.js: 4.11.9
-      clone: 2.1.2
-      elliptic: 6.5.2
-      minimalistic-crypto-utils: 1.0.1
-      sha.js: 2.4.11
-      verifiablecredentials-crypto-sdk-typescript-plugin: 1.1.1
-      webcrypto-core: 1.1.1
-    dev: false
-    resolution:
-      integrity: sha512-S4nBtOukAoq2xGNUjCIJ4955+dr4pUBpUtZ8KFXODX0Adw38QNh3+/2BJCfmyYsA7RWUiZLo3QAfyA923OGHkA==
-  /verifiablecredentials-crypto-sdk-typescript-plugin-keyvault/1.1.1:
-    dependencies:
-      '@azure/identity': 1.0.0
-      '@azure/keyvault-keys': 4.0.2
-      '@azure/keyvault-secrets': 4.0.2
-      base64url: 3.0.1
-      clone: 2.1.2
-      verifiablecredentials-crypto-sdk-typescript-keys: 1.1.1
-      verifiablecredentials-crypto-sdk-typescript-keystore: 1.1.1
-      verifiablecredentials-crypto-sdk-typescript-plugin: 1.1.1
-      verifiablecredentials-crypto-sdk-typescript-plugin-elliptic: 1.1.1
-      webcrypto-core: 1.1.1
-    dev: false
-    resolution:
-      integrity: sha512-SnFep78aMEojYTr7BOSqtIAIPm5aM07G1eOa9RTpSQvHfDsmviPNEIF8cbrDfXNl/bO3cachk4SZZ3b6hZyiQw==
-  /verifiablecredentials-crypto-sdk-typescript-plugin/1.1.1:
-    dependencies:
-      '@peculiar/webcrypto': 1.1.1
-      '@types/node': 12.12.16
-      base64url: 3.0.1
-      big-integer: 1.6.48
-      bn.js: 4.11.8
-      clone: 2.1.2
-      elliptic: 6.5.2
-      node-jose: 1.0.0
-      verifiablecredentials-crypto-sdk-typescript-keys: 1.1.1
-      verifiablecredentials-crypto-sdk-typescript-keystore: 1.1.1
-      webcrypto-core: 1.1.1
-    dev: false
-    resolution:
-      integrity: sha512-+qp6FHOzILd8c6UNRpwA4PCdmvrthvPtifsCDuPFWRwQUm4AffrH7d1LCn5aGqQqJHGfC1EZ4m3U+OkFRUBSqQ==
-  /verifiablecredentials-crypto-sdk-typescript-protocols-common/1.1.1:
-    dependencies:
-      base64url: 3.0.1
-      typescript-map: 0.0.7
-      verifiablecredentials-crypto-sdk-typescript-keys: 1.1.1
-      verifiablecredentials-crypto-sdk-typescript-keystore: 1.1.1
-      verifiablecredentials-crypto-sdk-typescript-plugin: 1.1.1
-      webcrypto-core: 1.1.1
-    dev: false
-    resolution:
-      integrity: sha512-OwLLRNxmjIBa2ieoMObh8xQoA3ppdrKVutvHVjx5ioN7J5cw/s859EmWERvsYkxOC5EfYt7oib5HVZCw/Un04A==
   /verror/1.10.0:
     dependencies:
       assert-plus: 1.0.0
@@ -3545,12 +3473,11 @@ packages:
       ts-node: /ts-node/8.5.4/typescript@3.9.2
       tslint: /tslint/5.20.1/typescript@3.9.2
       typescript: 3.9.2
-      verifiablecredentials-crypto-sdk-typescript-keys: 1.1.1
       webcrypto-core: 1.1.1
     dev: false
     name: '@rush-temp/verifiablecredentials-crypto-sdk-typescript-keystore'
     resolution:
-      integrity: sha512-zVRvUm0kfctDsXG22uZCr6qotnlrWHSp3hJS1XunvQhG/HB/Sjrovob6+mYkpgqVwpfQgM9ehLqdu+hF3lCMfw==
+      integrity: sha512-RlZ0U+xSqjWu9asZwVoxGuLQ6+vShNWg9q1hHF5LrUoK8cqHE3tnhYPY1h+9GDN3g1+Uh+S1vjNTjMZxRb2NdA==
       tarball: 'file:projects/verifiablecredentials-crypto-sdk-typescript-keystore.tgz'
     version: 0.0.0
   'file:projects/verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites.tgz':
@@ -3570,13 +3497,11 @@ packages:
       tslint: /tslint/5.20.1/typescript@3.9.2
       typescript: 3.9.2
       verifiablecredentials-crypto-sdk-typescript-keystore: 1.1.1
-      verifiablecredentials-crypto-sdk-typescript-plugin: 1.1.1
-      verifiablecredentials-crypto-sdk-typescript-plugin-elliptic: 1.1.1
       webcrypto-core: 1.1.1
     dev: false
     name: '@rush-temp/verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites'
     resolution:
-      integrity: sha512-EgCONq0N9mX2otal6+E9ceVKyQZIWXeUNtIZSoXY40KhniPGF6TOx7U0VKGjYj2ipu0KtA2EEcdVjglyLgV6AQ==
+      integrity: sha512-Ei4RzXT/3xxUM1o/pkZM2quO6jC+feUxInxzf/tolykm1PCpz0fq5VBKjIhugb5LO7fAngGUlc6Qu+PaD/a5Vw==
       tarball: 'file:projects/verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites.tgz'
     version: 0.0.0
   'file:projects/verifiablecredentials-crypto-sdk-typescript-plugin-elliptic.tgz':
@@ -3602,12 +3527,11 @@ packages:
       tslint: /tslint/5.20.1/typescript@3.9.2
       tslint-microsoft-contrib: /tslint-microsoft-contrib/6.1.1/tslint@5.20.1+typescript@3.9.2
       typescript: 3.9.2
-      verifiablecredentials-crypto-sdk-typescript-plugin: 1.1.1
       webcrypto-core: 1.1.1
     dev: false
     name: '@rush-temp/verifiablecredentials-crypto-sdk-typescript-plugin-elliptic'
     resolution:
-      integrity: sha512-2mKj1AQDsTakJDdjPoT/hmChV1s09GDKn6o2kEhzmmZF9V911s3M82sYkFSKgeVrHbQ1NJKr/qmGLKPqm525pQ==
+      integrity: sha512-Q15EZKYqU1K18evl612wYMjh12TzcvZtO2nlh5AZ+iSuJ+PyGbHV6/PaKRpA9rwrw2oAeWt1iTaXC7o0na4n1g==
       tarball: 'file:projects/verifiablecredentials-crypto-sdk-typescript-plugin-elliptic.tgz'
     version: 0.0.0
   'file:projects/verifiablecredentials-crypto-sdk-typescript-plugin-factory.tgz':
@@ -3624,15 +3548,11 @@ packages:
       ts-node: /ts-node/8.5.4/typescript@3.9.2
       tslint: /tslint/5.20.1/typescript@3.9.2
       typescript: 3.9.2
-      verifiablecredentials-crypto-sdk-typescript-keystore: 1.1.1
-      verifiablecredentials-crypto-sdk-typescript-plugin: 1.1.1
-      verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites: 1.1.1
-      verifiablecredentials-crypto-sdk-typescript-plugin-keyvault: 1.1.1
       webcrypto-core: 1.1.1
     dev: false
     name: '@rush-temp/verifiablecredentials-crypto-sdk-typescript-plugin-factory'
     resolution:
-      integrity: sha512-uFo5xKx5gY5gKtm/UfdF/Ox+de6hny7axaJyX3scT54GmsQCNrQhsuj293QWMkaSX9gjzgg2KfBhCk60pGfiuw==
+      integrity: sha512-ckahaEFFRdGMrKFyHM5a0ti2l35iNC04xvKpokjlpphSg+w+Fmsg2vjEtcNVzihP6LMfBEgpVCZyYHIBJCifbw==
       tarball: 'file:projects/verifiablecredentials-crypto-sdk-typescript-plugin-factory.tgz'
     version: 0.0.0
   'file:projects/verifiablecredentials-crypto-sdk-typescript-plugin-keyvault.tgz':
@@ -3660,15 +3580,11 @@ packages:
       tslint: /tslint/5.20.1/typescript@3.9.2
       tslint-config-standard: 8.0.1
       typescript: 3.9.2
-      verifiablecredentials-crypto-sdk-typescript-keys: 1.1.1
-      verifiablecredentials-crypto-sdk-typescript-keystore: 1.1.1
-      verifiablecredentials-crypto-sdk-typescript-plugin: 1.1.1
-      verifiablecredentials-crypto-sdk-typescript-plugin-elliptic: 1.1.1
       webcrypto-core: 1.1.1
     dev: false
     name: '@rush-temp/verifiablecredentials-crypto-sdk-typescript-plugin-keyvault'
     resolution:
-      integrity: sha512-3EcW0S3iUzm5O2+ZeVL9mF/oMthxCGLivV98YGaO4OdXTqGUUoMeSy8/hR/oinRMp78qIThED5i7rcnAg+4FUw==
+      integrity: sha512-i88SPji/5TW8qGIT2/b1EzoG7VaKSQpBoxWxSdlkWQ3g4z7EGRcK+vx/+ZXAscEmThdKnCq50xGuGbUZLKRoPw==
       tarball: 'file:projects/verifiablecredentials-crypto-sdk-typescript-plugin-keyvault.tgz'
     version: 0.0.0
   'file:projects/verifiablecredentials-crypto-sdk-typescript-plugin.tgz':
@@ -3678,7 +3594,7 @@ packages:
       '@types/node': 12.12.16
       base64url: 3.0.1
       big-integer: 1.6.48
-      bn.js: 4.11.8
+      bn.js: 5.1.2
       clone: 2.1.2
       elliptic: 6.5.2
       jasmine: 3.5.0
@@ -3691,13 +3607,11 @@ packages:
       ts-node: /ts-node/8.5.4/typescript@3.9.2
       tslint: /tslint/5.20.1/typescript@3.9.2
       typescript: 3.9.2
-      verifiablecredentials-crypto-sdk-typescript-keys: 1.1.1
-      verifiablecredentials-crypto-sdk-typescript-keystore: 1.1.1
       webcrypto-core: 1.1.1
     dev: false
     name: '@rush-temp/verifiablecredentials-crypto-sdk-typescript-plugin'
     resolution:
-      integrity: sha512-AzVazmhgKMNwmiaK1MeopXAp0n1gpYKyv56ZMHkI1LLUIAJ4YFdNM8K/VM1e6djSQAAaCANMadFbjipUV/5cjw==
+      integrity: sha512-meD3iSU+mIqt9ZzsPB8wcEmB7MGyRNdJk4oDq1gb6edl6Ez1vJWvWs4Unycl1xWD//G98trLvhkU3sl4zVL/qg==
       tarball: 'file:projects/verifiablecredentials-crypto-sdk-typescript-plugin.tgz'
     version: 0.0.0
   'file:projects/verifiablecredentials-crypto-sdk-typescript-protocol-jose.tgz':
@@ -3715,16 +3629,11 @@ packages:
       tslint: /tslint/5.20.1/typescript@3.9.2
       typescript: 3.9.2
       typescript-map: 0.0.7
-      verifiablecredentials-crypto-sdk-typescript-keys: 1.1.1
-      verifiablecredentials-crypto-sdk-typescript-keystore: 1.1.1
-      verifiablecredentials-crypto-sdk-typescript-plugin: 1.1.1
-      verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites: 1.1.1
-      verifiablecredentials-crypto-sdk-typescript-protocols-common: 1.1.1
       webcrypto-core: 1.1.1
     dev: false
     name: '@rush-temp/verifiablecredentials-crypto-sdk-typescript-protocol-jose'
     resolution:
-      integrity: sha512-QKQa3JeP2X8Q1kml6+aB3y6/7ia5Q3KwS0xuWJyEpEtOXEIMIJd/+KvV4tnG5+DZgQ+Ptz7epiDvX8sAXFWL6Q==
+      integrity: sha512-PzfadohfLSknV2TG7Orp07N8yiicO6uSmrTzurlXfETyLXdMaa7n7M81Kz98+5KWpOw5EWB3GFRN0IyQ3U71nQ==
       tarball: 'file:projects/verifiablecredentials-crypto-sdk-typescript-protocol-jose.tgz'
     version: 0.0.0
   'file:projects/verifiablecredentials-crypto-sdk-typescript-protocols-common.tgz':
@@ -3742,14 +3651,11 @@ packages:
       tslint: /tslint/5.20.1/typescript@3.9.2
       typescript: 3.9.2
       typescript-map: 0.0.7
-      verifiablecredentials-crypto-sdk-typescript-keys: 1.1.1
-      verifiablecredentials-crypto-sdk-typescript-keystore: 1.1.1
-      verifiablecredentials-crypto-sdk-typescript-plugin: 1.1.1
       webcrypto-core: 1.1.1
     dev: false
     name: '@rush-temp/verifiablecredentials-crypto-sdk-typescript-protocols-common'
     resolution:
-      integrity: sha512-KCBV4H6idKFkYjCv9aSSLusEKqeqz2ZzMLRoKrkK3VMKr+NQy0WQj0GMs3JPm1Xw7qzJ2NjgsYfta6xj1FXFHw==
+      integrity: sha512-K1mWCLSggaeRu/ZHsSdOGbOzC3R5RDS/oai2aSmqCygeKeQ8EVfvYu9J41ZUuov7KJRn/2eyDj/W6fQcpDgXPg==
       tarball: 'file:projects/verifiablecredentials-crypto-sdk-typescript-protocols-common.tgz'
     version: 0.0.0
   'file:projects/verifiablecredentials-crypto-sdk-typescript.tgz':
@@ -3793,7 +3699,7 @@ specifiers:
   '@rush-temp/verifiablecredentials-crypto-sdk-typescript-protocols-common': 'file:./projects/verifiablecredentials-crypto-sdk-typescript-protocols-common.tgz'
   '@types/node': 12.12.16
   adal-node: ^0.1.28
-  big-integer: ^1.0.0
+  big-integer: 1.6.48
   elliptic: 6.5.2
   eslint: ^6.2.1
   eslint-config-prettier: ^6.1.0
@@ -3814,10 +3720,5 @@ specifiers:
   tslint-microsoft-contrib: 6.1.1
   typescript: 3.9.2
   typescript-map: 0.0.7
-  verifiablecredentials-crypto-sdk-typescript-keys: ^1.0.0
-  verifiablecredentials-crypto-sdk-typescript-plugin: ^1.0.0
-  verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites: ^1.0.0
-  verifiablecredentials-crypto-sdk-typescript-plugin-elliptic: ^1.0.0
-  verifiablecredentials-crypto-sdk-typescript-plugin-keyvault: ^1.0.0
-  verifiablecredentials-crypto-sdk-typescript-protocols-common: ^1.0.0
+  verifiablecredentials-crypto-sdk-typescript-keystore: ^1.1.0
   webcrypto-core: 1.1.1

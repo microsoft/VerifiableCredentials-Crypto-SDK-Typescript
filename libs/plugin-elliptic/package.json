@@ -29,7 +29,7 @@
     "elliptic": "6.5.2",
     "minimalistic-crypto-utils": "1.0.1",
     "sha.js": "^2.4.11",
-    "verifiablecredentials-crypto-sdk-typescript-plugin": "^1.0.0",
+    "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.10-preview.0",
     "webcrypto-core": "1.1.1"
   },
   "devDependencies": {
