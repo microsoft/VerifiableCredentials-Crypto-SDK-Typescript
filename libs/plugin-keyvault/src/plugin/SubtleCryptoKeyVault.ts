@@ -10,7 +10,7 @@ import KeyVaultEcdsaProvider from './KeyVaultEcdsaProvider';
 import KeyVaultRsaOaepProvider from './KeyVaultRsaOaepProvider';
 
 /**
- * Subtle crypto class
+ * SubtleCrypto crypto class
  */
 export default class SubtleCryptoKeyVault extends SubtleCrypto implements ISubtleCrypto {
   private static crypto: SubtleCrypto = new SubtleCrypto();

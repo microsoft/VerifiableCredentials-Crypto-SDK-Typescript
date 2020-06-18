@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ClientSecretCredential } from '@azure/identity';
-import { JoseBuilder, CryptoBuilder, IPayloadProtectionSigning, CryptographicKey, ProtectionFormat, Jose, KeyUse } from '../lib/index';
+import { JoseBuilder, CryptoBuilder, IPayloadProtectionSigning, CryptographicKey, ProtectionFormat, Jose, KeyUse, KeyStoreOptions, JsonWebKey } from '../lib/index';
 import Credentials from './Credentials';
 
 describe('Jose', () => {
@@ -18,7 +18,7 @@ describe('Jose', () => {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
     });
     const cryptoNode = new CryptoBuilder()
-        .useSigningKeyReference('neo')
+        .useSigningKeyReference('neo', new KeyStoreOptions({ extractable: true }))
         .build();
 
     // Loop through these crypto factories. If no credentials for Key Vault are present, we skip key vault
@@ -49,34 +49,25 @@ describe('Jose', () => {
 
     });
     
-    fit('should sign and verify', async () => {
+    it('should sign and verify', async () => {
         const payload = Buffer.from('The only way you can survive is to spread to another area. There is another organism on this planet that follows the same pattern. Do you know what it is? A virus. Human beings are a disease. A cancer of this planet.');
 
         for (let inx = 0; inx < factories.length; inx++) {
-            const crypto = factories[inx];
+            let crypto = factories[inx];
             console.log(`Using crypto ${crypto.builder.cryptoFactory.constructor.name}`);
 
             // Generate and save a signing key
-            
-            await crypto.generateKey(KeyUse.Signature);
-
-/**            
-            const jwkPrivate = await crypto.builder.subtle.exportKey('jwk', keyPair.privateKey);
-            await crypto.builder.keyStore.save(crypto.builder.signingKeyReference!, <CryptographicKey>jwkPrivate);
+            crypto = await crypto.generateKey(KeyUse.Signature);
 
             let jose: IPayloadProtectionSigning = new JoseBuilder(crypto)
                 .build();
 
             jose = await jose.sign(payload);
-            const jwkPublic = <CryptographicKey>await crypto.builder.subtle.exportKey('jwk', keyPair.publicKey);
 
-            expect(await jose.verify([jwkPublic])).toBeTruthy();
+            const jwkPublic = (await crypto.builder.keyStore.get('neo', new KeyStoreOptions({publicKeyOnly: true}))).getKey<JsonWebKey>();
 
-            // import the signature to validate
-            const token = jose.serialize();
-            jose = new JoseBuilder(crypto).build();
-            jose = jose.deserialize(token);
-            expect(await jose.verify([jwkPublic])).toBeTruthy();
+            const validated = await jose.verify([jwkPublic]);
+            expect(validated).toBeTruthy();
 
             // negative cases
             // verify has no token
@@ -93,7 +84,7 @@ describe('Jose', () => {
             // serialize has no token
             jose = new JoseBuilder(crypto).build();
             expect(() => jose.serialize()).toThrowError('No token to serialize');
-            */
+
         }
 
 

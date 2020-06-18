@@ -17,9 +17,7 @@ import SecretKey from './SecretKey';
 import KeyContainer from './KeyContainer';
 import IKeyContainer, { CryptographicKey } from './IKeyContainer';
 import JsonWebKey, { KeyOperation } from './JsonWebKey';
-import EllipticCurveSubtleKey from './ec/EllipticCurveSubtleKey';
-import RsaSubtleKey from './rsa/RsaSubtleKey';
-export { OkpPrivateKey, KeyOperation, JsonWebKey, CryptographicKey, RsaSubtleKey, EllipticCurveSubtleKey, PrivateKey, PublicKey, EcPrivateKey, EcPublicKey, RsaPrivateKey, RsaPublicKey, SecretKey, OctKey, KeyUse, KeyUseFactory, KeyType, KeyContainer, IKeyContainer, KeyTypeFactory };
+export { OkpPrivateKey, KeyOperation, JsonWebKey, CryptographicKey, PrivateKey, PublicKey, EcPrivateKey, EcPublicKey, RsaPrivateKey, RsaPublicKey, SecretKey, OctKey, KeyUse, KeyUseFactory, KeyType, KeyContainer, IKeyContainer, KeyTypeFactory };
 
 import JoseConstants from './JoseConstants';
 import W3cCryptoApiConstants from './W3cCryptoApiConstants';

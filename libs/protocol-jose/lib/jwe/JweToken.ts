@@ -5,10 +5,9 @@
 
 import { PublicKey, KeyType } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import { ProtectionFormat } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
-import { CryptoFactory, CryptoFactoryScope, CryptoHelpers, ISubtleCryptoExtension, SubtleCryptoExtension } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
+import { Subtle, CryptoFactory, CryptoFactoryScope, CryptoHelpers, ISubtleCryptoExtension, SubtleCryptoExtension } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import { CryptoProtocolError, IPayloadProtectionOptions, ICryptoToken } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
 import { TSMap } from 'typescript-map'
-import { SubtleCrypto } from 'webcrypto-core'
 import base64url from 'base64url';
 import IJweGeneralJson, { JweHeader } from './IJweGeneralJson';
 import { IJweEncryptionOptions } from "../IJoseOptions";

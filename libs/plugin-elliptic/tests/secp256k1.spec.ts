@@ -5,14 +5,14 @@
 
 import SubtleCryptoElliptic from '../src/SubtleCryptoElliptic';
 import EllipticCurveKey from '../src/EllipticCurveKey';
-import { SubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
+import { Subtle } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
   // tslint:disable:mocha-no-side-effect-code
 const EC = require('elliptic').ec;
 
 describe('secp256k1 - ECDSA', () => {
   let crypto: SubtleCryptoElliptic;
   beforeAll(() =>{
-    crypto = new SubtleCryptoElliptic(new SubtleCrypto());
+    crypto = new SubtleCryptoElliptic(new Subtle());
   });
 
   it('should sign/verify a message with elliptic', async () => {

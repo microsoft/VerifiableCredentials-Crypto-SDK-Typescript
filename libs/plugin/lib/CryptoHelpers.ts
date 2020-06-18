@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { SubtleCrypto } from './index';
+import { Subtle } from './index';
 import { PublicKey, EcPublicKey, JoseConstants, W3cCryptoApiConstants } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import { CryptoAlgorithm } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import CryptoFactory, { CryptoFactoryScope } from './CryptoFactory';
@@ -18,7 +18,7 @@ export default class CryptoHelpers {
    * @param algorithmName Requested algorithm
    * @param hash Optional hash for the algorithm
    */
-  public static getSubtleCryptoForAlgorithm(cryptoFactory: CryptoFactory, algorithm: any, scope: CryptoFactoryScope): SubtleCrypto {
+  public static getSubtleCryptoForAlgorithm(cryptoFactory: CryptoFactory, algorithm: any, scope: CryptoFactoryScope): Subtle {
     const jwa = CryptoHelpers.webCryptoToJwa(algorithm)
     switch (algorithm.name.toUpperCase()) {
       case 'RSASSA-PKCS1-V1_5':
@@ -51,11 +51,12 @@ export default class CryptoHelpers {
     const regex = new RegExp('\\d+');
     let matches: RegExpExecArray;
 
-    switch (jwa.toUpperCase()) {
+    jwa = jwa.toUpperCase();
+    switch (jwa) {
       case JoseConstants.Rs256:
       case JoseConstants.Rs384:
       case JoseConstants.Rs512:
-        return { name: W3cCryptoApiConstants.RsaSsaPkcs1V15, hash: { name: `SHA-${jwa.replace('RS', '')}` } };
+        return { name: W3cCryptoApiConstants.RsaSsaPkcs1V15, modulusLength: 2048, publicExponent: new Uint8Array([0x01, 0x00, 0x01]), hash: { name: `SHA-${jwa.replace('RS', '')}` } };
       case JoseConstants.RsaOaep:
         case JoseConstants.RsaOaep256:
           return { name: 'RSA-OAEP', hash: 'SHA-256', modulusLength: 2048, publicExponent: new Uint8Array([0x01, 0x00, 0x01]) };

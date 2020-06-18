@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { ClientSecretCredential } from '@azure/identity';
 import { CryptographicKey, IKeyContainer, KeyContainer } from 'verifiablecredentials-crypto-sdk-typescript-keys';
-import { SubtleCrypto, CryptoFactory } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
+import { Subtle, CryptoFactory } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import KeyStoreKeyVault from '../src/keyStore/KeyStoreKeyVault';
 import KeyVaultEcdsaProvider from '../src/plugin/KeyVaultEcdsaProvider';
 import { KeyStoreOptions, KeyStoreInMemory } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
@@ -21,7 +21,7 @@ const clientSecret = encodeURI(Credentials.clientSecret);
 const vaultUri = Credentials.vaultUri;
 
 let originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-const subtle: SubtleCrypto = new SubtleCrypto();
+const subtle: Subtle = new Subtle();
 
 const logging = require('adal-node').Logging;
 logging.setLoggingOptions({
@@ -148,7 +148,7 @@ describe('KeyStoreKeyVault', () => {
 
 describe('KeyStoreKeyVault without credentials', () => {
   it('should convert toKeyVaultKey', async () => {
-    const subtle = new SubtleCrypto();
+    const subtle = new Subtle();
     let cryptokey = <CryptoKeyPair>await subtle.generateKey(
       <any>{
         name: "ECDSA",

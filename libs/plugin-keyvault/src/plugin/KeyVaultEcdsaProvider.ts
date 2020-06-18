@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import base64url from 'base64url';
-import { SubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
+import { Subtle } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import { CryptoKey } from 'webcrypto-core';
 import KeyVaultProvider from './KeyVaultProvider';
 import KeyStoreKeyVault from '../keyStore/KeyStoreKeyVault';
@@ -33,7 +33,7 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
    * @param keyStore The key vault key store
    */
   constructor(
-    subtle: SubtleCrypto,
+    subtle: Subtle,
     keyStore: IKeyStore) {
     super(subtle, keyStore);
   }

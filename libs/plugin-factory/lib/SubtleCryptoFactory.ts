@@ -5,7 +5,7 @@
 import { TokenCredential } from '@azure/identity';
 import { SubtleCryptoNode } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import { CryptoError } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
-import { SubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
+import { Subtle } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import { SubtleCryptoKeyVault } from 'verifiablecredentials-crypto-sdk-typescript-plugin-keyvault';
 import KeyStoreFactory from './KeyStoreFactory';
 
@@ -19,12 +19,12 @@ export default class SubtleCryptoFactory {
    * @param subtleName The name of the subtle crypto.
    * @param credential The azure token credential
     */
-  static create (subtleName: string, credential?: TokenCredential, vaultUri?: string): SubtleCrypto {
+  static create (subtleName: string, credential?: TokenCredential, vaultUri?: string): Subtle {
     switch (subtleName) {
       case 'SubtleCryptoNode': 
         return SubtleCryptoNode.getSubtleCrypto();
       case 'SubtleCryptoKeyVault': 
-        const subtle = new SubtleCrypto();
+        const subtle = new Subtle();
         const keyStore = KeyStoreFactory.create('KeyStoreKeyVault', credential, vaultUri);
         return new SubtleCryptoKeyVault(subtle, keyStore).getSubtleCrypto();
       default:

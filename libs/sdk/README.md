@@ -22,7 +22,7 @@ DID has defined a set of protocols supported by cryptographic primitives\. This 
 
 ## Goal \- Provide a standardized API
 
-The crypto API is based on the [W3C Web Crypto API](https://www.w3.org/TR/WebCryptoAPI/)\. This is typically referred to as Web Crypto, SubtleCrypto or subtle\.
+The crypto API is based on the [W3C Web Crypto API](https://www.w3.org/TR/WebCryptoAPI/)\. This is typically referred to as Web Crypto, Subtle or subtle\.
 
 The SDK uses several layers or crypto implementations:
 
@@ -68,9 +68,9 @@ KeyStores can be created by honoring the IKeyStore interface, as such applicatio
 
 You can use the KeyStoreFactory\.create\('KeyStoreInMemory') to create the KeyStore, KeyStoreInMemory in this case\.
 
-## SubtleCrypto
+## Subtle
 
-SubtleCrypto is the standardized API defined by W3C and is the basis of the primitives API\.
+Subtle is the standardized API defined by W3C and is the basis of the primitives API\.
 
     const subtle = SubtleCryptoFactory\.create\('SubtleCryptoNode');  
     const key = await subtle\.generateKey\(  
@@ -110,7 +110,7 @@ And finally verify the signature
 
 Checkout the /samples folder for samples\. Have a look at the subtle API examples on github [diafygi](https://github.com/diafygi/webcrypto-examples/)[/](https://github.com/diafygi/webcrypto-examples/)[webcrypto](https://github.com/diafygi/webcrypto-examples/)[\-examples](https://github.com/diafygi/webcrypto-examples/)\.
 
-Use the SubtleCryptoFactory\.create\('SubtleCryptoNode') factory method to create the default SubtleCrypto API\.
+Use the SubtleCryptoFactory\.create\('SubtleCryptoNode') factory method to create the default Subtle API\.
 
 ## CryptoFactory
 
@@ -131,7 +131,7 @@ The CryptoFactory defines which KeyStore to use and which plugins for which algo
         }  
     }
 
-Use the CryptoFactoryManager\.create\('CryptoFactoryNode', new SubtleCrypto\()) factory method to create the default SubtleCrypto API\.
+Use the CryptoFactoryManager\.create\('CryptoFactoryNode', new Subtle\()) factory method to create the default Subtle API\.
 
 ## Pairwise keys
 

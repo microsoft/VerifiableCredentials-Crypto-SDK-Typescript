@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CryptoBuilder, CryptoFactory, KeyStoreFactory, SubtleCrypto } from '../lib/index';
+import { CryptoBuilder, CryptoFactory, KeyStoreFactory, Subtle, KeyUse, KeyStoreOptions } from '../lib/index';
 import { ClientSecretCredential } from '@azure/identity';
 
 describe('CryptoBuilder', () => {
@@ -12,7 +12,7 @@ describe('CryptoBuilder', () => {
         expect(builder.cryptoFactory.constructor.name).toEqual('CryptoFactory');
         expect(builder.keyStore.constructor.name).toEqual('KeyStoreInMemory');
         expect(builder.payloadProtectionProtocol.constructor.name).toEqual('Jose');
-        expect(builder.subtle.constructor.name).toEqual('SubtleCrypto');
+        expect(builder.subtle.constructor.name).toEqual('Subtle');
         expect(builder.signingKeyReference).toBeUndefined();
         expect(builder.signingAlgorithm).toEqual('ES256K');
 
@@ -21,7 +21,7 @@ describe('CryptoBuilder', () => {
 
         const credential = new ClientSecretCredential('tenantId', 'clientId', 'clientSecret');
         const vault = 'https://keyvault.com';
-        const cryptoFactory = new CryptoFactory(KeyStoreFactory.create('KeyStoreKeyVault', credential, vault), new SubtleCrypto());
+        const cryptoFactory = new CryptoFactory(KeyStoreFactory.create('KeyStoreKeyVault', credential, vault), new Subtle());
         const cfBuilder  = builder.useCryptoFactory(cryptoFactory);
         expect(cfBuilder.cryptoFactory).toEqual(cryptoFactory);
 
@@ -37,5 +37,15 @@ describe('CryptoBuilder', () => {
         const crypto = builder.build();
         expect(crypto.builder).toEqual(builder);
 
+    });
+
+    it('should generate a signing key', async () => {
+        let crypto = new CryptoBuilder()
+            .useSigningKeyReference('signingKey', new KeyStoreOptions({ extractable: true }))
+            .useSigningAlgorithm('Rs256')
+            .build();
+        crypto = await crypto.generateKey(KeyUse.Signature);
+        const jwk = await crypto.builder.keyStore.get(crypto.builder.signingKeyReference!);
+        expect(jwk.alg).toEqual('RS256');
     });
 });

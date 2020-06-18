@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { SubtleCrypto } from '../index';
+import { Subtle } from '../index';
 import { CryptoError, CryptoAlgorithm } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { OctKey, PrivateKey, KeyTypeFactory, KeyType, IKeyContainer, W3cCryptoApiConstants, JoseConstants } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import CryptoFactory, { CryptoFactoryScope } from "../CryptoFactory";
@@ -70,7 +70,7 @@ import EcPairwiseKey from "./EcPairwiseKey";
     const jwk = <OctKey>(<IKeyContainer> await this.cryptoFactory.keyStore.get(seedReference, { publicKeyOnly: false})).getKey();
 
     // Get the subtle crypto
-    const crypto: SubtleCrypto = this.cryptoFactory.getMessageAuthenticationCodeSigner(W3cCryptoApiConstants.Hmac, CryptoFactoryScope.Private);
+    const crypto: Subtle = this.cryptoFactory.getMessageAuthenticationCodeSigner(W3cCryptoApiConstants.Hmac, CryptoFactoryScope.Private);
 
     // Generate the master key
     const alg: CryptoAlgorithm = { name: W3cCryptoApiConstants.Hmac, hash: W3cCryptoApiConstants.Sha512 };

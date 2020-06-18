@@ -4,7 +4,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.W3cCryptoApiConstants = exports.JoseConstants = exports.KeyTypeFactory = exports.KeyContainer = exports.KeyType = exports.KeyUseFactory = exports.KeyUse = exports.OctKey = exports.SecretKey = exports.RsaPublicKey = exports.RsaPrivateKey = exports.EcPublicKey = exports.EcPrivateKey = exports.PublicKey = exports.PrivateKey = exports.EllipticCurveSubtleKey = exports.RsaSubtleKey = exports.JsonWebKey = exports.KeyOperation = exports.OkpPrivateKey = void 0;
+exports.W3cCryptoApiConstants = exports.JoseConstants = exports.KeyTypeFactory = exports.KeyContainer = exports.KeyType = exports.KeyUseFactory = exports.KeyUse = exports.OctKey = exports.SecretKey = exports.RsaPublicKey = exports.RsaPrivateKey = exports.EcPublicKey = exports.EcPrivateKey = exports.PublicKey = exports.PrivateKey = exports.JsonWebKey = exports.KeyOperation = exports.OkpPrivateKey = void 0;
 const PrivateKey_1 = require("./PrivateKey");
 exports.PrivateKey = PrivateKey_1.default;
 const PublicKey_1 = require("./PublicKey");
@@ -34,10 +34,6 @@ exports.KeyContainer = KeyContainer_1.default;
 const JsonWebKey_1 = require("./JsonWebKey");
 exports.JsonWebKey = JsonWebKey_1.default;
 Object.defineProperty(exports, "KeyOperation", { enumerable: true, get: function () { return JsonWebKey_1.KeyOperation; } });
-const EllipticCurveSubtleKey_1 = require("./ec/EllipticCurveSubtleKey");
-exports.EllipticCurveSubtleKey = EllipticCurveSubtleKey_1.default;
-const RsaSubtleKey_1 = require("./rsa/RsaSubtleKey");
-exports.RsaSubtleKey = RsaSubtleKey_1.default;
 const JoseConstants_1 = require("./JoseConstants");
 exports.JoseConstants = JoseConstants_1.default;
 const W3cCryptoApiConstants_1 = require("./W3cCryptoApiConstants");

@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { SubtleCrypto } from '../index';
+import { Subtle } from '../index';
 import { W3cCryptoApiConstants, PrivateKey, KeyTypeFactory, KeyType, EcPrivateKey, JoseConstants } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import { CryptoAlgorithm, CryptoError } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import base64url from "base64url";
@@ -32,7 +32,7 @@ const SUPPORTED_CURVES = ['K-256', 'P-256K', 'secp256k1', 'ed25519'];
   public static async generate(cryptoFactory: CryptoFactory, personaMasterKey: Buffer, algorithm: EcKeyGenParams, peerId: string): Promise<PrivateKey> {
     // This method is currently breaking the subtle crypto pattern and needs to be fixed to be platform independent
     // Get the subtle crypto
-    const crypto: SubtleCrypto = cryptoFactory.getMessageAuthenticationCodeSigner(W3cCryptoApiConstants.Hmac, CryptoFactoryScope.Private);
+    const crypto: Subtle = cryptoFactory.getMessageAuthenticationCodeSigner(W3cCryptoApiConstants.Hmac, CryptoFactoryScope.Private);
 
     // Generate the master key
     const alg: CryptoAlgorithm = { name: W3cCryptoApiConstants.Hmac, hash: W3cCryptoApiConstants.Sha256 };

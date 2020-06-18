@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { JoseBuilder, CryptoFactory, Crypto, SubtleCrypto, IKeyStore, KeyStoreFactory, CryptoFactoryManager, SubtleCryptoNode, IPayloadProtection, IPayloadProtectionOptions, KeyStoreInMemory, IPayloadProtectionSigning, TokenCredential, KeyStoreOptions } from './index';
+import { JoseBuilder, CryptoFactory, Crypto, Subtle, IKeyStore, KeyStoreFactory, CryptoFactoryManager, SubtleCryptoNode, IPayloadProtection, IPayloadProtectionOptions, KeyStoreInMemory, IPayloadProtectionSigning, TokenCredential, KeyStoreOptions } from './index';
 
 export default class CryptoBuilder {
   // Set the default state
   private _keyStore: IKeyStore = new KeyStoreInMemory();
-  private _subtle: SubtleCrypto = new SubtleCryptoNode().getSubtleCrypto();
+  private _subtle: Subtle = new SubtleCryptoNode().getSubtleCrypto();
   private _cryptoFactory: CryptoFactory = new CryptoFactory(this.keyStore, this.subtle);
 
   private _payloadProtectionProtocol: IPayloadProtectionSigning = new JoseBuilder(this.build()).build();
@@ -96,7 +96,7 @@ export default class CryptoBuilder {
   /**
    * Gets the W3C subtle crypto web API
    */
-  public get subtle(): SubtleCrypto {
+  public get subtle(): Subtle {
     return this._subtle;
   }
 

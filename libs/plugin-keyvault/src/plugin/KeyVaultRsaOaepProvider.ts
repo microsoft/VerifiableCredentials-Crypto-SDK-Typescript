@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { SubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
+import { Subtle } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import { CryptoKey } from 'webcrypto-core';
 import { IKeyStore, CryptoError } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import base64url from 'base64url';
@@ -32,7 +32,7 @@ export default class KeyVaultRsaOaepProvider extends KeyVaultProvider {
    * @param keyStore The key vault key store
    */
   constructor (
-    crypto: SubtleCrypto,
+    crypto: Subtle,
     keyStore: IKeyStore) {
     super(crypto, keyStore);
   }

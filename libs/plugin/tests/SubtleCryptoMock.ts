@@ -1,8 +1,8 @@
-import { ISubtleCrypto, SubtleCrypto } from '../lib/index';
+import { ISubtleCrypto, Subtle } from '../lib/index';
 
 /**
  * Subtle crypto for node
  *  */
- export default class SubtleCryptoMock  extends SubtleCrypto {
+ export default class SubtleCryptoMock  extends Subtle {
   public ID = 'SubtleCryptoMock';
 }

@@ -8,7 +8,7 @@ import KeyVaultEcdsaProvider from '../src/plugin/KeyVaultEcdsaProvider';
 import KeyVaultRsaOaepProvider from '../src/plugin/KeyVaultRsaOaepProvider';
 import { KeyStoreOptions, KeyStoreInMemory } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { KeyClient } from '@azure/keyvault-keys';
-import { SubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
+import { Subtle } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import Credentials from './Credentials';
 const clone = require('clone');
 
@@ -18,7 +18,7 @@ const clientId = Credentials.clientId;
 const clientSecret = encodeURI(Credentials.clientSecret);
 const vaultUri = Credentials.vaultUri;
 
-const subtle = new SubtleCrypto();
+const subtle = new Subtle();
 // const random = (length: number) => Math.random().toString(36).substring(length);
 const logging = require('adal-node').Logging;
 logging.setLoggingOptions({

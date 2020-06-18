@@ -5,7 +5,7 @@
 
 import { SubtleCryptoElliptic, EllipticCurveKey}  from '../src/index';
 import base64url from 'base64url';
-import { SubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
+import { Subtle } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 
 
 const algGenerate = {
@@ -26,7 +26,7 @@ describe('ed25519 - EDDSA', () => {
   const signatureReference= '860c98d2297f3060a33f42739672d61b53cf3adefed3d3c672f320dc021b411e9d59b8628dc351e248b88b29468e0e41855b0fb7d83bb15be902bfccb8cd0a02'.toUpperCase();
 
   beforeAll(() =>{
-    crypto = new SubtleCryptoElliptic(new SubtleCrypto()).getSubtleCrypto();
+    crypto = new SubtleCryptoElliptic(new Subtle()).getSubtleCrypto();
   });
 
   it('should sign/verify a reference message with elliptic', async () => {

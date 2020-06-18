@@ -8,7 +8,7 @@ import EllipticEdDsaProvider from './EllipticEdDsaProvider';
 import EllipticEcDsaProvider from './EllipticEcDsaProvider';
 
 /**
- * Subtle crypto class
+ * SubtleCrypto crypto class
  */
 export default class SubtleCryptoElliptic extends SubtleCrypto implements ISubtleCrypto {
   /**

@@ -9,7 +9,7 @@ import CryptoFactory, { CryptoFactoryScope } from "../CryptoFactory";
 import base64url from "base64url";
 const bigInt = require('big-integer');
 import { BigIntegerStatic } from 'big-integer';
-import { SubtleCrypto } from '../index';
+import { Subtle } from '../index';
 
 // tslint:disable-next-line:prefer-array-literal
 type PrimeDelegate = Array<(cryptoFactory: CryptoFactory, inx: number, key: Buffer, data: Buffer, deterministicKey: Buffer) => Promise<Buffer>>;
@@ -113,7 +113,7 @@ type PrimeDelegate = Array<(cryptoFactory: CryptoFactory, inx: number, key: Buff
    */
   private static async generateHashForPrime (cryptoFactory: CryptoFactory, _inx: number, key: Buffer, data: Buffer, deterministicKey: Buffer): Promise<Buffer> {
     // Get the subtle crypto
-    const crypto: SubtleCrypto = cryptoFactory.getMessageAuthenticationCodeSigner(W3cCryptoApiConstants.Hmac, CryptoFactoryScope.Private);
+    const crypto: Subtle = cryptoFactory.getMessageAuthenticationCodeSigner(W3cCryptoApiConstants.Hmac, CryptoFactoryScope.Private);
 
     // Generate the master key
     const alg: CryptoAlgorithm = { name: W3cCryptoApiConstants.Hmac, hash: W3cCryptoApiConstants.Sha512 };

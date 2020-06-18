@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ClientSecretCredential } from '@azure/identity';
-import { CryptoFactoryManager, KeyStoreInMemory, SubtleCrypto, KeyStoreFactory, CryptoFactoryScope } from '../lib/index';
+import { CryptoFactoryManager, KeyStoreInMemory, Subtle, KeyStoreFactory, CryptoFactoryScope } from '../lib/index';
 import Credentials from './Credentials';
 
 describe('signing', () => {
@@ -18,7 +18,7 @@ describe('signing', () => {
       });
       
     // Setup the default crypto factory
-    const cryptoFactoryNode = CryptoFactoryManager.create('CryptoFactoryNode', new KeyStoreInMemory(), new SubtleCrypto());
+    const cryptoFactoryNode = CryptoFactoryManager.create('CryptoFactoryNode', new KeyStoreInMemory(), new Subtle());
 
     // Setup the key vault crypto factory.
     // Key vault needs your credentials. Put them in Credentials.ts
@@ -26,7 +26,7 @@ describe('signing', () => {
     const cryptoFactoryKeyVault = CryptoFactoryManager.create(
         'CryptoFactoryKeyVault',
         KeyStoreFactory.create('KeyStoreKeyVault', credentials, Credentials.vaultUri, new KeyStoreInMemory()),
-        new SubtleCrypto());
+        new Subtle());
 
     // Loop through these crypto factories. If no credentials for Key Vault are present, we skip key vault
     const factories = [cryptoFactoryNode];

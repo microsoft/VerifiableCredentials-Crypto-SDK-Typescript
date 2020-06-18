@@ -5,7 +5,7 @@
 import { CryptoFactoryNode } from 'verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites';
 import { CryptoFactoryKeyVault } from 'verifiablecredentials-crypto-sdk-typescript-plugin-keyvault';
 import { CryptoError, IKeyStore } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
-import { SubtleCrypto, CryptoFactory } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
+import { Subtle, CryptoFactory } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 
 /**
  * Crypto factory mapper
@@ -18,7 +18,7 @@ export default class CryptoFactoryManager {
    * @param keyStore used to store private keys.
    * @param crypto Default subtle crypto used for e.g. hashing.
     */
-  static create (cryptoFactoryName: string, keyStore: IKeyStore, crypto: SubtleCrypto): CryptoFactory {
+  static create (cryptoFactoryName: string, keyStore: IKeyStore, crypto: Subtle): CryptoFactory {
     switch (cryptoFactoryName) {
       case 'CryptoFactoryNode': 
         return new CryptoFactoryNode(keyStore, crypto);

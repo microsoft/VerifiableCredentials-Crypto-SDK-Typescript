@@ -1,6 +1,11 @@
-import { CryptoFactory } from './index';
-import {  CryptoKey } from 'webcrypto-core';
-import { CryptoFactoryScope } from './CryptoFactory';
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+ import {  CryptoKey } from 'webcrypto-core';
+import { SubtleCrypto } from 'webcrypto-core';
+
 const { Crypto } = require("@peculiar/webcrypto");
 const clone = require('clone');
 
@@ -14,13 +19,25 @@ const CURVE_SECP256K1 = 'secp256k1';
  * Wrapper class for W3C subtle crypto.
  * A subtle crypto class is the actual crypto library to be used.
  */
-export default class SubtleCrypto {
+export default class Subtle extends SubtleCrypto {
    
-    private subtle = new Crypto().subtle;
+    private subtle: SubtleCrypto = new Crypto().subtle;
 
     constructor() {
+        super();
     }
-
+    public checkRequiredArguments(args: IArguments, size: number, methodName: string) {
+        // ignore size from core implementation and use additional argument
+        console.log(`checkRequiredArguments ${methodName}`);
+  
+        switch (methodName) {
+          case "generateKey":
+            return super.checkRequiredArguments(args, 3, methodName); // +1 extra argument
+          default:
+            return super.checkRequiredArguments(args, size, methodName)
+        }
+      }
+  
     /**
      * Normalize the algorithm so it can be used by underlying crypto.
      * @param algorithm Algorithm to be normalized
@@ -112,9 +129,8 @@ export default class SubtleCrypto {
         return result;
     }
 
-    //public async exportKey(format: "raw" | "spki" | "pkcs8", key: CryptoKey): Promise<ArrayBuffer>;
-    //public async exportKey(format: "jwk", key: CryptoKey): Promise<JsonWebKey>;
-    //public async exportKey(format: KeyFormat, key: CryptoKey): Promise<JsonWebKey | ArrayBuffer>;
+    public async exportKey(format: "raw" | "spki" | "pkcs8", key: CryptoKey): Promise<ArrayBuffer>;
+    public async exportKey(format: "jwk", key: CryptoKey): Promise<JsonWebKey>;
     public async exportKey(format: KeyFormat, key: CryptoKey): Promise<JsonWebKey | ArrayBuffer> {
 
         let result = await this.subtle.exportKey(format, key);
