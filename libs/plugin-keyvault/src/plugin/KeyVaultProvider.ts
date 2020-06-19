@@ -31,13 +31,13 @@ export default abstract class KeyVaultProvider extends ProviderCrypto {
    * @param extractable is true if the key is exportable
    * @param keyUsages sign or verify
    */
-  async generate(kty: KeyType, algorithm: Algorithm, extractable: boolean, keyUsages: KeyUsage[], options?: any): Promise<object> {
+  async generate(kty: KeyType, algorithm: Algorithm, _extractable: boolean, keyUsages: KeyUsage[], options?: any): Promise<object> {
     let name: string = this.generateKeyName(algorithm, keyUsages, kty);
     if (options && options.name) {
       name = options.name;
     }
 
-    const client = <KeyClient>(<KeyStoreKeyVault>this.keyStore).getKeyStoreClient(new KeyStoreOptions({ extractable, latestVersion: options?.latestVersion }));
+    const client = <KeyClient>(<KeyStoreKeyVault>this.keyStore).getKeyStoreClient(new KeyStoreOptions({ extractable: false, latestVersion: options?.latestVersion }));
     const publicKey = await client.createKey(name, kty, options);
     return publicKey;
   }

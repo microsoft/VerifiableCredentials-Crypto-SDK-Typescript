@@ -34,7 +34,7 @@ describe('signing', () => {
         factories.push(cryptoFactoryKeyVault);
     }
 
-    it('should sign with secp256k1', async () => {
+    fit('should sign with secp256k1', async () => {
 
         for (let inx = 0 ; inx < factories.length; inx++) {
             // Get the subtle api for private key operations
@@ -52,7 +52,7 @@ describe('signing', () => {
             };
             const key: CryptoKeyPair = <CryptoKeyPair>await subtlePrivate.generateKey(
                 algorithm,
-                false,
+                !isKeyVault,
                 ['sign', 'verify']);
 
             // Export the key into JWK format. Only possible if key was generated with extractable = true, not possible on key vault
