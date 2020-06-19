@@ -34,7 +34,7 @@ describe('signing', () => {
         factories.push(cryptoFactoryKeyVault);
     }
 
-    fit('should sign with secp256k1', async () => {
+    it('should sign with secp256k1', async () => {
 
         for (let inx = 0 ; inx < factories.length; inx++) {
             // Get the subtle api for private key operations
