@@ -22,7 +22,7 @@ describe('Jose', () => {
         .build();
 
     // Loop through these crypto factories. If no credentials for Key Vault are present, we skip key vault
-    const factories = [cryptoNode];
+    let factories = [cryptoNode];
     //const alg = { name: 'ECDSA', namedCurve: 'secp256k1', hash: { name: 'SHA-256' } };
             
     if (Credentials.vaultUri.startsWith('https')) {
@@ -32,7 +32,7 @@ describe('Jose', () => {
             .useKeyVault(credentials, Credentials.vaultUri)
             .useSigningKeyReference('neo')
             .build();
-        factories.push(cryptoKeyVault);
+        factories= [cryptoKeyVault, cryptoNode];
     }
 
     it('should create a builder', () => {

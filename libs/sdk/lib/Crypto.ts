@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { CryptoBuilder, KeyUse, CryptoHelpers, CryptoFactoryScope, JsonWebKey } from './index';
+import { CryptoKey } from 'webcrypto-core';
 
 /**
  * Class to model Crypto
@@ -40,11 +41,11 @@ export default class Crypto {
       // export key
       let jwk: JsonWebKey;
       if ((<CryptoKeyPair>this.signingKey).privateKey) {
-        jwk = <JsonWebKey>await subtle.exportKey('jwk', (<CryptoKeyPair>this.signingKey).privateKey)
+        jwk = <JsonWebKey>await subtle.exportKey('jwk', (<CryptoKeyPair>this.signingKey).privateKey);
       } else if ((<CryptoKeyPair>this.signingKey).publicKey) {
-        jwk = <JsonWebKey>await subtle.exportKey('jwk', (<CryptoKeyPair>this.signingKey).publicKey)
+        jwk = <JsonWebKey>await subtle.exportKey('jwk', (<CryptoKeyPair>this.signingKey).publicKey);
       } else {
-        jwk = <JsonWebKey>await subtle.exportKey('jwk', <CryptoKey>this.signingKey)
+        jwk = <JsonWebKey>await subtle.exportKey('jwk', <CryptoKey>this.signingKey);
       }
 
       await this.builder.keyStore.save(this.builder.signingKeyReference!, jwk);

@@ -38,9 +38,9 @@ describe('signing', () => {
 
         for (let inx = 0 ; inx < factories.length; inx++) {
             // Get the subtle api for private key operations
-            const subtleSecure = factories[inx].getMessageSigner('ECDSA', CryptoFactoryScope.Private);
-            const isKeyVault = subtleSecure.constructor.name === 'SubtleCryptoKeyVault'
-            console.log(`Use subtle ${subtleSecure.constructor.name}`);
+            const subtlePrivate = factories[inx].getMessageSigner('ECDSA', CryptoFactoryScope.Private);
+            const isKeyVault = subtlePrivate.constructor.name === 'SubtleCryptoKeyVault'
+            console.log(`Use subtle ${subtlePrivate.constructor.name}`);
 
             // Get the subtle api for public key operations
             const subtle = factories[inx].defaultCrypto;
@@ -50,14 +50,14 @@ describe('signing', () => {
                 name: 'ECDSA',
                 namedCurve: 'secp256k1'
             };
-            const key: CryptoKeyPair = <CryptoKeyPair>await subtleSecure.generateKey(
+            const key: CryptoKeyPair = <CryptoKeyPair>await subtlePrivate.generateKey(
                 algorithm,
-                true,
+                false,
                 ['sign', 'verify']);
 
             // Export the key into JWK format. Only possible if key was generated with extractable = true, not possible on key vault
             if (!isKeyVault) {
-                const jwk = await subtleSecure.exportKey(
+                const jwk = await subtlePrivate.exportKey(
                     'jwk',
                     key.privateKey);
                 console.log(`Exported private key: ${JSON.stringify(jwk)}`);
@@ -65,7 +65,7 @@ describe('signing', () => {
 
             // Create ECDSA signature. In case of key vault, we only pass the key reference. 
             // Private key stays on key vault. 
-            const signature = await subtleSecure.sign(
+            const signature = await subtlePrivate.sign(
                 <EcdsaParams>{
                     name: 'ECDSA',
                     hash: { name: 'SHA-256' }

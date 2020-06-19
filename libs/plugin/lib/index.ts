@@ -6,7 +6,7 @@
 import CryptoFactory, { CryptoFactoryScope } from './CryptoFactory';
 import ISubtleCryptoExtension from './ISubtleCryptoExtension';
 import ISubtleCrypto from './ISubtleCrypto';
-import Subtle from './SubtleCrypto';
+import Subtle from './Subtle';
 import SubtleCryptoNode from './SubtleCryptoNode';
 import SubtleCryptoBrowser from './SubtleCryptoBrowser';
 import SubtleCryptoExtension from './SubtleCryptoExtension';

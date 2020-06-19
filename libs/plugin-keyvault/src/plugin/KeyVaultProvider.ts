@@ -8,7 +8,6 @@ import { Subtle } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import { ProviderCrypto, CryptoKey } from 'webcrypto-core';
 import { IKeyStore, KeyStoreOptions } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import KeyStoreKeyVault from '../keyStore/KeyStoreKeyVault';
-import KeyVaultEcdsaProvider from './KeyVaultEcdsaProvider';
 
 /**
  * Wrapper class for key vault plugin

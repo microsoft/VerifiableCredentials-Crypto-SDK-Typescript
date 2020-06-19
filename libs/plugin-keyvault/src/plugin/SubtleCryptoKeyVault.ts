@@ -14,7 +14,26 @@ import KeyVaultRsaOaepProvider from './KeyVaultRsaOaepProvider';
  */
 export default class SubtleCryptoKeyVault extends SubtleCrypto implements ISubtleCrypto {
   private static crypto: SubtleCrypto = new SubtleCrypto();
-  
+/*
+  public checkRequiredArguments(args: IArguments, size: number, methodName: string) {
+    // ignore size from core implementation and use additional argument
+
+    switch (methodName) {
+      case "generateKey":
+        return super.checkRequiredArguments(args, 4, methodName); // +1 extra argument
+      default:
+        return super.checkRequiredArguments(args, size, methodName)
+    }
+  }
+*/
+  public async generateKey(algorithm: Algorithm, extractable: boolean, keyUsages: KeyUsage[], options?: any) {
+    this.checkRequiredArguments(arguments, options ? 4 : 3, "generateKey");
+    const preparedAlgorithm = this.prepareAlgorithm(algorithm);
+    const provider: any = this.getProvider(preparedAlgorithm.name);
+    const result = await provider.generateKey({ ...preparedAlgorithm, name: provider.name }, extractable, keyUsages, options);
+    return result;
+}
+
   /**
    * Create a new instance of @class SubtleCryptoKeyVault
    * @param subtle A default subtle crypto object. Can be used for local crypto functions

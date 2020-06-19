@@ -26,18 +26,7 @@ export default class Subtle extends SubtleCrypto {
     constructor() {
         super();
     }
-    public checkRequiredArguments(args: IArguments, size: number, methodName: string) {
-        // ignore size from core implementation and use additional argument
-        console.log(`checkRequiredArguments ${methodName}`);
-  
-        switch (methodName) {
-          case "generateKey":
-            return super.checkRequiredArguments(args, 3, methodName); // +1 extra argument
-          default:
-            return super.checkRequiredArguments(args, size, methodName)
-        }
-      }
-  
+
     /**
      * Normalize the algorithm so it can be used by underlying crypto.
      * @param algorithm Algorithm to be normalized
