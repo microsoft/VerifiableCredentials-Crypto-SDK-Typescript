@@ -32,9 +32,9 @@ describe('KeyStoreInMemory', () => {
       n: 'xxxxxxxxx',
       alg: 'none'
     };
-    await keyStore.save('1', key1);
-    await keyStore.save('1', key2);
-    await keyStore.save('2', <PublicKey>key3);
+    await keyStore.save(new KeyReference('1'), key1);
+    await keyStore.save(new KeyReference('1'), key2);
+    await keyStore.save(new KeyReference('2'), <PublicKey>key3);
     let list = await keyStore.list();
 
     // tslint:disable-next-line: no-backbone-get-set-outside-model
@@ -59,7 +59,7 @@ describe('KeyStoreInMemory', () => {
       qi: 'AAEE',
       alg: 'none'
     };
-    await keyStore.save('rsaKey', rsaKey);
+    await keyStore.save(new KeyReference('rsaKey'), rsaKey);
     let key: any = await keyStore.get(new KeyReference('rsaKey'), { publicKeyOnly: true });
     expect(key.d).toBeUndefined();
     expect(key.p).toBeUndefined();
@@ -76,7 +76,7 @@ describe('KeyStoreInMemory', () => {
   it('should save a string', async () => {
     const key = 'abcdef';
     const keyStore = new KeyStoreInMemory();
-    await keyStore.save('key', key);
+    await keyStore.save(new KeyReference('key'), key);
     const retrieved = await keyStore.get(new KeyReference('key'), new KeyStoreOptions({ publicKeyOnly: false }));
     expect(retrieved.keys.length).toEqual(1);
     expect((<any>retrieved.keys[0]).k).toEqual(base64url.encode(key));
@@ -88,7 +88,7 @@ describe('KeyStoreInMemory', () => {
     const jwk: any = new OctKey('AAEE');
 
     const keyStore = new KeyStoreInMemory();
-    await keyStore.save('key', jwk);
+    await keyStore.save(new KeyReference('key'), jwk);
     let throwCaught = false;
     const error = await keyStore.get(new KeyReference('key'), new KeyStoreOptions({ publicKeyOnly: true }))
       .catch((err) => {
@@ -108,7 +108,7 @@ describe('KeyStoreInMemory', () => {
 
     // Fail because wrong key type
     const keyStore = new KeyStoreInMemory();
-    await keyStore.save('key', jwk);
+    await keyStore.save(new KeyReference('key'), jwk);
     let throwCaught = false;
     const error = await keyStore.get(new KeyReference('key'), new KeyStoreOptions({ publicKeyOnly: true }))
       .catch((err) => {
@@ -129,7 +129,7 @@ describe('KeyStoreInMemory', () => {
     };
 
     const keyStore = new KeyStoreInMemory();
-    await keyStore.save('key', jwk);
+    await keyStore.save(new KeyReference('key'), jwk);
     let throwCaught = false;
     const signature = await keyStore.get(new KeyReference('key1'))
       .catch((err) => {

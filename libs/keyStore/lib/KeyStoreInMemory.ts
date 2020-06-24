@@ -77,7 +77,7 @@ export default class KeyStoreInMemory implements IKeyStore {
   /**
    * Lists all keys with their corresponding key ids
    */
-  list(_options: KeyStoreOptions = new KeyStoreOptions()): Promise<{ [name: string]: KeyStoreListItem }> {
+  list(): Promise<{ [name: string]: KeyStoreListItem }> {
     const dictionary: { [name: string]: KeyStoreListItem } = {};
     for (let [key, container] of this.store) {
       if ((<any>container)) {
@@ -99,20 +99,20 @@ export default class KeyStoreInMemory implements IKeyStore {
    * @param keyIdentifier for the key being saved.
    * @param key being saved to the key store. If the key is a string it will be base64url encoded.
    */
-  save(keyIdentifier: string, key: CryptographicKey | string, _options: KeyStoreOptions = new KeyStoreOptions()): Promise<void> {
+  save(keyIdentifier: KeyReference, key: CryptographicKey | string, _options: KeyStoreOptions = new KeyStoreOptions()): Promise<void> {
     //todo serialization of the key needs to happen in here if key is string than create a oct key of it
-    console.log(`Store ${keyIdentifier}`);
+    console.log(`Store ${keyIdentifier.keyReference}`);
     if (typeof key === 'string') {
       key = new OctKey(base64url.encode(<string>key));
     }
-    if (this.store.get(keyIdentifier)) {
-      const container = <IKeyContainer>this.store.get(keyIdentifier);
+    if (this.store.get(keyIdentifier.keyReference)) {
+      const container = <IKeyContainer>this.store.get(keyIdentifier.keyReference);
       container.keys.push(key);
-      this.store.set(keyIdentifier, container);
+      this.store.set(keyIdentifier.keyReference, container);
     } else {
       // create new container
       const container = new KeyContainer(key);
-      this.store.set(keyIdentifier, container);
+      this.store.set(keyIdentifier.keyReference, container);
     }
 
     return new Promise((resolve) => {

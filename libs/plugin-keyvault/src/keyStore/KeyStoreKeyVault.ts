@@ -6,7 +6,7 @@
 import { ClientCertificateCredential, ClientSecretCredential, TokenCredential } from '@azure/identity';
 import { KeyClient, JsonWebKey, CryptographyClient } from '@azure/keyvault-keys';
 import { SecretClient } from '@azure/keyvault-secrets';
-import { KeyStoreOptions, IKeyStore, KeyStoreListItem } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { KeyStoreOptions, IKeyStore, KeyStoreListItem, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { RsaPublicKey, EcPublicKey, KeyType, OctKey, KeyContainer, IKeyContainer, CryptographicKey, EcPrivateKey, RsaPrivateKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import base64url from 'base64url';
 
@@ -41,10 +41,10 @@ export default class KeyStoreKeyVault implements IKeyStore {
    * @param keyIdentifier for which to return the key.
      * @param [options] Options for retrieving.
    */
-  public async get(keyReference: string, options: KeyStoreOptions = new KeyStoreOptions({ extractable: false })): Promise<any> {
+  public async get(keyReference: KeyReference, options: KeyStoreOptions = new KeyStoreOptions({ extractable: false })): Promise<any> {
     const client = this.getKeyStoreClient(options);
     const versionList: any[] = [];
-    if (options.extractable) {
+    if (keyReference.extractable) {
       // Get extractable secrets 
       // Check the cache first
       try {
@@ -57,27 +57,27 @@ export default class KeyStoreKeyVault implements IKeyStore {
 
       const secretClient: SecretClient = <SecretClient>client;
       if (options.latestVersion) {
-        const secret = await secretClient.getSecret(keyReference);
+        const secret = await secretClient.getSecret(keyReference.keyReference);
         (<any>secret).keyType = 'Oct';
         try {
           secret.value = JSON.parse(<string>secret.value);
           (<any>secret).keyType = (<any>secret.value).kty;
         } catch (e) {
           // no key container in secret
-          console.log(`parsing of latest version of key from keyvault failed: ${keyReference}`);
+          console.log(`parsing of latest version of key from keyvault failed: ${keyReference.keyReference}`);
         }
 
         versionList.push(secret);
       } else {
-        for await (const keyProperties of secretClient.listPropertiesOfSecretVersions(keyReference)) {
-          let secret = await secretClient.getSecret(keyReference, { version: keyProperties.version! });
+        for await (const keyProperties of secretClient.listPropertiesOfSecretVersions(keyReference.keyReference)) {
+          let secret = await secretClient.getSecret(keyReference.keyReference, { version: keyProperties.version! });
           (<any>secret).keyType = 'Oct';
           try {
             secret.value = JSON.parse(<string>secret.value);
             (<any>secret).keyType = (<any>secret.value).kty;
           } catch {
             // no key container in secret
-            console.log(`parsing of versions of key from keyvault failed: ${keyReference}`);
+            console.log(`parsing of versions of key from keyvault failed: ${keyReference.keyReference}`);
           }
 
           versionList.push(secret);
@@ -87,11 +87,11 @@ export default class KeyStoreKeyVault implements IKeyStore {
       // Get non extractable keys returning public keys
       const keyClient: KeyClient = <KeyClient>client;
       if (options.latestVersion) {
-        const key = await keyClient.getKey(keyReference);
+        const key = await keyClient.getKey(keyReference.keyReference);
         versionList.push(key);
       } else {
-        for await (const keyProperties of keyClient.listPropertiesOfKeyVersions(keyReference)) {
-          const key = await keyClient.getKey(keyReference, { version: keyProperties.version! });
+        for await (const keyProperties of keyClient.listPropertiesOfKeyVersions(keyReference.keyReference)) {
+          const key = await keyClient.getKey(keyReference.keyReference, { version: keyProperties.version! });
           versionList.push(key);
         }
       }
@@ -111,7 +111,7 @@ export default class KeyStoreKeyVault implements IKeyStore {
           container = new KeyContainer(keyContainerItem);
         }
       } else {
-        if (options.extractable) {
+        if (keyReference.extractable) {
           if (kty === 'EC') {
             keyContainerItem = options.publicKeyOnly ?
               new EcPublicKey(version.key ? version.key : version.value as any) : new EcPrivateKey(version.key ? version.key : version.value as any);
@@ -135,13 +135,13 @@ export default class KeyStoreKeyVault implements IKeyStore {
       }
 
       // cache the private key
-      if (keyContainerItem && options.extractable) {
-        await this.defaultKeyStore.save(keyReference, keyContainerItem);
+      if (keyContainerItem && keyReference.extractable) {
+        await this.defaultKeyStore.save(keyReference.keyReference, keyContainerItem);
       }
     }
 
     if (!container) {
-      throw new Error(`The secret with reference '${keyReference}' has not usable secrets`);
+      throw new Error(`The secret with reference '${keyReference.keyReference}' has not usable secrets`);
     }
 
     return container;
@@ -154,22 +154,22 @@ export default class KeyStoreKeyVault implements IKeyStore {
    * @param key being saved to the key store.
    * @param [options] Options for saving.
    */
-  async save(keyReference: string, key: CryptographicKey | string, options: KeyStoreOptions = new KeyStoreOptions()): Promise<void> {
+  async save(keyReference: KeyReference, key: CryptographicKey | string, options: KeyStoreOptions = new KeyStoreOptions()): Promise<void> {
     const client = this.getKeyStoreClient(options);
-    if (options.extractable) {
+    if (keyReference.extractable) {
       const secretClient: SecretClient = <SecretClient>client;
       if (typeof key === 'object') {
         const serialKey = JSON.stringify(key);
-        await secretClient.setSecret(keyReference, serialKey);
+        await secretClient.setSecret(keyReference.keyReference, serialKey);
       } else {
-        await secretClient.setSecret(keyReference, <string>key);
+        await secretClient.setSecret(keyReference.keyReference, <string>key);
       }
 
     } else {
       const keyClient: KeyClient = <KeyClient>client;
       const kvKey = KeyStoreKeyVault.toKeyVaultKey(<IKeyContainer>key);
 
-      await keyClient.importKey(keyReference, kvKey);
+      await keyClient.importKey(keyReference.keyReference, kvKey);
     }
   }
 

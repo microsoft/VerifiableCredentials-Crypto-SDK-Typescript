@@ -47,11 +47,11 @@ export default interface IKeyStore {
    * @param key being saved to the key store.
    * @param [options] Options for saving.
    */
-  save (keyReference: string, key: CryptographicKey | string, options?: KeyStoreOptions): Promise<void>;
+  save (keyReference: KeyReference, key: CryptographicKey | string, options?: KeyStoreOptions): Promise<void>;
 
   /**
    * Lists all key references with their corresponding key ids
    * @param [options] Options for listing.
    */
-  list (options?: KeyStoreOptions): Promise<{ [name: string]: KeyStoreListItem }>;
+  list (extracable?: boolean): Promise<{ [name: string]: KeyStoreListItem }>;
 }

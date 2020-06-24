@@ -59,7 +59,7 @@ describe('SubtleCryptoExtension', () => {
     const alg = { name: 'ECDSA', namedCurve: 'secp256k1', hash: { name: 'SHA-256' }, format: 'DER' };
 
     const jwk = new EcPrivateKey({ "kid": "#signing", "kty": "EC", "use": "sig", "alg": "ES256K", "crv": "secp256k1", "x": "7RlJnsuYQuSNdpRAFwejCXZqsAccW_QKWw4dPmABBVA", "y": "nf0vn9ib6ObyLm4WaDWUe8g3gkEwo2jVbthS7R4MsaU", "d": "2PtA4bb6fXprFLfjIJsi5Cer8YAdEDVDomYNYK9ppkU" });
-    await keyStore.save('key', jwk);
+    await keyStore.save(new KeyReference('key'), jwk);
     const payload = Buffer.from('test');
     let signature = await subtle.signByKeyStore(alg, new KeyReference('key'), payload);
     expect(signature.byteLength).toBeGreaterThan(65);
@@ -81,7 +81,7 @@ describe('SubtleCryptoExtension', () => {
     const alg = { name: 'ECDSA', namedCurve: 'secp256k1', hash: { name: 'SHA-256' }, format: 'DER' };
 
     const jwk = new EcPrivateKey({ "kid": "#signing", "kty": "EC", "use": "sig", "alg": "ES256K", "crv": "secp256k1", "x": "7RlJnsuYQuSNdpRAFwejCXZqsAccW_QKWw4dPmABBVA", "y": "nf0vn9ib6ObyLm4WaDWUe8g3gkEwo2jVbthS7R4MsaU", "d": "2PtA4bb6fXprFLfjIJsi5Cer8YAdEDVDomYNYK9ppkU" });
-    await keyStore.save('key', jwk);
+    await keyStore.save(new KeyReference('key'), jwk);
     const payload = Buffer.from('test');
     let signature = await subtle.signByKeyStore(alg, new KeyReference('key'), payload);
     expect(signature.byteLength).toBeGreaterThan(65);
