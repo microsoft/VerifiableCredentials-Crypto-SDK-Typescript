@@ -5,7 +5,7 @@
 
 import { RsaPublicKey, KeyType, PublicKey, KeyContainer, OctKey, RsaPrivateKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import base64url from 'base64url';
-import { KeyStoreInMemory, KeyStoreOptions } from '../lib/index';
+import { KeyStoreInMemory, KeyStoreOptions, KeyReference } from '../lib/index';
 
 describe('KeyStoreInMemory', () => {
 
@@ -60,7 +60,7 @@ describe('KeyStoreInMemory', () => {
       alg: 'none'
     };
     await keyStore.save('rsaKey', rsaKey);
-    let key: any = await keyStore.get('rsaKey', { publicKeyOnly: true });
+    let key: any = await keyStore.get(new KeyReference('rsaKey'), { publicKeyOnly: true });
     expect(key.d).toBeUndefined();
     expect(key.p).toBeUndefined();
     expect(key.q).toBeUndefined();
@@ -68,7 +68,7 @@ describe('KeyStoreInMemory', () => {
     expect(key.dq).toBeUndefined();
     expect(key.qi).toBeUndefined();
 
-    key = await keyStore.get('rsaKey');
+    key = await keyStore.get(new KeyReference('rsaKey'));
     expect(key.keys[0].d).toBeUndefined();
     expect(key.keys[0].n).toBeDefined();
   });
@@ -77,7 +77,7 @@ describe('KeyStoreInMemory', () => {
     const key = 'abcdef';
     const keyStore = new KeyStoreInMemory();
     await keyStore.save('key', key);
-    const retrieved = await keyStore.get('key', new KeyStoreOptions({ publicKeyOnly: false }));
+    const retrieved = await keyStore.get(new KeyReference('key'), new KeyStoreOptions({ publicKeyOnly: false }));
     expect(retrieved.keys.length).toEqual(1);
     expect((<any>retrieved.keys[0]).k).toEqual(base64url.encode(key));
   });
@@ -90,7 +90,7 @@ describe('KeyStoreInMemory', () => {
     const keyStore = new KeyStoreInMemory();
     await keyStore.save('key', jwk);
     let throwCaught = false;
-    const error = await keyStore.get('key', new KeyStoreOptions({ publicKeyOnly: true }))
+    const error = await keyStore.get(new KeyReference('key'), new KeyStoreOptions({ publicKeyOnly: true }))
       .catch((err) => {
         throwCaught = true;
         expect(err).toBe('A secret does not has a public key');
@@ -110,7 +110,7 @@ describe('KeyStoreInMemory', () => {
     const keyStore = new KeyStoreInMemory();
     await keyStore.save('key', jwk);
     let throwCaught = false;
-    const error = await keyStore.get('key', new KeyStoreOptions({ publicKeyOnly: true }))
+    const error = await keyStore.get(new KeyReference('key'), new KeyStoreOptions({ publicKeyOnly: true }))
       .catch((err) => {
         throwCaught = true;
         expect(err).toBe('A secret does not has a public key');
@@ -131,7 +131,7 @@ describe('KeyStoreInMemory', () => {
     const keyStore = new KeyStoreInMemory();
     await keyStore.save('key', jwk);
     let throwCaught = false;
-    const signature = await keyStore.get('key1')
+    const signature = await keyStore.get(new KeyReference('key1'))
       .catch((err) => {
         throwCaught = true;
         expect(err).toBe('key1 not found');

@@ -7,6 +7,7 @@ import { IKeyContainer, KeyType, PrivateKey, CryptographicKey, OctKey, KeyContai
 import base64url from 'base64url';
 import IKeyStore, { KeyStoreListItem } from './IKeyStore';
 import KeyStoreOptions from './KeyStoreOptions';
+import { KeyReference } from '.';
 
 const clone = require('clone');
 
@@ -22,10 +23,10 @@ export default class KeyStoreInMemory implements IKeyStore {
    * @param keyReference for which to return the key.
    * @param [options] Options for retrieving.
    */
-  get(keyReference: string, options: KeyStoreOptions = new KeyStoreOptions()): Promise<IKeyContainer> {
+  get(keyReference: KeyReference, options?: KeyStoreOptions): Promise<IKeyContainer> {
     return new Promise((resolve, reject) => {
-      if (this.store.has(keyReference)) {
-        const key = (<IKeyContainer>this.store.get(keyReference));
+      if (this.store.has(keyReference.keyReference)) {
+        const key = (<IKeyContainer>this.store.get(keyReference.keyReference));
         if (key.kty === KeyType.Oct) {
           if (options && options.publicKeyOnly) {
             const error = 'A secret does not has a public key';
@@ -49,7 +50,7 @@ export default class KeyStoreInMemory implements IKeyStore {
           resolve(key);
         }
       } else {
-        const error = `${keyReference} not found`;
+        const error = `${keyReference.keyReference} not found`;
         return reject(error);
       }
     });

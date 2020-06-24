@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CryptoBuilder, KeyUse, CryptoHelpers, CryptoFactoryScope, JsonWebKey } from './index';
+import { KeyReference, CryptoBuilder, KeyUse, CryptoHelpers, CryptoFactoryScope, JsonWebKey } from './index';
 import { CryptoKey } from 'webcrypto-core';
 
 /**
@@ -43,8 +43,12 @@ export default class Crypto {
       if ((<CryptoKeyPair>this.signingKey).privateKey) {
         jwk = <JsonWebKey>await subtle.exportKey('jwk', (<CryptoKeyPair>this.signingKey).privateKey);
       } else if ((<CryptoKeyPair>this.signingKey).publicKey) {
-        jwk = <JsonWebKey>await subtle.exportKey('jwk', (<CryptoKeyPair>this.signingKey).publicKey);
+        // the key is externally generated and already on the key store
+        return this;
       } else {
+        if (!this.builder.signingKeyOptions.extractable!) {
+          return this;
+        }
         jwk = <JsonWebKey>await subtle.exportKey('jwk', <CryptoKey>this.signingKey);
       }
 

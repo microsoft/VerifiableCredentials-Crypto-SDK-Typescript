@@ -5,7 +5,7 @@
 
  import IPayloadProtectionOptions from './IPayloadProtectionOptions';
  import { PublicKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
- import { KeyReferenceOptions } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+ import { KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import IVerificationResult from './IVerificationResult';
 import { ICryptoToken } from './ICryptoToken';
 
@@ -23,7 +23,7 @@ export interface IPayloadProtection {
    * @param options used for the signature. These options override the options provided in the constructor.
    * @returns Signed payload in requested format.
    */
-   sign (signingKeyReference: string | KeyReferenceOptions, payload: Buffer, format: string, options?: IPayloadProtectionOptions): Promise<ICryptoToken>;
+   sign (signingKeyReference: string | KeyReference, payload: Buffer, format: string, options?: IPayloadProtectionOptions): Promise<ICryptoToken>;
 
   /**
    * Verify the signature.

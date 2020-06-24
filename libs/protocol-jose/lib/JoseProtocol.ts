@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { PublicKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
-import { ProtectionFormat, KeyReferenceOptions } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { ProtectionFormat, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { CryptoProtocolError, IVerificationResult, ICryptoToken, IPayloadProtectionOptions, IPayloadProtection } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
 import JwsToken from './jws/JwsToken';
 import JoseConstants from './JoseConstants';
@@ -25,7 +25,7 @@ export default class JoseProtocol implements IPayloadProtection {
    * @param options used for the signature. These options override the options provided in the constructor.
    * @returns Signed payload in requested format.
    */
-   public async sign (signingKeyReference: string | KeyReferenceOptions, payload: Buffer, format: string, options: IPayloadProtectionOptions): Promise<ICryptoToken> {
+   public async sign (signingKeyReference: string | KeyReference, payload: Buffer, format: string, options: IPayloadProtectionOptions): Promise<ICryptoToken> {
     const jwsOptions: IJwsSigningOptions = JwsToken.fromPayloadProtectionOptions(options);
     const token: JwsToken = new JwsToken(jwsOptions);
     const protocolFormat: ProtectionFormat = this.getProtectionFormat(format);

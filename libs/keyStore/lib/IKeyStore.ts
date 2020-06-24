@@ -5,6 +5,7 @@
 
 import { IKeyContainer, KeyType, CryptographicKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import KeyStoreOptions from './KeyStoreOptions';
+import { KeyReference } from '.';
 
 /**
  * Define an item in the key store list
@@ -37,7 +38,7 @@ export default interface IKeyStore {
    * @param keyIdentifier for which to return the key.
    * @param [options] Options for retrieving.
    */
-  get (keyReference: string, options?: KeyStoreOptions): Promise<IKeyContainer>;
+  get (keyReference: KeyReference, options?: KeyStoreOptions): Promise<IKeyContainer>;
 
   /**
    * Saves the specified key container to the key store using

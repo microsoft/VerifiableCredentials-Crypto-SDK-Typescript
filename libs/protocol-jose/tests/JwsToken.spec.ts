@@ -5,7 +5,7 @@
 
 import { JwsToken, JoseConstants, IJwsSigningOptions, JoseProtocol } from '../lib/index'
 import { IPayloadProtectionOptions } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
-import { KeyStoreInMemory, ProtectionFormat, KeyReferenceOptions } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { KeyStoreInMemory, ProtectionFormat, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { CryptoFactory, SubtleCryptoNode, SubtleCryptoExtension } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import { OctKey, PublicKey, KeyContainer } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import { TSMap } from "typescript-map";
@@ -72,7 +72,7 @@ describe('JwsToken', () => {
       
       await keyStore.save('key', privateKey);
       const jwsToken = new JwsToken(options);
-      const signature = await jwsToken.sign(new KeyReferenceOptions({ keyReference: 'key' }), Buffer.from(payload), ProtectionFormat.JwsGeneralJson);
+      const signature = await jwsToken.sign(new KeyReference({ keyReference: 'key' }), Buffer.from(payload), ProtectionFormat.JwsGeneralJson);
       expect(signature).toBeDefined();
   });
   it('should create, validate and serialize a JwsToken', async () => {

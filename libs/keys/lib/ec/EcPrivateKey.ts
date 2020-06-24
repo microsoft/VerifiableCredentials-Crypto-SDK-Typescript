@@ -18,7 +18,7 @@ export default class EcPrivateKey extends EcPublicKey implements PrivateKey {
   /**
    * ECDSA w/ secp256k1 Curve
    */
-  readonly alg: string = 'secp256k1';
+  readonly alg: string = 'ES256K';
 
   /**
    * Private exponent

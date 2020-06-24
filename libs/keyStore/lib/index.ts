@@ -8,5 +8,5 @@ import CryptoError from './CryptoError';
 import { ProtectionFormat } from './ProtectionFormat';
 import KeyStoreInMemory from './KeyStoreInMemory';
 import KeyStoreOptions from './KeyStoreOptions';
-import KeyReferenceOptions from './KeyReferenceOptions';
-export { IKeyStore, KeyReferenceOptions, KeyStoreOptions, CryptoAlgorithm, CryptoError, KeyStoreListItem, ProtectionFormat, KeyStoreInMemory };
+import KeyReference from './KeyReference';
+export { IKeyStore, KeyReference, KeyStoreOptions, CryptoAlgorithm, CryptoError, KeyStoreListItem, ProtectionFormat, KeyStoreInMemory };

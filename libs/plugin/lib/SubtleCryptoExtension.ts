@@ -5,7 +5,7 @@
 import { CryptoHelpers, PairwiseKey, CryptoFactory, CryptoFactoryScope, Subtle, ISubtleCryptoExtension } from './index';
 import { CryptoKey } from 'webcrypto-core';
 import { PublicKey, PrivateKey, KeyType, IKeyContainer } from 'verifiablecredentials-crypto-sdk-typescript-keys';
-import { KeyReferenceOptions, IKeyStore, CryptoAlgorithm, CryptoError } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { KeyReference, IKeyStore, CryptoAlgorithm, CryptoError } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 
 /**
  * The class extends the @class Subtle with addtional methods.
@@ -41,11 +41,11 @@ export default class SubtleCryptoExtension extends Subtle implements ISubtleCryp
    * @param data to sign
    * @returns The signature in the requested algorithm
    */
-  public async signByKeyStore(algorithm: CryptoAlgorithm, keyReference: string | KeyReferenceOptions, data: BufferSource): Promise<ArrayBuffer> {
+  public async signByKeyStore(algorithm: CryptoAlgorithm, keyReference: KeyReference, data: BufferSource): Promise<ArrayBuffer> {
     const keyReferenceInStore = typeof keyReference === 'object' ? keyReference.keyReference : keyReference;
     const extractable = typeof keyReference === 'object' ? keyReference.extractable : true;
 
-    let jwk: PrivateKey = (await <Promise<IKeyContainer>>this.keyStore.get(keyReferenceInStore, { publicKeyOnly: false, extractable })).getKey<PrivateKey>();
+    let jwk: PrivateKey = (await <Promise<IKeyContainer>>this.keyStore.get(new KeyReference(keyReferenceInStore, extractable), { publicKeyOnly: false})).getKey<PrivateKey>();
 
     const crypto: Subtle = CryptoHelpers.getSubtleCryptoForAlgorithm(this.cryptoFactory, algorithm, CryptoFactoryScope.Private);
     const keyImportAlgorithm: any = CryptoHelpers.getKeyImportAlgorithm(algorithm, jwk);
@@ -140,8 +140,9 @@ export default class SubtleCryptoExtension extends Subtle implements ISubtleCryp
    */
   public async verifyByJwk(algorithm: CryptoAlgorithm, jwk: JsonWebKey, signature: BufferSource, payload: BufferSource): Promise<boolean> {
     const crypto: Subtle = CryptoHelpers.getSubtleCryptoForAlgorithm(this.cryptoFactory, algorithm, CryptoFactoryScope.Public);
-    const keyImportAlgorithm: any = CryptoHelpers.getKeyImportAlgorithm(algorithm, jwk);
-
+    jwk = crypto.keyImportTransform(jwk);
+    let keyImportAlgorithm: any = CryptoHelpers.getKeyImportAlgorithm(algorithm, jwk);
+    
     const key = await crypto.importKey('jwk', jwk, keyImportAlgorithm, true, ['verify']);
     const isElliptic = algorithm.name === 'ECDSA' || algorithm.name === 'EDDSA';
 
@@ -215,7 +216,7 @@ export default class SubtleCryptoExtension extends Subtle implements ISubtleCryp
    */
   public async decryptByKeyStore(algorithm: CryptoAlgorithm, keyReference: string, cipher: BufferSource): Promise<ArrayBuffer> {
 
-    let jwk: PrivateKey = (await this.keyStore.get(keyReference, { publicKeyOnly: false })).getKey<PrivateKey>();
+    let jwk: PrivateKey = (await this.keyStore.get(new KeyReference(keyReference), { publicKeyOnly: false })).getKey<PrivateKey>();
     const crypto: Subtle = CryptoHelpers.getSubtleCryptoForAlgorithm(this.cryptoFactory, algorithm, CryptoFactoryScope.Private);
     const keyImportAlgorithm: any = CryptoHelpers.getKeyImportAlgorithm(algorithm, jwk);
 

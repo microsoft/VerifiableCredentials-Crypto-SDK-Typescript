@@ -5,7 +5,7 @@
  
 // tslint:disable-next-line: import-name
 import {CryptoFactory, SubtleCryptoExtension, SubtleCryptoNode, PairwiseKey } from '../lib/index';
-import { KeyStoreInMemory } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { KeyStoreInMemory, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { PrivateKey, EcPrivateKey, OctKey, KeyContainer } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import base64url from 'base64url';
 
@@ -184,7 +184,7 @@ describe('PairwiseKey', () => {
     const pairwiseKey1: PrivateKey = await subtleCryptoExtensions.generatePairwiseKey(<any>alg, seedReference, 'did:persona', 'did:peer');
     keyStore.save('key', pairwiseKey1);
     const data = Buffer.from('1234567890');
-    const signature = await subtleCryptoExtensions.signByKeyStore(alg, 'key', Buffer.from('1234567890'));
+    const signature = await subtleCryptoExtensions.signByKeyStore(alg, new KeyReference('key'), Buffer.from('1234567890'));
     const verify = await subtleCryptoExtensions.verifyByJwk(alg, pairwiseKey1.getPublicKey(), signature, data);
     expect(verify).toBeTruthy();
   });

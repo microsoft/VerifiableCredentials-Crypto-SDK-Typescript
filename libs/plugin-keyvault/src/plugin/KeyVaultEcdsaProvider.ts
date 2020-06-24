@@ -80,18 +80,22 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
       x: base64url.encode(publicKey.key.x),
       y: base64url.encode(publicKey.key.y)
     };
-    const cryptoKey: CryptoKey = await this.subtle.importKey(
-      'jwk', 
-      jwk, <EcKeyAlgorithm>{   //these are the algorithm options
+
+    const alg = <EcKeyAlgorithm> this.subtle.algorithmTransform({
       name: "ECDSA",
-      namedCurve: "secp256k1", 
-    }, 
-    extractable, 
-    keyUsages);
+      namedCurve: "SECP256K1",
+    });
+
+    const cryptoKey: CryptoKey = await this.subtle.importKey(
+      'jwk',
+      jwk,
+      alg,
+      extractable,
+      keyUsages);
 
     // need to keep track of kid. cryptoKey is not extensible
     (<any>cryptoKey.algorithm).kid = jwk.kid;
-    const pair = <CryptoKeyPair> {publicKey: cryptoKey};
+    const pair = <CryptoKeyPair>{ publicKey: cryptoKey };
     return pair;
   }
 
@@ -108,8 +112,10 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
     if (format !== 'jwk') {
       throw new Error(`Import key only supports jwk`);
     }
+    //const alg = <EcKeyAlgorithm> this.subtle.algorithmTransform(algorithm);
+    
 
-    return this.subtle.importKey(format, keyData, algorithm, extractable,keyUsages);
+    return this.subtle.importKey(format, keyData, algorithm, extractable, keyUsages);
   }
 
   /**

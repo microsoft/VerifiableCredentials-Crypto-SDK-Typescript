@@ -8,7 +8,7 @@ import { IPayloadProtectionSigning, CryptoProtocolError, IProtocolCryptoToken } 
 import { PublicKey, JoseConstants } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import { JoseBuilder } from './index';
 import { JoseToken } from 'verifiablecredentials-crypto-sdk-typescript-protocol-jose';
-import { KeyReferenceOptions } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 
 export default class Jose implements IPayloadProtectionSigning {
 
@@ -36,7 +36,7 @@ export default class Jose implements IPayloadProtectionSigning {
     const protectionFormat = Jose.getProtectionFormat(this.builder.serializationFormat);
 
     this._token = await token.sign(
-      new KeyReferenceOptions({keyReference: this.builder.crypto.builder.signingKeyReference!, extractable: this.builder.crypto.builder.signingKeyOptions.extractable!}),
+      new KeyReference({keyReference: this.builder.crypto.builder.signingKeyReference!, extractable: this.builder.crypto.builder.signingKeyOptions.extractable!}),
       <Buffer>payload, protectionFormat);
     return this;
   }

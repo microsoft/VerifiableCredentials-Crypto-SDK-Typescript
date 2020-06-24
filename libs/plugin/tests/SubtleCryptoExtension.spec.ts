@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { SubtleCryptoNode, CryptoFactory, CryptoFactoryScope, CryptoHelpers, SubtleCryptoExtension } from '../lib';
-import { KeyStoreInMemory, KeyReferenceOptions } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { KeyStoreInMemory, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import EcPrivateKey from 'verifiablecredentials-crypto-sdk-typescript-keys/dist/lib/ec/EcPrivateKey';
 import { PublicKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 
@@ -61,15 +61,15 @@ describe('SubtleCryptoExtension', () => {
     const jwk = new EcPrivateKey({ "kid": "#signing", "kty": "EC", "use": "sig", "alg": "ES256K", "crv": "secp256k1", "x": "7RlJnsuYQuSNdpRAFwejCXZqsAccW_QKWw4dPmABBVA", "y": "nf0vn9ib6ObyLm4WaDWUe8g3gkEwo2jVbthS7R4MsaU", "d": "2PtA4bb6fXprFLfjIJsi5Cer8YAdEDVDomYNYK9ppkU" });
     await keyStore.save('key', jwk);
     const payload = Buffer.from('test');
-    let signature = await subtle.signByKeyStore(alg, 'key', payload);
+    let signature = await subtle.signByKeyStore(alg, new KeyReference('key'), payload);
     expect(signature.byteLength).toBeGreaterThan(65);
-    const publicKey = (await keyStore.get('key')).getKey<PublicKey>();
+    const publicKey = (await keyStore.get(new KeyReference('key'), {publicKeyOnly: true})).getKey<PublicKey>();
     let result = await subtle.verifyByJwk(alg, publicKey, signature, payload);
     expect(result).toBeTruthy();
 
     // without DER
     delete alg.format;
-    signature = await subtle.signByKeyStore(alg, 'key', payload);
+    signature = await subtle.signByKeyStore(alg, new KeyReference('key'), payload);
     expect(signature.byteLength).toBeLessThanOrEqual(64);
     result = await subtle.verifyByJwk(alg, publicKey, signature, payload);
     expect(result).toBeTruthy();
@@ -83,9 +83,9 @@ describe('SubtleCryptoExtension', () => {
     const jwk = new EcPrivateKey({ "kid": "#signing", "kty": "EC", "use": "sig", "alg": "ES256K", "crv": "secp256k1", "x": "7RlJnsuYQuSNdpRAFwejCXZqsAccW_QKWw4dPmABBVA", "y": "nf0vn9ib6ObyLm4WaDWUe8g3gkEwo2jVbthS7R4MsaU", "d": "2PtA4bb6fXprFLfjIJsi5Cer8YAdEDVDomYNYK9ppkU" });
     await keyStore.save('key', jwk);
     const payload = Buffer.from('test');
-    let signature = await subtle.signByKeyStore(alg, new KeyReferenceOptions({ keyReference: 'key', extractable: true }), payload);
+    let signature = await subtle.signByKeyStore(alg, new KeyReference('key'), payload);
     expect(signature.byteLength).toBeGreaterThan(65);
-    const publicKey = (await keyStore.get('key')).getKey<PublicKey>();
+    const publicKey = (await keyStore.get(new KeyReference('key'), {publicKeyOnly: true})).getKey<PublicKey>();
     let result = await subtle.verifyByJwk(alg, publicKey, signature, payload);
     expect(result).toBeTruthy();
   });

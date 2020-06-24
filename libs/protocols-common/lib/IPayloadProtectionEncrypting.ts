@@ -5,7 +5,7 @@
 
  import IPayloadProtectionOptions from './IPayloadProtectionOptions';
  import { PublicKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
- import { KeyReferenceOptions } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+ import { KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import IVerificationResult from './IVerificationResult';
 import { ICryptoToken } from './ICryptoToken';
 

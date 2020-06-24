@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { PublicKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
-import { IKeyStore, CryptoAlgorithm, ProtectionFormat, KeyReferenceOptions, KeyStoreOptions } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { IKeyStore, CryptoAlgorithm, ProtectionFormat, KeyReference, KeyStoreOptions } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { CryptoFactory, SubtleCryptoExtension, ISubtleCryptoExtension, CryptoHelpers } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import { IProtocolCryptoToken, CryptoProtocolError, IPayloadProtectionOptions, ICryptoToken } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
 import base64url from 'base64url';
@@ -343,7 +343,7 @@ export default class JwsToken implements IJwsGeneralJson {
    * @returns Signed payload in compact JWS format.
    */
   public async sign(
-    signingKeyReference: string | KeyReferenceOptions,
+    signingKeyReference: string | KeyReference,
     payload: Buffer,
     format: ProtectionFormat,
     options?: IJwsSigningOptions

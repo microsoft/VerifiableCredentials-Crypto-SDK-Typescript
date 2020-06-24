@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { JoseBuilder, CryptoFactory, Crypto, Subtle, IKeyStore, KeyStoreFactory, CryptoFactoryManager, SubtleCryptoNode, IPayloadProtection, IPayloadProtectionOptions, KeyStoreInMemory, IPayloadProtectionSigning, TokenCredential, KeyStoreOptions } from './index';
+import { KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 
 export default class CryptoBuilder {
   // Set the default state
@@ -30,7 +31,7 @@ export default class CryptoBuilder {
   /**
    * Get the reference in the key store to the signing key
    */
-  public get signingKeyReference(): string | undefined {
+  public get signingKeyReference(): string | KeyReference | undefined {
     return this._signingKeyReference;
   }
 

@@ -8,7 +8,7 @@ import CryptoBuilder from './CryptoBuilder';
 import Crypto from './Crypto';
 export { CryptoBuilder, Crypto, JoseBuilder, Jose };
 export { CryptographicKey, KeyTypeFactory, KeyUseFactory, KeyUse, KeyType, IKeyContainer, KeyContainer, JsonWebKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
-export { KeyReferenceOptions, KeyStoreOptions, IKeyStore, KeyStoreInMemory, ProtectionFormat } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+export { KeyReference, KeyStoreOptions, IKeyStore, KeyStoreInMemory, ProtectionFormat } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 export { CryptoFactory, CryptoFactoryScope, CryptoHelpers, Subtle, SubtleCryptoExtension, SubtleCryptoNode } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 export { CryptoFactoryNode } from 'verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites';
 export { KeyStoreKeyVault } from 'verifiablecredentials-crypto-sdk-typescript-plugin-keyvault';

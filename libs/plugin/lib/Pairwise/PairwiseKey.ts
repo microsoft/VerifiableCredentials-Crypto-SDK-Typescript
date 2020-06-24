@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Subtle } from '../index';
-import { CryptoError, CryptoAlgorithm } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { CryptoError, CryptoAlgorithm, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { OctKey, PrivateKey, KeyTypeFactory, KeyType, IKeyContainer, W3cCryptoApiConstants, JoseConstants } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import CryptoFactory, { CryptoFactoryScope } from "../CryptoFactory";
 import RsaPairwiseKey from "./RsaPairwiseKey";
@@ -67,7 +67,7 @@ import EcPairwiseKey from "./EcPairwiseKey";
     }
 
     // Get the seed
-    const jwk = <OctKey>(<IKeyContainer> await this.cryptoFactory.keyStore.get(seedReference, { publicKeyOnly: false})).getKey();
+    const jwk = <OctKey>(<IKeyContainer> await this.cryptoFactory.keyStore.get(new KeyReference(seedReference), { publicKeyOnly: false})).getKey();
 
     // Get the subtle crypto
     const crypto: Subtle = this.cryptoFactory.getMessageAuthenticationCodeSigner(W3cCryptoApiConstants.Hmac, CryptoFactoryScope.Private);

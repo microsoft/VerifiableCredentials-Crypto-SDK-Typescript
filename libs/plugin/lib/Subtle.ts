@@ -12,7 +12,7 @@ const clone = require('clone');
 // Named curves
 const CURVE_P256K = 'P-256K';
 const CURVE_K256 = 'K-256';
-const CURVE_SECP256K1 = 'secp256k1';
+const CURVE_SECP256K1 = 'SECP256K1';
 
 
 /**
@@ -33,7 +33,8 @@ export default class Subtle extends SubtleCrypto {
      */
     public algorithmTransform(algorithm: any) {
         if (algorithm.namedCurve) {
-            if (algorithm.namedCurve === CURVE_P256K || algorithm.namedCurve === CURVE_SECP256K1) {
+            const curve = (<string>algorithm.namedCurve).toUpperCase();
+            if (curve === CURVE_P256K || curve === CURVE_SECP256K1) {
                 const alg = clone(algorithm);
                 alg.namedCurve = CURVE_K256;
                 return alg;
@@ -49,7 +50,8 @@ export default class Subtle extends SubtleCrypto {
    */
     public keyImportTransform(jwk: any) {
         if (jwk.crv) {
-            if (jwk.crv === CURVE_P256K || jwk.crv === CURVE_SECP256K1) {
+            const curve = (<string>jwk.crv).toUpperCase();
+            if (curve === CURVE_P256K || curve === CURVE_SECP256K1) {
                 const clonedKey = clone(jwk);
                 clonedKey.crv = CURVE_K256;
                 return clonedKey;
@@ -65,7 +67,8 @@ export default class Subtle extends SubtleCrypto {
      */
     public keyExportTransform(jwk: any) {
         if (jwk.crv) {
-            if (jwk.crv === CURVE_P256K || jwk.crv === CURVE_K256) {
+            const curve = (<string>jwk.crv).toUpperCase();
+            if (curve === CURVE_P256K || curve === CURVE_K256) {
                 const clonedKey = clone(jwk);
                 clonedKey.crv = CURVE_SECP256K1;
                 return clonedKey;

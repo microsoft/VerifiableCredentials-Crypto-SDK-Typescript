@@ -11,12 +11,10 @@ export default class KeyStoreOptions {
     // set default values if not set by the constructor
     if (options) {
       this.publicKeyOnly = options.publicKeyOnly === undefined ? true : options.publicKeyOnly;
-      this.extractable = options.extractable  === undefined ? true : options.extractable;
       this.latestVersion = options.latestVersion === undefined ? true : options.latestVersion;
     } else {
       // set defaults
       this.publicKeyOnly = true;
-      this.extractable = true;
       this.latestVersion = true;    
     }
   }
@@ -25,11 +23,6 @@ export default class KeyStoreOptions {
    * True if only public keys are requested
    */
   public publicKeyOnly: boolean;
-
-  /**
-   * True if the key is extractable
-   */
-   public extractable?: boolean;
 
   /**
    * True if only the latest version of they is wanted

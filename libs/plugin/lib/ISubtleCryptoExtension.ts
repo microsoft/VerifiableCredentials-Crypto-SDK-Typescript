@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { Subtle } from './index';
-import { CryptoAlgorithm, KeyReferenceOptions } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { CryptoAlgorithm, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { PrivateKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import { CryptoFactoryScope } from './CryptoFactory';
 
@@ -29,7 +29,7 @@ export default interface ISubtleCryptoExtension extends Subtle {
    * @param keyReference points to key in the key store
    * @param data to sign
    */
-   signByKeyStore(algorithm: CryptoAlgorithm, keyReference: string | KeyReferenceOptions, data: BufferSource): PromiseLike<ArrayBuffer>;  
+   signByKeyStore(algorithm: CryptoAlgorithm, keyReference: string | KeyReference, data: BufferSource): PromiseLike<ArrayBuffer>;  
 
    /**
    * Verify with JWK.
