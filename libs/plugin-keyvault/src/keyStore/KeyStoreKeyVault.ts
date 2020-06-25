@@ -42,7 +42,7 @@ export default class KeyStoreKeyVault implements IKeyStore {
      * @param [options] Options for retrieving.
    */
   public async get(keyReference: KeyReference, options: KeyStoreOptions = new KeyStoreOptions({ extractable: false })): Promise<any> {
-    const client = this.getKeyStoreClient(options);
+    const client = this.getKeyStoreClient(keyReference.extractable);
     const versionList: any[] = [];
     if (keyReference.extractable) {
       // Get extractable secrets 
@@ -136,7 +136,7 @@ export default class KeyStoreKeyVault implements IKeyStore {
 
       // cache the private key
       if (keyContainerItem && keyReference.extractable) {
-        await this.defaultKeyStore.save(keyReference.keyReference, keyContainerItem);
+        await this.defaultKeyStore.save(keyReference, keyContainerItem);
       }
     }
 
@@ -154,8 +154,8 @@ export default class KeyStoreKeyVault implements IKeyStore {
    * @param key being saved to the key store.
    * @param [options] Options for saving.
    */
-  async save(keyReference: KeyReference, key: CryptographicKey | string, options: KeyStoreOptions = new KeyStoreOptions()): Promise<void> {
-    const client = this.getKeyStoreClient(options);
+  async save(keyReference: KeyReference, key: CryptographicKey | string, _options: KeyStoreOptions = new KeyStoreOptions()): Promise<void> {
+    const client = this.getKeyStoreClient(keyReference.extractable);
     if (keyReference.extractable) {
       const secretClient: SecretClient = <SecretClient>client;
       if (typeof key === 'object') {
@@ -176,10 +176,10 @@ export default class KeyStoreKeyVault implements IKeyStore {
   /**
    * Lists all key references with their corresponding key ids
    */
-  async list(options: KeyStoreOptions = new KeyStoreOptions()): Promise<{ [name: string]: KeyStoreListItem }> {
-    const client = this.getKeyStoreClient(options);
+  async list(extractable: boolean = true, options: KeyStoreOptions = new KeyStoreOptions()): Promise<{ [name: string]: KeyStoreListItem }> {
+    const client = this.getKeyStoreClient(extractable);
     const list: { [name: string]: KeyStoreListItem } = {};
-    if (options.extractable) {
+    if (extractable) {
       const secretClient: SecretClient = <SecretClient>client;
       for await (const secretProperties of secretClient.listPropertiesOfSecrets()) {
         list[secretProperties.name] = <KeyStoreListItem>{
@@ -247,8 +247,8 @@ export default class KeyStoreKeyVault implements IKeyStore {
   /**
    * Get the client to access the key vault store
    */
-  public getKeyStoreClient(options: KeyStoreOptions): KeyClient | SecretClient {
-    if (options.extractable) {
+  public getKeyStoreClient(extractable: boolean): KeyClient | SecretClient {
+    if (extractable) {
       return this.secretClient;
     } else {
       return this.keyClient;

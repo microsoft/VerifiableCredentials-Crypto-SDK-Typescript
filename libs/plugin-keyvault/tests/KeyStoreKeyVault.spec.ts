@@ -7,7 +7,7 @@ import { CryptographicKey, IKeyContainer, KeyContainer } from 'verifiablecredent
 import { Subtle, CryptoFactory } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import KeyStoreKeyVault from '../src/keyStore/KeyStoreKeyVault';
 import KeyVaultEcdsaProvider from '../src/plugin/KeyVaultEcdsaProvider';
-import { KeyStoreOptions, KeyStoreInMemory } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { KeyStoreOptions, KeyStoreInMemory, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { KeyClient } from '@azure/keyvault-keys';
 import { SecretClient } from '@azure/keyvault-secrets';
 import { CryptoKey } from 'webcrypto-core';
@@ -50,14 +50,14 @@ describe('KeyStoreKeyVault', () => {
     const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
     try {
       const provider = new KeyVaultEcdsaProvider(subtle, keyStore);
-      await provider.onGenerateKey(alg, true, ['sign'], { name });
-      let list = await keyStore.list(new KeyStoreOptions({ extractable: false, latestVersion: false }));
+      await provider.onGenerateKey(alg, false, ['sign'], { name });
+      let list = await keyStore.list(false, new KeyStoreOptions({ latestVersion: false }));
       expect(list[name]).toBeDefined();
-      const key = await keyStore.get(name, new KeyStoreOptions({ extractable: false, latestVersion: false }));
+      const key = await keyStore.get(new KeyReference(name, false), new KeyStoreOptions({latestVersion: false }));
       expect(key).toBeDefined();
-      expect((await cache.list(new KeyStoreOptions({ extractable: false, latestVersion: false })))[name]).toBeUndefined();
+      expect((await cache.list())[name]).toBeUndefined();
     } finally {
-      await (<KeyClient>keyStore.getKeyStoreClient(new KeyStoreOptions({ extractable: false }))).beginDeleteKey(name);
+      await (<KeyClient>keyStore.getKeyStoreClient(false)).beginDeleteKey(name);
     }
   });
   it('should list a default generated key', async () => {
@@ -65,15 +65,15 @@ describe('KeyStoreKeyVault', () => {
     const cache = new KeyStoreInMemory();
     const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
     const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
-    let list = await keyStore.list(new KeyStoreOptions({ extractable: false, latestVersion: false }));
+    let list = await keyStore.list(false, new KeyStoreOptions({ latestVersion: false }));
     let versionsCount = list[name] ? list[name].kids.length + 1 : 1;
     try {
       const provider = new KeyVaultEcdsaProvider(subtle, keyStore);
-      await provider.onGenerateKey(alg, true, ['sign'], { name });
-      let list = await keyStore.list(new KeyStoreOptions({ extractable: false, latestVersion: false }));
+      await provider.onGenerateKey(alg, false, ['sign'], { name });
+      let list = await keyStore.list(false, new KeyStoreOptions({ latestVersion: false }));
       expect(list[name].kids.length).toEqual(versionsCount);
     } finally {
-      await (<KeyClient>keyStore.getKeyStoreClient(new KeyStoreOptions({ extractable: false }))).beginDeleteKey(name);
+      await (<KeyClient>keyStore.getKeyStoreClient(false)).beginDeleteKey(name);
     }
   });
   it('should set a secret', async () => {
@@ -83,17 +83,17 @@ describe('KeyStoreKeyVault', () => {
     const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
     let throwed = false;
     try {
-      await keyStore.save(name, 'abcdefg');
-      const list = await keyStore.list(new KeyStoreOptions({ extractable: true, latestVersion: false }));
+      await keyStore.save(new KeyReference(name, true), 'abcdefg');
+      let list = await keyStore.list(true, new KeyStoreOptions({ latestVersion: false }));
       expect(list[name]).toBeDefined();
-      await cache.get(name);
+      await cache.get(new KeyReference(name, true));
       expect(throwed).toBeTruthy();
     } catch (err) {
       throwed = true;
       expect(err).toEqual(`${name} not found`)
 
     } finally {
-      await (<SecretClient>keyStore.getKeyStoreClient(new KeyStoreOptions({ extractable: true }))).beginDeleteSecret(name);
+      await (<SecretClient>keyStore.getKeyStoreClient(true)).beginDeleteSecret(name);
     }
   });
 
@@ -108,12 +108,12 @@ describe('KeyStoreKeyVault', () => {
       const cryptoKey: any = <CryptoKey>await subtle.generateKey(alg, true, ['sign']);
       const jwk: any = await subtle.exportKey('jwk', cryptoKey.privateKey);
       jwk.kid = name;
-      await keyStore.save(name, <CryptographicKey>jwk, new KeyStoreOptions({ extractable: true }));
-      let container = await keyStore.get(name, new KeyStoreOptions({ extractable: true, latestVersion: false }));
+      await keyStore.save(new KeyReference(name, true), <CryptographicKey>jwk, new KeyStoreOptions());
+      let container = await keyStore.get(new KeyReference(name, true), new KeyStoreOptions({ latestVersion: false }));
       expect(container.keys.length).toEqual(1);
-      expect((await cache.list(new KeyStoreOptions({ extractable: true, latestVersion: false })))[name]).toBeDefined();
+      expect((await cache.list())[name]).toBeDefined();
     } finally {
-      await (<SecretClient>keyStore.getKeyStoreClient(new KeyStoreOptions({ extractable: true }))).beginDeleteSecret(name);
+      await (<SecretClient>keyStore.getKeyStoreClient(true)).beginDeleteSecret(name);
     }
   });
 
@@ -136,12 +136,12 @@ describe('KeyStoreKeyVault', () => {
       jwk.kid = name;
 
 
-      await keyStore.save(name, new KeyContainer(jwk), new KeyStoreOptions({ extractable: false }));
-      let container = await keyStore.get(name, new KeyStoreOptions({ extractable: false, latestVersion: false }));
+      await keyStore.save(new KeyReference(name, false), new KeyContainer(jwk), new KeyStoreOptions());
+      let container = await keyStore.get(new KeyReference(name, false), new KeyStoreOptions({ extractable: false, latestVersion: false }));
       expect(container.keys.length).toEqual(1);
-      expect((await cache.list(new KeyStoreOptions({ extractable: false, latestVersion: false })))[name]).toBeUndefined();
+      expect((await cache.list())[name]).toBeUndefined();
     } finally {
-      await (<KeyClient>keyStore.getKeyStoreClient(new KeyStoreOptions({ extractable: false }))).beginDeleteKey(name);
+      await (<KeyClient>keyStore.getKeyStoreClient(false)).beginDeleteKey(name);
     }
   });
 });
