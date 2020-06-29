@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
  import { JweToken, JoseHelpers, IJweEncryptionOptions, JoseProtocol, JoseConstants } from "../lib/index";
  import { IPayloadProtectionOptions } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
- import { KeyStoreInMemory, ProtectionFormat } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+ import { KeyStoreInMemory, ProtectionFormat, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
  import { CryptoFactory, SubtleCryptoExtension, SubtleCryptoNode } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
  import { KeyOperation, RsaPrivateKey, OctKey, PrivateKey, KeyContainer } from 'verifiablecredentials-crypto-sdk-typescript-keys';
  import base64url from 'base64url';
@@ -14,7 +14,7 @@ describe('JweToken', () => {
   it('should create, decrypt and serialize a JweToken', async () => {
     const payload = 'The true sign of intelligence is not knowledge but imagination.';      
     const keyStore = new KeyStoreInMemory();
-    await keyStore.save('seed', new OctKey('ABEE'));
+    await keyStore.save(new KeyReference('seed'), new OctKey('ABEE'));
     const cryptoFactory = new CryptoFactory(keyStore, SubtleCryptoNode.getSubtleCrypto());
     const options: IPayloadProtectionOptions = {
         cryptoFactory: cryptoFactory,
@@ -29,9 +29,9 @@ describe('JweToken', () => {
     const privateKey = await generator.generatePairwiseKey(alg, 'seed', 'persona','peer');
     console.log('_________________________\n\n\n\n\n');
     console.log(privateKey);
-    await keyStore.save('key', privateKey);
+    await keyStore.save(new KeyReference('key'), privateKey);
 
-    const cipher = await options.payloadProtection.encrypt([(await keyStore.get('key')).getKey<PrivateKey>()], Buffer.from(payload), 'JweGeneralJson', options);
+    const cipher = await options.payloadProtection.encrypt([(await keyStore.get(new KeyReference('key'))).getKey<PrivateKey>()], Buffer.from(payload), 'JweGeneralJson', options);
     expect(cipher.get(JoseConstants.tokenAad)).toBeDefined();
     expect(cipher.get(JoseConstants.tokenCiphertext)).toBeDefined();
     expect(cipher.get(JoseConstants.tokenFormat)).toBe(ProtectionFormat.JweGeneralJson);
@@ -132,7 +132,7 @@ describe('JweToken', () => {
             }
             const key = new RsaPrivateKey(privateKey);
       
-            await keyStore.save('key', key);
+            await keyStore.save(new KeyReference('key'), key);
             const jweToken = new JweToken(options);
             const cipher = await jweToken.encrypt([key.getPublicKey()], payload, ProtectionFormat.JweCompactJson);
             expect(JoseHelpers.encodeHeader(cipher.protected)).toEqual('eyJhbGciOiJSU0EtT0FFUC0yNTYiLCJlbmMiOiJBMjU2R0NNIiwia2lkIjoia2V5MSJ9');

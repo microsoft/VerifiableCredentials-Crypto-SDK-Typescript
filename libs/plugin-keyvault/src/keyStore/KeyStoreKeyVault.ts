@@ -10,11 +10,15 @@ import { KeyStoreOptions, IKeyStore, KeyStoreListItem, KeyReference } from 'veri
 import { RsaPublicKey, EcPublicKey, KeyType, OctKey, KeyContainer, IKeyContainer, CryptographicKey, EcPrivateKey, RsaPrivateKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import base64url from 'base64url';
 
+
 /**
  * Key store class for accessing key vault
  */
 export default class KeyStoreKeyVault implements IKeyStore {
 
+  public static SECRETS = 'secret'
+  public static KEYS = 'key';
+    
   private keyClient: KeyClient;
   private secretClient: SecretClient;
 
@@ -42,9 +46,9 @@ export default class KeyStoreKeyVault implements IKeyStore {
      * @param [options] Options for retrieving.
    */
   public async get(keyReference: KeyReference, options: KeyStoreOptions = new KeyStoreOptions({ extractable: false })): Promise<any> {
-    const client = this.getKeyStoreClient(keyReference.extractable);
+    const client = this.getKeyStoreClient(keyReference.type);
     const versionList: any[] = [];
-    if (keyReference.extractable) {
+    if (keyReference.type === KeyStoreKeyVault.SECRETS) {
       // Get extractable secrets 
       // Check the cache first
       try {
@@ -111,7 +115,7 @@ export default class KeyStoreKeyVault implements IKeyStore {
           container = new KeyContainer(keyContainerItem);
         }
       } else {
-        if (keyReference.extractable) {
+        if (keyReference.type === KeyStoreKeyVault.SECRETS) {
           if (kty === 'EC') {
             keyContainerItem = options.publicKeyOnly ?
               new EcPublicKey(version.key ? version.key : version.value as any) : new EcPrivateKey(version.key ? version.key : version.value as any);
@@ -135,7 +139,7 @@ export default class KeyStoreKeyVault implements IKeyStore {
       }
 
       // cache the private key
-      if (keyContainerItem && keyReference.extractable) {
+      if (keyContainerItem && keyReference.type === KeyStoreKeyVault.SECRETS) {
         await this.defaultKeyStore.save(keyReference, keyContainerItem);
       }
     }
@@ -155,8 +159,8 @@ export default class KeyStoreKeyVault implements IKeyStore {
    * @param [options] Options for saving.
    */
   async save(keyReference: KeyReference, key: CryptographicKey | string, _options: KeyStoreOptions = new KeyStoreOptions()): Promise<void> {
-    const client = this.getKeyStoreClient(keyReference.extractable);
-    if (keyReference.extractable) {
+    const client = this.getKeyStoreClient(keyReference.type);
+    if (keyReference.type === KeyStoreKeyVault.SECRETS) {
       const secretClient: SecretClient = <SecretClient>client;
       if (typeof key === 'object') {
         const serialKey = JSON.stringify(key);
@@ -176,10 +180,10 @@ export default class KeyStoreKeyVault implements IKeyStore {
   /**
    * Lists all key references with their corresponding key ids
    */
-  async list(extractable: boolean = true, options: KeyStoreOptions = new KeyStoreOptions()): Promise<{ [name: string]: KeyStoreListItem }> {
-    const client = this.getKeyStoreClient(extractable);
+  async list(type: string = KeyStoreKeyVault.SECRETS, options: KeyStoreOptions = new KeyStoreOptions()): Promise<{ [name: string]: KeyStoreListItem }> {
+    const client = this.getKeyStoreClient(type);
     const list: { [name: string]: KeyStoreListItem } = {};
-    if (extractable) {
+    if (type === KeyStoreKeyVault.SECRETS) {
       const secretClient: SecretClient = <SecretClient>client;
       for await (const secretProperties of secretClient.listPropertiesOfSecrets()) {
         list[secretProperties.name] = <KeyStoreListItem>{
@@ -247,7 +251,8 @@ export default class KeyStoreKeyVault implements IKeyStore {
   /**
    * Get the client to access the key vault store
    */
-  public getKeyStoreClient(extractable: boolean): KeyClient | SecretClient {
+  public getKeyStoreClient(type: string): KeyClient | SecretClient {
+    const extractable = type === KeyStoreKeyVault.SECRETS;
     if (extractable) {
       return this.secretClient;
     } else {

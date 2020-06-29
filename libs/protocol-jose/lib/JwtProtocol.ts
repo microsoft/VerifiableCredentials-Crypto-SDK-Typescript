@@ -24,7 +24,7 @@ export default class JwtProtocol {
    * @param options used for the signature. These options override the options provided in the constructor.
    * @returns Signed payload in requested format.
    */
-   public async sign (signingKeyReference: string | KeyReference, payload: object, options: IPayloadProtectionOptions): Promise<ICryptoToken> {
+   public async sign (signingKeyReference: KeyReference, payload: object, options: IPayloadProtectionOptions): Promise<ICryptoToken> {
     const jwtOptions: IJwtSigningOptions = JwsToken.fromPayloadProtectionOptions(options);
     const token: JwtToken = new JwtToken(jwtOptions);
     return JwsToken.toCryptoToken(ProtectionFormat.JwsCompactJson, await token.sign(signingKeyReference, payload), options);

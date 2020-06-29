@@ -5,7 +5,7 @@
 
 import base64url from "base64url";
 import { JwsToken, IJwsSigningOptions } from '../lib/index'
-import { KeyStoreInMemory, ProtectionFormat } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { KeyStoreInMemory, ProtectionFormat, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { CryptoFactory, SubtleCryptoNode, CryptoFactoryScope } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import { CryptoFactoryNode } from 'verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites';
 import { KeyOperation, RsaPrivateKey, KeyContainer, OkpPrivateKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
@@ -41,10 +41,10 @@ describe('JwsToken  RSA', () => {
       true, 
       ["sign", "verify"]);
     const jwk = await subtle.exportKey('jwk', key.privateKey);
-    await keyStore.save('key', jwk);
+    await keyStore.save(new KeyReference('key'), jwk);
       
     const token = new JwtToken(options);
-    const signature = await token.sign('key', payload);
+    const signature = await token.sign(new KeyReference('key'), payload);
     expect(signature.getProtected().get('typ')).toEqual('JWT');
 
     const serialized = signature.serialize();

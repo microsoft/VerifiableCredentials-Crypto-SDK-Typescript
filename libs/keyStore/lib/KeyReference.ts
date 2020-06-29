@@ -14,6 +14,6 @@ export default class KeyReference {
    * @param extractable True if the key is extractable
    * @param cryptoKey Reference to a key in an external system
    */
-  constructor(public keyReference: string, public extractable: boolean = true, public cryptoKey?: CryptoKey) {
+  constructor(public keyReference: string, public type: string = 'key', public cryptoKey?: CryptoKey) {
   }
 }

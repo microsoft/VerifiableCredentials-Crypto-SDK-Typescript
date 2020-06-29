@@ -35,7 +35,7 @@ export default class JwtToken {
    * @returns Signed payload in compact JWT format.
    */
   public async sign(
-    signingKeyReference: string | KeyReference,
+    signingKeyReference: KeyReference,
     payload: object,
     options?: IJwtSigningOptions
   ): Promise<JwsToken> {

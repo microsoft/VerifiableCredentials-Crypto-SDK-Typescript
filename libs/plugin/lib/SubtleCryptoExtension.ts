@@ -43,9 +43,9 @@ export default class SubtleCryptoExtension extends Subtle implements ISubtleCryp
    */
   public async signByKeyStore(algorithm: CryptoAlgorithm, keyReference: KeyReference, data: BufferSource): Promise<ArrayBuffer> {
     const keyReferenceInStore = typeof keyReference === 'object' ? keyReference.keyReference : keyReference;
-    const extractable = typeof keyReference === 'object' ? keyReference.extractable : true;
+    const keyType = typeof keyReference === 'object' ? keyReference.type : 'key';
 
-    let jwk: PrivateKey = (await <Promise<IKeyContainer>>this.keyStore.get(new KeyReference(keyReferenceInStore, extractable), { publicKeyOnly: false})).getKey<PrivateKey>();
+    let jwk: PrivateKey = (await <Promise<IKeyContainer>>this.keyStore.get(new KeyReference(keyReferenceInStore, keyType), { publicKeyOnly: false})).getKey<PrivateKey>();
 
     const crypto: Subtle = CryptoHelpers.getSubtleCryptoForAlgorithm(this.cryptoFactory, algorithm, CryptoFactoryScope.Private);
     const keyImportAlgorithm: any = CryptoHelpers.getKeyImportAlgorithm(algorithm, jwk);

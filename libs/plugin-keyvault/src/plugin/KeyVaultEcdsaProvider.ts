@@ -90,7 +90,7 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
       'jwk',
       jwk,
       alg,
-      extractable,
+      true,
       keyUsages);
 
     // need to keep track of kid. cryptoKey is not extensible

@@ -53,25 +53,26 @@ describe('KeyVaultPlugin', () => {
       expect(result.publicKey.algorithm.name).toEqual('ECDSA');
       expect((<any>result.publicKey.algorithm).kid.startsWith('https')).toBeTruthy();
     } finally {
-      await (<KeyClient>keyStore.getKeyStoreClient(false)).beginDeleteKey(name);
+      await (<KeyClient>keyStore.getKeyStoreClient('key')).beginDeleteKey(name);
     }
   });
+
   it('should generate a key and secret', async () => {
     const name = 'ECDSA-sign-EC';
     const cache = new KeyStoreInMemory();
     const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
     const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
     try {
-      let list = await keyStore.list(false, new KeyStoreOptions({ latestVersion: false }));
+      let list = await keyStore.list('key', new KeyStoreOptions({ latestVersion: false }));
       const versions = list[name];
       const plugin = new KeyVaultEcdsaProvider(subtle, keyStore);
 
       // Generate EC
       let keyPair: CryptoKeyPair = await plugin.onGenerateKey(alg, false, ['sign', 'verify']);
-      const jwk = await plugin.onExportKey('jwk', keyPair.publicKey);
-      list = await keyStore.list(false, new KeyStoreOptions({ latestVersion: false }));
+      //let jwk = await plugin.onExportKey('jwk', keyPair.publicKey);
+      list = await keyStore.list('key', new KeyStoreOptions({ latestVersion: false }));
       // problem: extrable is used to mark secret/key meaning we cannot extract a public key.
-      const jwk = (await keyStore.get(new KeyReference(name, false))).publi
+      const jwk = (await keyStore.get(new KeyReference(name, 'key'))).getKey();
       if (versions) {
         expect(list[name].kids.length).toEqual(versions.kids.length + 1);
       } else {
@@ -82,23 +83,23 @@ describe('KeyVaultPlugin', () => {
       expect(keyPair.publicKey.extractable).toEqual(true);
       expect(keyPair.publicKey.type).toEqual('public');
       expect(keyPair.publicKey.usages).toEqual(['sign', 'verify']);
-      let container = await keyStore.get(new KeyReference(name, false), new KeyStoreOptions({ latestVersion: false }));
+      let container = await keyStore.get(new KeyReference(name, 'key'), new KeyStoreOptions({ latestVersion: false }));
       expect(container.keys.length).toEqual(1);
 
       // Add new version
       (<any>jwk).kid = '#key2';
-      keyPair = await plugin.onGenerateKey(alg, true, ['sign']);
+      keyPair = await plugin.onGenerateKey(alg, false, ['sign']);
 
-      list = await keyStore.list(false, new KeyStoreOptions({ latestVersion: false }));
+      list = await keyStore.list('key', new KeyStoreOptions({ latestVersion: false }));
       if (versions) {
         expect(list[name].kids.length).toEqual(versions.kids.length + 2);
       } else {
         expect(list[name].kids.length).toEqual(2);
       }
-      container = await keyStore.get(new KeyReference(name, false), new KeyStoreOptions({ latestVersion: false }));
+      container = await keyStore.get(new KeyReference(name, 'key'), new KeyStoreOptions({ latestVersion: false }));
       expect(container.keys.length).toEqual(2);
     } finally {
-      await (<KeyClient>keyStore.getKeyStoreClient(false)).beginDeleteKey(name);
+      await (<KeyClient>keyStore.getKeyStoreClient('key')).beginDeleteKey(name);
     }
   });
 
@@ -128,7 +129,7 @@ describe('KeyVaultPlugin', () => {
       expect(result).toBeTruthy();
       expect((await cache.list())[name]).toBeUndefined();
     } finally {
-      await (<KeyClient>keyStore.getKeyStoreClient(false)).beginDeleteKey(name);
+      await (<KeyClient>keyStore.getKeyStoreClient('key')).beginDeleteKey(name);
     }
   });
 });
@@ -154,7 +155,7 @@ describe('rsa-oaep', () => {
       expect(Buffer.from(decrypt)).toEqual(payload);
       expect((await cache.list())[name]).toBeUndefined();
     } finally {
-      await (<KeyClient>keyStore.getKeyStoreClient(false)).beginDeleteKey(name);
+      await (<KeyClient>keyStore.getKeyStoreClient('key')).beginDeleteKey(name);
     }
   });
 });

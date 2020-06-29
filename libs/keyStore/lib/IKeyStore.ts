@@ -53,5 +53,5 @@ export default interface IKeyStore {
    * Lists all key references with their corresponding key ids
    * @param [options] Options for listing.
    */
-  list (extracable?: boolean, options?: KeyStoreOptions): Promise<{ [name: string]: KeyStoreListItem }>;
+  list (type?: string, options?: KeyStoreOptions): Promise<{ [name: string]: KeyStoreListItem }>;
 }
