@@ -13,9 +13,8 @@ export default class CryptoBuilder {
   private _cryptoFactory: CryptoFactory = new CryptoFactory(this.keyStore, this.subtle);
 
   private _payloadProtectionProtocol: IPayloadProtectionSigning = new JoseBuilder(this.build()).build();
-  private _signingKeyReference: string | undefined;
+  private _signingKeyReference: KeyReference | undefined;
   private _signingKeyOptions: KeyStoreOptions = { 
-    extractable: false,    // use keys on key vault
     publicKeyOnly: false,  // get private key, key vault only returns public key
     latestVersion: true    // take last version of the key
   };
@@ -29,9 +28,20 @@ export default class CryptoBuilder {
   }
 
   /**
+   * True is the signing key can be extracted from the key store
+   */
+  public get signingKeyIsExtractable(): boolean {
+    if (this._signingKeyReference) {
+      return this._signingKeyReference.type === 'secret';
+    } else {
+      return true;
+    }
+  }
+
+  /**
    * Get the reference in the key store to the signing key
    */
-  public get signingKeyReference(): string | KeyReference | undefined {
+  public get signingKeyReference(): KeyReference | undefined {
     return this._signingKeyReference;
   }
 
@@ -46,9 +56,8 @@ export default class CryptoBuilder {
    * Set the reference in the key store to the signing key
    */
   public  useSigningKeyReference(
-    signingKeyReference: string, 
+    signingKeyReference: KeyReference, 
     options: KeyStoreOptions = { 
-      extractable: false,    // use keys on key vault
       publicKeyOnly: false,  // get private key, key vault only returns public key
       latestVersion: true    // take last version of the key
     } ): CryptoBuilder {

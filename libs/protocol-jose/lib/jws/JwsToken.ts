@@ -350,8 +350,6 @@ export default class JwsToken implements IJwsGeneralJson {
   ): Promise<JwsToken> {
     const keyStore: IKeyStore = this.getKeyStore(options);
     const cryptoFactory: CryptoFactory = this.getCryptoFactory(options);
-    const keyReferenceInStore = typeof signingKeyReference === 'object' ? signingKeyReference.keyReference : signingKeyReference;
-    const extractable = typeof signingKeyReference === 'object' ? signingKeyReference.type === 'secret' : true;
 
     // tslint:disable-next-line:no-suspicious-comment
     // TODO support for multiple signatures
@@ -361,7 +359,7 @@ export default class JwsToken implements IJwsGeneralJson {
     const jwsToken = new JwsToken(this.options);
 
     // Get signing key public key
-    const jwk: PublicKey = (await keyStore.get(new KeyReference(keyReferenceInStore), new KeyStoreOptions({publicKeyOnly: true, extractable}))).getKey<PublicKey>();
+    const jwk: PublicKey = (await keyStore.get(signingKeyReference, new KeyStoreOptions({publicKeyOnly: true}))).getKey<PublicKey>();
     const jwaAlgorithm: string = jwk.alg || JoseConstants.DefaultSigningAlgorithm;
     const algorithm: CryptoAlgorithm = CryptoHelpers.jwaToWebCrypto(jwaAlgorithm);
 

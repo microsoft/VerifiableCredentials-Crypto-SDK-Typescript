@@ -5,7 +5,7 @@
 
 import { JwsToken, JoseConstants, IJwsSigningOptions, JoseProtocol } from '../lib/index'
 import { IPayloadProtectionOptions } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
-import { KeyStoreInMemory, ProtectionFormat, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { KeyStoreInMemory, ProtectionFormat, KeyReference, KeyStoreOptions } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { CryptoFactory, SubtleCryptoNode, SubtleCryptoExtension } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import { OctKey, PublicKey, KeyContainer } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import { TSMap } from "typescript-map";
@@ -118,7 +118,7 @@ describe('JwsToken', () => {
     expect(deserialized.get(JoseConstants.tokenPayload)).toEqual(signature.get(JoseConstants.tokenPayload));
 
     // validate
-    const publicKeyContainer = (await keyStore.get(new KeyReference('key'))).getKey<PublicKey>();
+    const publicKeyContainer = (await keyStore.get(new KeyReference('key'), new KeyStoreOptions({publicKeyOnly: true}))).getKey<PublicKey>();
     const result = await options.payloadProtection.verify([publicKeyContainer], Buffer.from(payload), signature, options);
     expect(result.result).toBeTruthy();
 
@@ -194,7 +194,7 @@ describe('JwsToken', () => {
       expect(deserialized.get(JoseConstants.tokenPayload)).toEqual(signature.get(JoseConstants.tokenPayload));
   
       // validate
-      const publicKeyContainer = (await keyStore.get(new KeyReference('key'))).getKey<PublicKey>();
+      const publicKeyContainer = (await keyStore.get(new KeyReference('key'), new KeyStoreOptions({publicKeyOnly: true}))).getKey<PublicKey>();
       const result = await options.payloadProtection.verify([publicKeyContainer], Buffer.from(payload), signature, options);
       expect(result.result).toBeTruthy();
   

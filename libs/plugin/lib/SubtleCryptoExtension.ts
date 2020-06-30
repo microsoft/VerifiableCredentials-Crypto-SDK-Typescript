@@ -42,16 +42,21 @@ export default class SubtleCryptoExtension extends Subtle implements ISubtleCryp
    * @returns The signature in the requested algorithm
    */
   public async signByKeyStore(algorithm: CryptoAlgorithm, keyReference: KeyReference, data: BufferSource): Promise<ArrayBuffer> {
-    const keyReferenceInStore = typeof keyReference === 'object' ? keyReference.keyReference : keyReference;
-    const keyType = typeof keyReference === 'object' ? keyReference.type : 'key';
+    let key: CryptoKey;
+    let crypto: Subtle;
+    if (keyReference.cryptoKey) {
+      crypto = CryptoHelpers.getSubtleCryptoForAlgorithm(this.cryptoFactory, algorithm, CryptoFactoryScope.Private);
+      key = keyReference.cryptoKey;
+    } else {
+      let jwk: PrivateKey = (await <Promise<IKeyContainer>>this.keyStore.get(keyReference)).getKey<PrivateKey>();
 
-    let jwk: PrivateKey = (await <Promise<IKeyContainer>>this.keyStore.get(new KeyReference(keyReferenceInStore, keyType), { publicKeyOnly: false})).getKey<PrivateKey>();
+      crypto = CryptoHelpers.getSubtleCryptoForAlgorithm(this.cryptoFactory, algorithm, CryptoFactoryScope.Private);
+      const keyImportAlgorithm: any = CryptoHelpers.getKeyImportAlgorithm(algorithm, jwk);
+  
+      key = await crypto.importKey('jwk', jwk, keyImportAlgorithm, true, ['sign']);
+    }
 
-    const crypto: Subtle = CryptoHelpers.getSubtleCryptoForAlgorithm(this.cryptoFactory, algorithm, CryptoFactoryScope.Private);
-    const keyImportAlgorithm: any = CryptoHelpers.getKeyImportAlgorithm(algorithm, jwk);
-
-    const key = await crypto.importKey('jwk', jwk, keyImportAlgorithm, true, ['sign']);
-    const signature = await <PromiseLike<ArrayBuffer>>crypto.sign(jwk.kty === KeyType.EC || jwk.kty === KeyType.OKP ? <EcdsaParams>algorithm : <RsaPssParams>algorithm,
+    const signature = await <PromiseLike<ArrayBuffer>>crypto.sign(<any>algorithm,
       key,
       <ArrayBuffer>data);
 

@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ClientSecretCredential } from '@azure/identity';
-import { JoseBuilder, CryptoBuilder, IPayloadProtectionSigning, CryptographicKey, ProtectionFormat, Jose, KeyUse, KeyStoreOptions, JsonWebKey } from '../lib/index';
+import { JoseBuilder, CryptoBuilder, IPayloadProtectionSigning, CryptographicKey, ProtectionFormat, Jose, KeyUse, KeyStoreOptions, JsonWebKey, KeyReference } from '../lib/index';
 import Credentials from './Credentials';
 
 describe('Jose', () => {
@@ -18,7 +18,7 @@ describe('Jose', () => {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
     });
     const cryptoNode = new CryptoBuilder()
-        .useSigningKeyReference('neo', new KeyStoreOptions({ extractable: true }))
+        .useSigningKeyReference(new KeyReference('neo', 'key'))
         .build();
 
     // Loop through these crypto factories. If no credentials for Key Vault are present, we skip key vault
@@ -30,7 +30,7 @@ describe('Jose', () => {
 
         const cryptoKeyVault = new CryptoBuilder()
             .useKeyVault(credentials, Credentials.vaultUri)
-            .useSigningKeyReference('neo')
+            .useSigningKeyReference(new KeyReference('neo'))
             .build();
         factories= [cryptoKeyVault, cryptoNode];
     }
@@ -64,7 +64,7 @@ describe('Jose', () => {
 
             jose = await jose.sign(payload);
 
-            const jwkPublic = (await crypto.builder.keyStore.get('neo', new KeyStoreOptions({publicKeyOnly: true}))).getKey<JsonWebKey>();
+            const jwkPublic = (await crypto.builder.keyStore.get(new KeyReference('neo'), new KeyStoreOptions({publicKeyOnly: true}))).getKey<JsonWebKey>();
 
             const validated = await jose.verify([jwkPublic]);
             expect(validated).toBeTruthy();

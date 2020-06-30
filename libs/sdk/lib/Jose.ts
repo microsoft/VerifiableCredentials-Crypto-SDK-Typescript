@@ -35,9 +35,7 @@ export default class Jose implements IPayloadProtectionSigning {
     const token: JwsToken = new JwsToken(jwsOptions);
     const protectionFormat = Jose.getProtectionFormat(this.builder.serializationFormat);
 
-    this._token = await token.sign(
-      new KeyReference({keyReference: this.builder.crypto.builder.signingKeyReference!, extractable: this.builder.crypto.builder.signingKeyOptions.extractable!}),
-      <Buffer>payload, protectionFormat);
+    this._token = await token.sign(this.builder.crypto.builder.signingKeyReference!, <Buffer>payload, protectionFormat);
     return this;
   }
 

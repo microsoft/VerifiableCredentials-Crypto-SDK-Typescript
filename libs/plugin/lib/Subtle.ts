@@ -37,6 +37,15 @@ export default class Subtle extends SubtleCrypto {
             if (curve === CURVE_P256K || curve === CURVE_SECP256K1) {
                 const alg = clone(algorithm);
                 alg.namedCurve = CURVE_K256;
+                algorithm = alg;
+            }
+        }
+
+        if (algorithm.crv) {
+            const curve = (<string>algorithm.crv).toUpperCase();
+            if (curve === CURVE_P256K || curve === CURVE_SECP256K1) {
+                const alg = clone(algorithm);
+                alg.crv = CURVE_K256;
                 return alg;
             }
         }

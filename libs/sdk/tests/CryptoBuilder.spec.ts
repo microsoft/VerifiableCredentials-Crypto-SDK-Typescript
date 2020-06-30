@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CryptoBuilder, CryptoFactory, KeyStoreFactory, Subtle, KeyUse, KeyStoreOptions } from '../lib/index';
+import { CryptoBuilder, CryptoFactory, KeyStoreFactory, Subtle, KeyUse, KeyStoreOptions, KeyReference } from '../lib/index';
 import { ClientSecretCredential } from '@azure/identity';
 
 describe('CryptoBuilder', () => {
@@ -28,9 +28,9 @@ describe('CryptoBuilder', () => {
         builder = builder.useKeyVault(credential, vault);
         expect(builder.cryptoFactory.keyStore.constructor.name).toEqual('KeyStoreKeyVault');
 
-        builder = builder.useSigningKeyReference('signing');
-        expect(builder.signingKeyReference).toEqual('signing');
-        expect(builder.signingKeyOptions.extractable).toBeFalsy();
+        builder = builder.useSigningKeyReference(new KeyReference('signing', 'key'));
+        expect(builder.signingKeyReference?.keyReference).toEqual('signing');
+        expect(builder.signingKeyIsExtractable).toBeFalsy();
         expect(builder.signingKeyOptions.latestVersion).toBeTruthy();
         expect(builder.signingKeyOptions.publicKeyOnly).toBeFalsy();
 
@@ -41,7 +41,7 @@ describe('CryptoBuilder', () => {
 
     it('should generate a signing key', async () => {
         let crypto = new CryptoBuilder()
-            .useSigningKeyReference('signingKey', new KeyStoreOptions({ extractable: true }))
+            .useSigningKeyReference(new KeyReference('signingKey'))
             .useSigningAlgorithm('Rs256')
             .build();
         crypto = await crypto.generateKey(KeyUse.Signature);

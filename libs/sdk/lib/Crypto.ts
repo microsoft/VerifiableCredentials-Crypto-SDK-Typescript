@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { KeyReference, CryptoBuilder, KeyUse, CryptoHelpers, CryptoFactoryScope, JsonWebKey } from './index';
+import { KeyReference, CryptoBuilder, KeyUse, CryptoHelpers, CryptoFactoryScope, JsonWebKey, KeyContainer } from './index';
 import { CryptoKey } from 'webcrypto-core';
 
 /**
@@ -30,11 +30,10 @@ export default class Crypto {
 
       this.signingKey = await subtle.generateKey(
         algorithm,
-        this.builder.signingKeyOptions.extractable!,
+        this.builder.signingKeyIsExtractable,
         ['sign', 'verify'],
         {
           name: this.builder.signingKeyReference,
-          extractable: this.builder.signingKeyOptions.extractable,
           latestVersion: this.builder.signingKeyOptions.latestVersion
         });
 
@@ -43,16 +42,16 @@ export default class Crypto {
       if ((<CryptoKeyPair>this.signingKey).privateKey) {
         jwk = <JsonWebKey>await subtle.exportKey('jwk', (<CryptoKeyPair>this.signingKey).privateKey);
       } else if ((<CryptoKeyPair>this.signingKey).publicKey) {
-        // the key is externally generated and already on the key store
-        return this;
+        this.builder.signingKeyReference!.cryptoKey = (<CryptoKeyPair>this.signingKey).publicKey;
+        jwk = <JsonWebKey>await subtle.exportKey('jwk', (<CryptoKeyPair>this.signingKey).publicKey);
       } else {
-        if (!this.builder.signingKeyOptions.extractable!) {
+        if (!this.builder.signingKeyIsExtractable) {
           return this;
         }
         jwk = <JsonWebKey>await subtle.exportKey('jwk', <CryptoKey>this.signingKey);
       }
 
-      await this.builder.keyStore.save(this.builder.signingKeyReference!, jwk);
+      await this.builder.keyStore.save(this.builder.signingKeyReference!, new KeyContainer(jwk));
       return this;
 
     } else {
