@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { KeyClient, JsonWebKey, KeyType } from '@azure/keyvault-keys';
-import { Subtle } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
+import { Subtle, IKeyGenerationOptions } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import { ProviderCrypto, CryptoKey } from 'webcrypto-core';
 import { IKeyStore, KeyStoreOptions } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import KeyStoreKeyVault from '../keyStore/KeyStoreKeyVault';
@@ -31,14 +31,14 @@ export default abstract class KeyVaultProvider extends ProviderCrypto {
    * @param extractable is true if the key is exportable
    * @param keyUsages sign or verify
    */
-  async generate(kty: KeyType, algorithm: Algorithm, _extractable: boolean, keyUsages: KeyUsage[], options?: any): Promise<object> {
+  async generate(kty: KeyType, algorithm: Algorithm, _extractable: boolean, keyUsages: KeyUsage[], options?: IKeyGenerationOptions): Promise<object> {
     let name: string = this.generateKeyName(algorithm, keyUsages, kty);
     if (options && options.name) {
       name = options.name.keyReference;
     }
 
     const client = <KeyClient>(<KeyStoreKeyVault>this.keyStore).getKeyStoreClient(KeyStoreKeyVault.KEYS);
-    const publicKey = await client.createKey(name, kty, options);
+    const publicKey = await client.createKey(name, kty, <any>options);
     return publicKey;
   }
 

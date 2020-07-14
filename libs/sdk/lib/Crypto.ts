@@ -33,8 +33,7 @@ export default class Crypto {
         this.builder.signingKeyIsExtractable,
         ['sign', 'verify'],
         {
-          name: this.builder.signingKeyReference,
-          latestVersion: this.builder.signingKeyOptions.latestVersion
+          name: this.builder.signingKeyReference
         });
 
       // export key
@@ -44,6 +43,7 @@ export default class Crypto {
       } else if ((<CryptoKeyPair>this.signingKey).publicKey) {
         this.builder.signingKeyReference!.cryptoKey = (<CryptoKeyPair>this.signingKey).publicKey;
         jwk = <JsonWebKey>await subtle.exportKey('jwk', (<CryptoKeyPair>this.signingKey).publicKey);
+        //return this;
       } else {
         if (!this.builder.signingKeyIsExtractable) {
           return this;
@@ -51,7 +51,7 @@ export default class Crypto {
         jwk = <JsonWebKey>await subtle.exportKey('jwk', <CryptoKey>this.signingKey);
       }
 
-      await this.builder.keyStore.save(this.builder.signingKeyReference!, new KeyContainer(jwk));
+      await this.builder.keyStore.save(this.builder.signingKeyReference!,jwk);
       return this;
 
     } else {

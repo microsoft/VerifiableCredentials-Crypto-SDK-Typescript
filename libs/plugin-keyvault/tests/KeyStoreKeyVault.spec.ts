@@ -50,7 +50,7 @@ describe('KeyStoreKeyVault', () => {
     const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
     try {
       const provider = new KeyVaultEcdsaProvider(subtle, keyStore);
-      await provider.onGenerateKey(alg, false, ['sign'], { name });
+      await provider.onGenerateKey(alg, false, ['sign'], { name: new KeyReference(name) });
       let list = await keyStore.list('key', new KeyStoreOptions({ latestVersion: false }));
       expect(list[name]).toBeDefined();
       const key = await keyStore.get(new KeyReference(name, 'key'), new KeyStoreOptions({latestVersion: false }));
@@ -69,7 +69,7 @@ describe('KeyStoreKeyVault', () => {
     let versionsCount = list[name] ? list[name].kids.length + 1 : 1;
     try {
       const provider = new KeyVaultEcdsaProvider(subtle, keyStore);
-      await provider.onGenerateKey(alg, false, ['sign'], { name });
+      await provider.onGenerateKey(alg, false, ['sign'], { name: new KeyReference(name) });
       let list = await keyStore.list('key', new KeyStoreOptions({ latestVersion: false }));
       expect(list[name].kids.length).toEqual(versionsCount);
     } finally {

@@ -115,7 +115,7 @@ describe('KeyVaultPlugin', () => {
       console.log(payload);
 
       // import reference key
-      let keyPair: any = await plugin.onGenerateKey(alg, false, ['sign'], { name });
+      let keyPair: any = await plugin.onGenerateKey(alg, false, ['sign'], { name: new KeyReference(name) });
       expect(keyPair.publicKey).toBeDefined();
       const signature = await plugin.onSign(alg, keyPair.publicKey, payload);
       console.log(keyPair.publicKey);

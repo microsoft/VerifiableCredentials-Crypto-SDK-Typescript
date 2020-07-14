@@ -18,7 +18,7 @@ describe('Jose', () => {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
     });
     const cryptoNode = new CryptoBuilder()
-        .useSigningKeyReference(new KeyReference('neo', 'key'))
+        .useSigningKeyReference(new KeyReference('neo'))
         .build();
 
     // Loop through these crypto factories. If no credentials for Key Vault are present, we skip key vault
@@ -30,7 +30,7 @@ describe('Jose', () => {
 
         const cryptoKeyVault = new CryptoBuilder()
             .useKeyVault(credentials, Credentials.vaultUri)
-            .useSigningKeyReference(new KeyReference('neo'))
+            .useSigningKeyReference(new KeyReference('neo', 'key'))
             .build();
         factories= [cryptoKeyVault, cryptoNode];
     }
@@ -49,7 +49,7 @@ describe('Jose', () => {
 
     });
     
-    fit('should sign and verify', async () => {
+    it('should sign and verify', async () => {
         const payload = Buffer.from('The only way you can survive is to spread to another area. There is another organism on this planet that follows the same pattern. Do you know what it is? A virus. Human beings are a disease. A cancer of this planet.');
 
         for (let inx = 0; inx < factories.length; inx++) {
@@ -64,7 +64,7 @@ describe('Jose', () => {
 
             jose = await jose.sign(payload);
 
-            const jwkPublic = (await crypto.builder.keyStore.get(new KeyReference('neo'), new KeyStoreOptions({publicKeyOnly: true}))).getKey<JsonWebKey>();
+            const jwkPublic = (await crypto.builder.keyStore.get(crypto.builder.signingKeyReference!, new KeyStoreOptions({publicKeyOnly: true}))).getKey<JsonWebKey>();
 
             const validated = await jose.verify([jwkPublic]);
             expect(validated).toBeTruthy();

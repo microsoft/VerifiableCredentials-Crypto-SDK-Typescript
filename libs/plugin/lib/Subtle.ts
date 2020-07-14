@@ -5,6 +5,7 @@
 
  import {  CryptoKey } from 'webcrypto-core';
 import { SubtleCrypto } from 'webcrypto-core';
+import { KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 
 const { Crypto } = require("@peculiar/webcrypto");
 const clone = require('clone');
@@ -14,6 +15,17 @@ const CURVE_P256K = 'P-256K';
 const CURVE_K256 = 'K-256';
 const CURVE_SECP256K1 = 'SECP256K1';
 
+export interface IKeyGenerationOptions {
+    /**
+     * Specify the reference of the key
+     */
+    name?: KeyReference,
+
+    /**
+     * Specify the curve for the key to generate
+     */
+    curve?: string
+}
 
 /**
  * Wrapper class for W3C subtle crypto.
@@ -95,7 +107,7 @@ export default class Subtle extends SubtleCrypto {
     }
 
 
-    public async generateKey(algorithm: Algorithm, extractable: boolean, keyUsages: KeyUsage[], _options?: any): Promise<CryptoKeyPair | CryptoKey> {
+    public async generateKey(algorithm: Algorithm, extractable: boolean, keyUsages: KeyUsage[], _options?: IKeyGenerationOptions): Promise<CryptoKeyPair | CryptoKey> {
         algorithm = this.algorithmTransform(algorithm);
         const result = await this.subtle.generateKey(algorithm, extractable, keyUsages);
 

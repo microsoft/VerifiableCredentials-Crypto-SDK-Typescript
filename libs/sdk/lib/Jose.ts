@@ -7,8 +7,6 @@ import { IJwsSigningOptions, JwsToken, ProtectionFormat } from 'verifiablecreden
 import { IPayloadProtectionSigning, CryptoProtocolError, IProtocolCryptoToken } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
 import { PublicKey, JoseConstants } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import { JoseBuilder } from './index';
-import { JoseToken } from 'verifiablecredentials-crypto-sdk-typescript-protocol-jose';
-import { KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 
 export default class Jose implements IPayloadProtectionSigning {
 

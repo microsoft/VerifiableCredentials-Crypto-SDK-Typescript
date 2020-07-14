@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import base64url from 'base64url';
-import { Subtle } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
+import { Subtle, IKeyGenerationOptions } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import { CryptoKey } from 'webcrypto-core';
 import KeyVaultProvider from './KeyVaultProvider';
 import KeyStoreKeyVault from '../keyStore/KeyStoreKeyVault';
@@ -65,7 +65,7 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
    * @param extractable is true if the key is exportable
    * @param keyUsages sign or verify
    */
-  async onGenerateKey(algorithm: EcKeyGenParams, extractable: boolean, keyUsages: KeyUsage[], options?: any): Promise<CryptoKeyPair> {
+  async onGenerateKey(algorithm: EcKeyGenParams, extractable: boolean, keyUsages: KeyUsage[], options?: IKeyGenerationOptions): Promise<CryptoKeyPair> {
     if (!options) {
       options = { curve: 'SECP256K1' }
     } else {
