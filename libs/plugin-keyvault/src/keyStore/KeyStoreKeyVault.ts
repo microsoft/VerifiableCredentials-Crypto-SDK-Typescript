@@ -166,12 +166,14 @@ export default class KeyStoreKeyVault implements IKeyStore {
         const serialKey = JSON.stringify(key);
         await secretClient.setSecret(keyReference.keyReference, serialKey);
       } else {
-        await secretClient.setSecret(keyReference.keyReference, <string>key);
+        key = new OctKey(base64url.encode(<string>key));
+        const serialKey = JSON.stringify(key);
+        await secretClient.setSecret(keyReference.keyReference, serialKey);
       }
 
     } else {
       const keyClient: KeyClient = <KeyClient>client;
-      const kvKey = KeyStoreKeyVault.toKeyVaultKey(<IKeyContainer>key);
+      const kvKey = KeyStoreKeyVault.toKeyVaultKey(<any>key);
 
       await keyClient.importKey(keyReference.keyReference, kvKey);
     }
@@ -222,26 +224,25 @@ export default class KeyStoreKeyVault implements IKeyStore {
    * Convert key container into a key vault compatible key
    * @param container to convert
    */
-  public static toKeyVaultKey(container: IKeyContainer): JsonWebKey {
-    const key: any = (<IKeyContainer>container).getKey<CryptographicKey>();
-    if (key.kty === KeyType.EC || key.kty === 'EC') {
+  public static toKeyVaultKey(key: JsonWebKey): JsonWebKey {
+    if (key.kty === KeyType.EC || (<any>key).kty === 'EC') {
       key.kty = 'EC';
-      key.x = new Uint8Array(base64url.toBuffer(key.x).buffer);
-      key.y = new Uint8Array(base64url.toBuffer(key.y).buffer);
+      key.x = new Uint8Array(base64url.toBuffer((<any>key).x).buffer);
+      key.y = new Uint8Array(base64url.toBuffer((<any>key).y).buffer);
       if (key.d) {
-        key.d = new Uint8Array(base64url.toBuffer(key.d).buffer);
+        key.d = new Uint8Array(base64url.toBuffer((<any>key).d).buffer);
       }
-    } else if (key.kty === KeyType.RSA || key.kty === 'RSA') {
+    } else if (key.kty === KeyType.RSA || (<any>key).kty === 'RSA') {
       key.kty = 'RSA'
-      key.e = new Uint8Array(base64url.toBuffer(key.e));
-      key.n = new Uint8Array(base64url.toBuffer(key.n));
+      key.e = new Uint8Array(base64url.toBuffer((<any>key).e));
+      key.n = new Uint8Array(base64url.toBuffer((<any>key).n));
       if (key.d) {
-        key.d = new Uint8Array(base64url.toBuffer(key.d));
-        key.p = new Uint8Array(base64url.toBuffer(key.p));
-        key.q = new Uint8Array(base64url.toBuffer(key.q));
-        key.dp = new Uint8Array(base64url.toBuffer(key.dp));
-        key.dq = new Uint8Array(base64url.toBuffer(key.dq));
-        key.qi = new Uint8Array(base64url.toBuffer(key.qi));
+        key.d = new Uint8Array(base64url.toBuffer((<any>key).d));
+        key.p = new Uint8Array(base64url.toBuffer((<any>key).p));
+        key.q = new Uint8Array(base64url.toBuffer((<any>key).q));
+        key.dp = new Uint8Array(base64url.toBuffer((<any>key).dp));
+        key.dq = new Uint8Array(base64url.toBuffer((<any>key).dq));
+        key.qi = new Uint8Array(base64url.toBuffer((<any>key).qi));
       }
     }
 

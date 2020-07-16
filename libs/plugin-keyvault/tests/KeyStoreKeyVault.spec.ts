@@ -12,7 +12,6 @@ import { KeyClient } from '@azure/keyvault-keys';
 import { SecretClient } from '@azure/keyvault-secrets';
 import { CryptoKey } from 'webcrypto-core';
 import Credentials from './Credentials';
-import KeyVaultRsaOaepProvider from '../src/plugin/KeyVaultRsaOaepProvider';
 
 // Sample config
 const tenantId = Credentials.tenantGuid;
@@ -50,7 +49,7 @@ describe('KeyStoreKeyVault', () => {
     const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
     try {
       const provider = new KeyVaultEcdsaProvider(subtle, keyStore);
-      await provider.onGenerateKey(alg, false, ['sign'], { name: new KeyReference(name) });
+      await provider.onGenerateKey(alg, false, ['sign'], { keyReference: new KeyReference(name) });
       let list = await keyStore.list('key', new KeyStoreOptions({ latestVersion: false }));
       expect(list[name]).toBeDefined();
       const key = await keyStore.get(new KeyReference(name, 'key'), new KeyStoreOptions({latestVersion: false }));
@@ -69,7 +68,7 @@ describe('KeyStoreKeyVault', () => {
     let versionsCount = list[name] ? list[name].kids.length + 1 : 1;
     try {
       const provider = new KeyVaultEcdsaProvider(subtle, keyStore);
-      await provider.onGenerateKey(alg, false, ['sign'], { name: new KeyReference(name) });
+      await provider.onGenerateKey(alg, false, ['sign'], { keyReference: new KeyReference(name) });
       let list = await keyStore.list('key', new KeyStoreOptions({ latestVersion: false }));
       expect(list[name].kids.length).toEqual(versionsCount);
     } finally {
@@ -131,13 +130,16 @@ describe('KeyStoreKeyVault', () => {
         hash: { name: "SHA-256" }
       }
 
-      const cryptoKey: any = <CryptoKey>await subtle.generateKey(alg, true, ['sign']);
+      const keyReference = new KeyReference(name, 'key');
+      const plugin = new KeyVaultEcdsaProvider(subtle, keyStore);
+
+      const cryptoKey: any = <CryptoKey>await subtle.generateKey(alg, true, ['sign'], {keyReference: new KeyReference(name)});
       const jwk: any = await subtle.exportKey('jwk', cryptoKey.privateKey);
       jwk.kid = name;
 
 
-      await keyStore.save(new KeyReference(name, 'key'), new KeyContainer(jwk), new KeyStoreOptions());
-      let container = await keyStore.get(new KeyReference(name, 'key'), new KeyStoreOptions({ extractable: false, latestVersion: false }));
+      await keyStore.save(keyReference, jwk, new KeyStoreOptions());
+      let container = await keyStore.get(keyReference, new KeyStoreOptions({ latestVersion: false }));
       expect(container.keys.length).toEqual(1);
       expect((await cache.list())[name]).toBeUndefined();
     } finally {
@@ -157,8 +159,8 @@ describe('KeyStoreKeyVault without credentials', () => {
       true,
       ["sign", "verify"]);
     let key = await subtle.exportKey('jwk', cryptokey.privateKey);
-    let container = new KeyContainer(<any>key);
-    let kvKey = KeyStoreKeyVault.toKeyVaultKey(container);
+
+    let kvKey = KeyStoreKeyVault.toKeyVaultKey(<any>key);
     expect(kvKey).toBeDefined();
 
     cryptokey = <CryptoKeyPair>await subtle.generateKey(
@@ -172,8 +174,7 @@ describe('KeyStoreKeyVault without credentials', () => {
       ["sign", "verify"]);
 
     key = await subtle.exportKey('jwk', cryptokey.privateKey);
-    container = new KeyContainer(<any>key);
-    kvKey = KeyStoreKeyVault.toKeyVaultKey(container);
+    kvKey = KeyStoreKeyVault.toKeyVaultKey(<any>key);
     expect(kvKey).toBeDefined();
   });
 });

@@ -19,7 +19,7 @@ export interface IKeyGenerationOptions {
     /**
      * Specify the reference of the key
      */
-    name?: KeyReference,
+    keyReference?: KeyReference,
 
     /**
      * Specify the curve for the key to generate

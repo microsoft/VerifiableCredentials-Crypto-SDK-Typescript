@@ -49,7 +49,7 @@ describe('Jose', () => {
 
     });
     
-    it('should sign and verify', async () => {
+    fit('should sign and verify', async () => {
         const payload = Buffer.from('The only way you can survive is to spread to another area. There is another organism on this planet that follows the same pattern. Do you know what it is? A virus. Human beings are a disease. A cancer of this planet.');
 
         for (let inx = 0; inx < factories.length; inx++) {

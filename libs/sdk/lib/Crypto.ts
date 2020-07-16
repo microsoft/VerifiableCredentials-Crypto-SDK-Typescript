@@ -33,7 +33,7 @@ export default class Crypto {
         this.builder.signingKeyIsExtractable,
         ['sign', 'verify'],
         {
-          name: this.builder.signingKeyReference
+          keyReference: this.builder.signingKeyReference
         });
 
       // export key
@@ -42,6 +42,7 @@ export default class Crypto {
         jwk = <JsonWebKey>await subtle.exportKey('jwk', (<CryptoKeyPair>this.signingKey).privateKey);
       } else if ((<CryptoKeyPair>this.signingKey).publicKey) {
         this.builder.signingKeyReference!.cryptoKey = (<CryptoKeyPair>this.signingKey).publicKey;
+        this.builder.keyStore.
         jwk = <JsonWebKey>await subtle.exportKey('jwk', (<CryptoKeyPair>this.signingKey).publicKey);
         //return this;
       } else {
