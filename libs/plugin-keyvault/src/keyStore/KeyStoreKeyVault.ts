@@ -7,10 +7,11 @@ import { ClientCertificateCredential, ClientSecretCredential, TokenCredential } 
 import { KeyClient, JsonWebKey, CryptographyClient } from '@azure/keyvault-keys';
 import { SecretClient } from '@azure/keyvault-secrets';
 import { KeyStoreOptions, IKeyStore, KeyStoreListItem, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
-import { RsaPublicKey, EcPublicKey, KeyType, OctKey, KeyContainer, IKeyContainer, CryptographicKey, EcPrivateKey, RsaPrivateKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
+import { RsaPublicKey, EcPublicKey, KeyType, OctKey, KeyContainer, CryptographicKey, EcPrivateKey, RsaPrivateKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import base64url from 'base64url';
-
-
+import KeyVaultProvider from '../plugin/KeyVaultProvider';
+const clone = require('clone');
+  
 /**
  * Key store class for accessing key vault
  */
@@ -18,7 +19,7 @@ export default class KeyStoreKeyVault implements IKeyStore {
 
   public static SECRETS = 'secret'
   public static KEYS = 'key';
-    
+
   private keyClient: KeyClient;
   private secretClient: SecretClient;
 
@@ -27,12 +28,12 @@ export default class KeyStoreKeyVault implements IKeyStore {
    * Create a new instance of @class KeyStoreKeyVault
    * @param credential TokenCredential intance.
    * @param vaultUri of the key vault endpoint
-   * @param defaultKeyStore Default IKeyStore implementation
+   * @param cache IKeyStore used as cache
    */
   constructor(
     private readonly credential: TokenCredential,
-    vaultUri: string,
-    private defaultKeyStore: IKeyStore
+    private vaultUri: string,
+    public cache: IKeyStore
   ) {
     this.keyClient = new KeyClient(vaultUri, this.credential);
     this.secretClient = new SecretClient(vaultUri, this.credential);
@@ -52,7 +53,7 @@ export default class KeyStoreKeyVault implements IKeyStore {
       // Get extractable secrets 
       // Check the cache first
       try {
-        //const cached = await this.defaultKeyStore.get(keyReference, options);
+        //const cached = await this.cache.get(keyReference, options);
         //return cached;
       } catch {
         // the key was not in the cache
@@ -140,7 +141,7 @@ export default class KeyStoreKeyVault implements IKeyStore {
 
       // cache the private key
       if (keyContainerItem && keyReference.type === KeyStoreKeyVault.SECRETS) {
-        await this.defaultKeyStore.save(keyReference, keyContainerItem);
+        await this.cache.save(keyReference, keyContainerItem);
       }
     }
 
@@ -174,8 +175,11 @@ export default class KeyStoreKeyVault implements IKeyStore {
     } else {
       const keyClient: KeyClient = <KeyClient>client;
       const kvKey = KeyStoreKeyVault.toKeyVaultKey(<any>key);
+      await keyClient.importKey(keyReference.keyReference, <any>kvKey);
 
-      await keyClient.importKey(keyReference.keyReference, kvKey);
+      // Save public key in cach
+      await this.cache.save(keyReference, key);
+      //keyReference.cryptoKey = KeyVaultProvider.toCryptoKey()
     }
   }
 
@@ -224,25 +228,27 @@ export default class KeyStoreKeyVault implements IKeyStore {
    * Convert key container into a key vault compatible key
    * @param container to convert
    */
-  public static toKeyVaultKey(key: JsonWebKey): JsonWebKey {
+  public static toKeyVaultKey(jwk: JsonWebKey): JsonWebKey {
+    const key = clone(jwk);
+
     if (key.kty === KeyType.EC || (<any>key).kty === 'EC') {
       key.kty = 'EC';
-      key.x = new Uint8Array(base64url.toBuffer((<any>key).x).buffer);
-      key.y = new Uint8Array(base64url.toBuffer((<any>key).y).buffer);
+      key.x = base64url.toBuffer((<any>key).x);
+      key.y = base64url.toBuffer((<any>key).y);
       if (key.d) {
-        key.d = new Uint8Array(base64url.toBuffer((<any>key).d).buffer);
+        key.d = base64url.toBuffer((<any>key).d);
       }
     } else if (key.kty === KeyType.RSA || (<any>key).kty === 'RSA') {
       key.kty = 'RSA'
-      key.e = new Uint8Array(base64url.toBuffer((<any>key).e));
-      key.n = new Uint8Array(base64url.toBuffer((<any>key).n));
+      key.e = base64url.toBuffer((<any>key).e);
+      key.n = base64url.toBuffer((<any>key).n);
       if (key.d) {
-        key.d = new Uint8Array(base64url.toBuffer((<any>key).d));
-        key.p = new Uint8Array(base64url.toBuffer((<any>key).p));
-        key.q = new Uint8Array(base64url.toBuffer((<any>key).q));
-        key.dp = new Uint8Array(base64url.toBuffer((<any>key).dp));
-        key.dq = new Uint8Array(base64url.toBuffer((<any>key).dq));
-        key.qi = new Uint8Array(base64url.toBuffer((<any>key).qi));
+        key.d = base64url.toBuffer((<any>key).d);
+        key.p = base64url.toBuffer((<any>key).p);
+        key.q = base64url.toBuffer((<any>key).q);
+        key.dp = base64url.toBuffer((<any>key).dp);
+        key.dq = base64url.toBuffer((<any>key).dq);
+        key.qi = base64url.toBuffer((<any>key).qi);
       }
     }
 

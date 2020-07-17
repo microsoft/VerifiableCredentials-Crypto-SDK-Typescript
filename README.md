@@ -41,7 +41,7 @@ The crypto SDK provides support for protecting payloads. The protocol support is
 __Supported protocols:__
 
 - [JSON Web Signature (JWS) - RFC 7515](https://tools.ietf.org/html/rfc7515).
-- [JSON Web Encryption (JWE) - RFC 7516](https://tools.ietf.org/html/rfc7516).
+- [JSON Web Encryption (JWE) - RFC 7516](https://tools.ietf.org/html/rfc7516) - experimental.
 - [JSON Web Key (JWK) - RFC 7517](https://tools.ietf.org/html/rfc7517).
 - [JSON Web Token (JWT) - RFC 7519. Only signed payloads](https://tools.ietf.org/html/rfc7519).
 

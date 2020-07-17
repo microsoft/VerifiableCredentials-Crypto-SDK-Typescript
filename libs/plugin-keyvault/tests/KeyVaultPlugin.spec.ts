@@ -8,8 +8,9 @@ import KeyVaultEcdsaProvider from '../src/plugin/KeyVaultEcdsaProvider';
 import KeyVaultRsaOaepProvider from '../src/plugin/KeyVaultRsaOaepProvider';
 import { KeyStoreOptions, KeyStoreInMemory, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { KeyClient } from '@azure/keyvault-keys';
-import { Subtle } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
+import { Subtle, CryptoFactoryScope } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import Credentials from './Credentials';
+import { KeyVaultProvider, CryptoFactoryKeyVault } from '../src';
 const clone = require('clone');
 
 // Sample config
@@ -123,16 +124,68 @@ describe('KeyVaultPlugin', () => {
       // Set verify key
       const webCryptoAlg = clone(alg);
       webCryptoAlg.namedCurve = 'K-256';
-      const jwk = await plugin.onExportKey('jwk', keyPair.publicKey);
+      const jwk = await (await cache.get(new KeyReference(name, 'key'), keyPair.publicKey)).getKey<JsonWebKey>();
       const cryptoKey = await subtle.importKey('jwk', jwk, webCryptoAlg, true, ['verify']);
       const result = await subtle.verify(webCryptoAlg, cryptoKey, Buffer.from(signature), payload);
       expect(result).toBeTruthy();
-      expect((await cache.list())[name]).toBeUndefined();
+      expect((await cache.list())[name]).toBeDefined();
     } finally {
       await (<KeyClient>keyStore.getKeyStoreClient('key')).beginDeleteKey(name);
     }
   });
+
+
+  fit('should sign a message with imported key', async () => {
+   
+    const name = 'KvTest-KeyStorePlugin-' + Math.random().toString(10).substr(2);
+    const cache = new KeyStoreInMemory();
+    const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+    const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
+    try {
+      const plugin = new KeyVaultEcdsaProvider(subtle, keyStore);
+
+      const payload = Buffer.from('test');
+      console.log(payload);
+
+      // import reference key
+      const keyReference = new KeyReference(name, 'key');
+      let cryptoKey: any = <CryptoKey>await subtle.generateKey(alg, true, ['sign'], {keyReference});
+      let jwk: any = await subtle.exportKey('jwk', cryptoKey.privateKey);
+      jwk.kid = name;
+
+      await keyStore.save(keyReference, jwk, new KeyStoreOptions());
+      console.log(`Key saved in key store`);
+
+      const cachedPublic = await (await cache.get(keyReference)).getKey<JsonWebKey>();
+      cryptoKey = await subtle.importKey('jwk', cachedPublic, alg, false, ['sign', 'verify']);
+      const signature = await plugin.onSign(alg, cryptoKey, payload);
+
+      // Set verify key
+      const webCryptoAlg = clone(alg);
+      webCryptoAlg.namedCurve = 'K-256';
+      jwk = (await cache.get(new KeyReference(name, 'key'))).getKey<JsonWebKey>();
+      cryptoKey = await subtle.importKey('jwk', jwk, webCryptoAlg, true, ['verify']);
+      const result = await subtle.verify(webCryptoAlg, cryptoKey, Buffer.from(signature), payload);
+      expect(result).toBeTruthy();
+      expect((await cache.list())[name]).toBeDefined();
+    } finally {
+      await (<KeyClient>keyStore.getKeyStoreClient('key')).beginDeleteKey(name);
+    }
+  });
+
+  it('should create a key pair', async() => {
+    const key = {};
+    const cache = new KeyStoreInMemory();
+    const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+    const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
+    const pair = await KeyVaultProvider.toCryptoKeyPair(alg, true, ['verify'], key);
+    expect(pair.publicKey.algorithm).toEqual(alg);
+    expect(pair.publicKey.extractable).toBeTruthy;
+    expect(pair.publicKey.type).toEqual('public');
+    expect(pair.publicKey.usages).toEqual(['verify']);
+  });
 });
+
 describe('rsa-oaep', () => {
   const alg = { name: 'RSA-OAEP', hash: 'SHA-256', modulusLength: 2048, publicExponent: new Uint8Array([0x01, 0x00, 0x01]) };
   it('should decrypt a message', async () => {
@@ -153,7 +206,7 @@ describe('rsa-oaep', () => {
       // decrypt with key vault
       const decrypt = await plugin.onDecrypt(alg, keyPair.publicKey, cipher);
       expect(Buffer.from(decrypt)).toEqual(payload);
-      expect((await cache.list())[name]).toBeUndefined();
+      expect((await cache.list())[name]).toBeDefined();
     } finally {
       await (<KeyClient>keyStore.getKeyStoreClient('key')).beginDeleteKey(name);
     }

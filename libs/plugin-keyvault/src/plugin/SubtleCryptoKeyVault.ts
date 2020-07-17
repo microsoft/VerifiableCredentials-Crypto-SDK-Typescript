@@ -5,7 +5,7 @@
 
 import { SubtleCrypto } from 'webcrypto-core';
 import { IKeyStore } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
-import { ISubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
+import { ISubtleCrypto, IKeyGenerationOptions } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import KeyVaultEcdsaProvider from './KeyVaultEcdsaProvider';
 import KeyVaultRsaOaepProvider from './KeyVaultRsaOaepProvider';
 
@@ -13,26 +13,21 @@ import KeyVaultRsaOaepProvider from './KeyVaultRsaOaepProvider';
  * SubtleCrypto crypto class
  */
 export default class SubtleCryptoKeyVault extends SubtleCrypto implements ISubtleCrypto {
-  private static crypto: SubtleCrypto = new SubtleCrypto();
-/*
-  public checkRequiredArguments(args: IArguments, size: number, methodName: string) {
-    // ignore size from core implementation and use additional argument
 
-    switch (methodName) {
-      case "generateKey":
-        return super.checkRequiredArguments(args, 4, methodName); // +1 extra argument
-      default:
-        return super.checkRequiredArguments(args, size, methodName)
-    }
-  }
-*/
-  public async generateKey(algorithm: Algorithm, extractable: boolean, keyUsages: KeyUsage[], options?: any) {
+  /**
+   * Override generateKey to support additional options argument
+   * @param algorithm for key generation
+   * @param extractable True if key is extractable
+   * @param keyUsages For the key
+   * @param options Options used to define optional name
+   */
+  public async generateKey(algorithm: Algorithm, extractable: boolean, keyUsages: KeyUsage[], options?: IKeyGenerationOptions) {
     this.checkRequiredArguments(arguments, options ? 4 : 3, "generateKey");
     const preparedAlgorithm = this.prepareAlgorithm(algorithm);
     const provider: any = this.getProvider(preparedAlgorithm.name);
     const result = await provider.generateKey({ ...preparedAlgorithm, name: provider.name }, extractable, keyUsages, options);
     return result;
-}
+  }
 
   /**
    * Create a new instance of @class SubtleCryptoKeyVault

@@ -54,7 +54,7 @@ describe('KeyStoreKeyVault', () => {
       expect(list[name]).toBeDefined();
       const key = await keyStore.get(new KeyReference(name, 'key'), new KeyStoreOptions({latestVersion: false }));
       expect(key).toBeDefined();
-      expect((await cache.list())[name]).toBeUndefined();
+      expect((await cache.list())[name]).toBeDefined();
     } finally {
       await (<KeyClient>keyStore.getKeyStoreClient('key')).beginDeleteKey(name);
     }
@@ -111,12 +111,13 @@ describe('KeyStoreKeyVault', () => {
       let container = await keyStore.get(new KeyReference(name, 'secret'), new KeyStoreOptions({ latestVersion: false }));
       expect(container.keys.length).toEqual(1);
       expect((await cache.list())[name]).toBeDefined();
+
     } finally {
       await (<SecretClient>keyStore.getKeyStoreClient('secret')).beginDeleteSecret(name);
     }
   });
 
-  it('should return a non extractable key', async () => {
+  it('should import a non extractable key', async () => {
     const name = 'KvTest-KeyStoreKeyVault' + Math.random().toString(10).substr(2);
     const cache = new KeyStoreInMemory();
     const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
@@ -141,7 +142,7 @@ describe('KeyStoreKeyVault', () => {
       await keyStore.save(keyReference, jwk, new KeyStoreOptions());
       let container = await keyStore.get(keyReference, new KeyStoreOptions({ latestVersion: false }));
       expect(container.keys.length).toEqual(1);
-      expect((await cache.list())[name]).toBeUndefined();
+      expect((await cache.list())[name]).toBeDefined();
     } finally {
       await (<KeyClient>keyStore.getKeyStoreClient('key')).beginDeleteKey(name);
     }

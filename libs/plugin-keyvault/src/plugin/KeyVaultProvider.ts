@@ -31,7 +31,7 @@ export default abstract class KeyVaultProvider extends ProviderCrypto {
    * @param extractable is true if the key is exportable
    * @param keyUsages sign or verify
    */
-  async generate(kty: KeyType, algorithm: Algorithm, _extractable: boolean, keyUsages: KeyUsage[], options?: IKeyGenerationOptions): Promise<object> {
+  async generate(kty: KeyType, algorithm: Algorithm, _extractable: boolean, keyUsages: KeyUsage[], options?: IKeyGenerationOptions): Promise<[string, any]> {
     let name: string = this.generateKeyName(algorithm, keyUsages, kty);
     if (options && options.keyReference) {
       name = options.keyReference.keyReference;
@@ -39,7 +39,7 @@ export default abstract class KeyVaultProvider extends ProviderCrypto {
 
     const client = <KeyClient>(<KeyStoreKeyVault>this.keyStore).getKeyStoreClient(KeyStoreKeyVault.KEYS);
     const publicKey = await client.createKey(name, kty, <any>options);
-    return publicKey;
+    return [name, publicKey];
   }
 
   /**
@@ -59,7 +59,7 @@ export default abstract class KeyVaultProvider extends ProviderCrypto {
    * @param keyUsages sign or verify
    * @param key to convert
    */
-  public async toCryptoKey(algorithm: Algorithm, type: 'public' | 'private', extractable: boolean, keyUsages: KeyUsage[], key: any): Promise<CryptoKey> {
+  public static async toCryptoKey(algorithm: Algorithm, type: 'public' | 'private', extractable: boolean, keyUsages: KeyUsage[], key: any): Promise<CryptoKey> {
     const cryptoKey: any = CryptoKey.create(algorithm, type, extractable, keyUsages);
     cryptoKey.key = key;
     return cryptoKey;
@@ -72,8 +72,8 @@ export default abstract class KeyVaultProvider extends ProviderCrypto {
    * @param keyUsages sign or verify
    * @param key to convert
    */
-  public async toCryptoKeyPair(algorithm: Algorithm, extractable: boolean, keyUsages: KeyUsage[], key: any): Promise<CryptoKeyPair> {
-    const cryptoKey = await this.toCryptoKey(algorithm, 'public', extractable, keyUsages, key);
+  public static async toCryptoKeyPair(algorithm: Algorithm, extractable: boolean, keyUsages: KeyUsage[], key: any): Promise<CryptoKeyPair> {
+    const cryptoKey = await KeyVaultProvider.toCryptoKey(algorithm, 'public', extractable, keyUsages, key);
     const pair = {
       publicKey: cryptoKey
     };
