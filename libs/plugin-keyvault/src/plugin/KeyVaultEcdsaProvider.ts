@@ -8,8 +8,8 @@ import { Subtle, IKeyGenerationOptions } from 'verifiablecredentials-crypto-sdk-
 import { CryptoKey } from 'webcrypto-core';
 import KeyVaultProvider from './KeyVaultProvider';
 import KeyStoreKeyVault from '../keyStore/KeyStoreKeyVault';
-import { IKeyStore, CryptoError, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
-import { KeyClient } from '@azure/keyvault-keys';
+import { IKeyStore, CryptoError, KeyReference, KeyStoreOptions } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { JsonWebKey, IKeyContainer } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 
 /**
  * Wrapper class for key vault plugin
@@ -62,19 +62,59 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
    * Import jwk key. Return @class CryptoKey as the internal format of a key.
    * This method does not import any key material into key vault.
    * @param format must be 'jwk'
-   * @param key Key to export in jwk
+   * @param jwk Key to export in jwk
    * @param algorithm for key generation
    * @param extractable is true if the key is exportable
    * @param keyUsages sign or verify
    */
   async onImportKey(format: KeyFormat,
-    keyData: JsonWebKey, algorithm: EcKeyImportParams, _extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKey> {
+    jwk: JsonWebKey, _algorithm: EcKeyImportParams, _extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKey> {
 
     if (format !== 'jwk') {
       throw new Error(`Import key only supports jwk`);
     }
 
-    return this.subtle.importKey(format, keyData, algorithm, true, keyUsages);
+    if (jwk.kty?.toUpperCase() !== 'EC' ){
+      throw new Error(`Import key only supports kty EC`);
+    }
+
+    if (jwk.crv?.toUpperCase() !== 'SECP256K1'){
+      throw new Error(`Import key only supports crv SECP256K1`);
+    }
+
+    if (!jwk.kid && jwk.kid!.startsWith('https://')){
+      throw new Error(`Imported key must have a kid in the format https://<vault>/keys/<name>/<version>`);
+    }    
+
+    const kidParts = jwk.kid!.split('/');
+
+    if (kidParts[3] !== 'keys') {
+      throw new Error(`Imported key must be of type keys`);
+    }
+
+    if (kidParts.length <= 5 ) {      
+      const container: IKeyContainer = (await (<KeyStoreKeyVault>this.keyStore).get(new KeyReference(kidParts[4], KeyStoreKeyVault.KEYS), new KeyStoreOptions({latestVersion: true})));
+      const kvKey = container.getKey<JsonWebKey>();
+      jwk.kid = kvKey.kid;
+    }
+
+    const alg = <EcKeyAlgorithm>this.subtle.algorithmTransform({
+      name: "ECDSA",
+      namedCurve: "SECP256K1",
+    });
+
+    // convert key to crypto key
+    const cryptoKey: CryptoKey = await this.subtle.importKey(
+      'jwk',
+      jwk,
+      alg,
+      true,
+      keyUsages);
+
+    // need to keep track of kid. cryptoKey is not extensible
+    (<any>cryptoKey.algorithm).kid = jwk.kid;
+
+    return cryptoKey;
   }
 
   /**

@@ -37,6 +37,9 @@ export default class KeyStoreKeyVault implements IKeyStore {
   ) {
     this.keyClient = new KeyClient(vaultUri, this.credential);
     this.secretClient = new SecretClient(vaultUri, this.credential);
+    if (!this.vaultUri.endsWith('/')) {
+      this.vaultUri += '/';
+    }
   }
 
 
@@ -160,6 +163,14 @@ export default class KeyStoreKeyVault implements IKeyStore {
    * @param [options] Options for saving.
    */
   async save(keyReference: KeyReference, key: CryptographicKey | string, _options: KeyStoreOptions = new KeyStoreOptions()): Promise<void> {
+    if (!keyReference || !keyReference.keyReference) {
+      throw new Error(`Key reference needs to be specified`);
+    }
+
+    // add kid
+    const kid = `${this.vaultUri}${keyReference.type}s/${keyReference.keyReference}`;
+    (<any>key).kid = kid;
+
     const client = this.getKeyStoreClient(keyReference.type);
     if (keyReference.type === KeyStoreKeyVault.SECRETS) {
       const secretClient: SecretClient = <SecretClient>client;
@@ -175,7 +186,7 @@ export default class KeyStoreKeyVault implements IKeyStore {
     } else {
       const keyClient: KeyClient = <KeyClient>client;
       const kvKey = KeyStoreKeyVault.toKeyVaultKey(<any>key);
-      await keyClient.importKey(keyReference.keyReference, <any>kvKey);
+      const cryptoKey = await keyClient.importKey(keyReference.keyReference, <any>kvKey);
 
       // Save public key in cach
       await this.cache.save(keyReference, key);

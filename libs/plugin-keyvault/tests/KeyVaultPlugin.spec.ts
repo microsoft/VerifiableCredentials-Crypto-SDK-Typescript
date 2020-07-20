@@ -135,7 +135,7 @@ describe('KeyVaultPlugin', () => {
   });
 
 
-  fit('should sign a message with imported key', async () => {
+  it('should sign a message with imported key', async () => {
    
     const name = 'KvTest-KeyStorePlugin-' + Math.random().toString(10).substr(2);
     const cache = new KeyStoreInMemory();
@@ -157,15 +157,16 @@ describe('KeyVaultPlugin', () => {
       console.log(`Key saved in key store`);
 
       const cachedPublic = await (await cache.get(keyReference)).getKey<JsonWebKey>();
-      cryptoKey = await subtle.importKey('jwk', cachedPublic, alg, false, ['sign', 'verify']);
+
+      cryptoKey = await plugin.importKey('jwk', cachedPublic, alg, false, ['sign', 'verify']);
       const signature = await plugin.onSign(alg, cryptoKey, payload);
 
       // Set verify key
       const webCryptoAlg = clone(alg);
       webCryptoAlg.namedCurve = 'K-256';
-      jwk = (await cache.get(new KeyReference(name, 'key'))).getKey<JsonWebKey>();
+      jwk = (await cache.get(new KeyReference(name, 'key'), new KeyStoreOptions({publicKeyOnly: true}))).getKey<JsonWebKey>();
       cryptoKey = await subtle.importKey('jwk', jwk, webCryptoAlg, true, ['verify']);
-      const result = await subtle.verify(webCryptoAlg, cryptoKey, Buffer.from(signature), payload);
+      const result = await subtle.verify(webCryptoAlg, cryptoKey, signature, payload);
       expect(result).toBeTruthy();
       expect((await cache.list())[name]).toBeDefined();
     } finally {
