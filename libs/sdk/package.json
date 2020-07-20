@@ -39,6 +39,8 @@
   },
   "dependencies": {
     "@azure/identity": "1.0.0",
+    "@azure/keyvault-keys": "4.0.2",
+    "@azure/keyvault-secrets": "4.0.2",
     "verifiablecredentials-crypto-sdk-typescript-keys": "1.1.10-preview.0",
     "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.10-preview.0",
     "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.10-preview.0",

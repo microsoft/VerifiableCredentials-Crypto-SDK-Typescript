@@ -33,6 +33,8 @@ describe('Jose', () => {
             .useSigningKeyReference(new KeyReference('neo', 'key'))
             .build();
         factories= [cryptoKeyVault, cryptoNode];
+    } else {
+        console.log('Enter your key vault credentials in Credentials.ts to enable key vault testing')
     }
 
     it('should create a builder', () => {
@@ -49,7 +51,7 @@ describe('Jose', () => {
 
     });
     
-    fit('should sign and verify', async () => {
+    it('should sign and verify', async () => {
         const payload = Buffer.from('The only way you can survive is to spread to another area. There is another organism on this planet that follows the same pattern. Do you know what it is? A virus. Human beings are a disease. A cancer of this planet.');
 
         for (let inx = 0; inx < factories.length; inx++) {
