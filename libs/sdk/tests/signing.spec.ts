@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ClientSecretCredential } from '@azure/identity';
-import { CryptoFactoryManager, KeyStoreInMemory, Subtle, KeyStoreFactory, CryptoFactoryScope, KeyReference, JsonWebKey } from '../lib/index';
+import { CryptoFactoryManager, KeyStoreInMemory, Subtle, KeyStoreFactory, CryptoFactoryScope, KeyReference, JsonWebKey, CryptoFactory, CryptoFactoryNode, KeyType, KeyStoreOptions } from '../lib/index';
 import { KeyClient } from '@azure/keyvault-keys';
 import Credentials from './Credentials';
 
@@ -135,6 +135,71 @@ describe('signing', () => {
 
         // Create ECDSA signature. Reference subtleKv to use key on key vault.
         const signature = await subtleKv.sign(
+            <EcdsaParams>{
+                name: 'ECDSA',
+                hash: { name: 'SHA-256' }
+            },
+            key,
+            Buffer.from('Payload to sign'));
+
+        // Verify the signature on subtle               
+        const result = await subtle.verify(
+            <EcdsaParams>{
+                name: 'ECDSA',
+                hash: { name: 'SHA-256' }
+            },
+            key,
+            signature,
+            Buffer.from('Payload to sign'));
+        expect(result).toBeTruthy();
+    });
+
+    fit('should sign with secp256k1 imported secret on key vault', async () => {
+        
+        if (!keyVaultEnabled) {
+            console.log('This test only works on key vault');
+            return;
+        }
+
+        // preparation to generate key and import this one in key vault
+        const keyName = 'importedSecret';
+        const reference = new KeyReference(keyName, 'secret');
+
+        // Generate a secp256k1 key pair
+        const algorithm = <EcKeyGenParams>{
+            name: 'ECDSA',
+            namedCurve: 'secp256k1'
+        };
+
+        const keyPair: CryptoKeyPair = <CryptoKeyPair>await subtle.generateKey(
+            algorithm,
+            true,
+            ['sign', 'verify']);
+
+        const jwk = <JsonWebKey>await subtle.exportKey('jwk', keyPair.privateKey);
+
+        // Save key in key vault as a key vault secret
+        await keyStoreKeyVault.save(reference, jwk)
+
+        // Change Crypto factory
+        const factory = new CryptoFactoryNode(keyStoreKeyVault, subtle);
+
+        // Get the subtle api for private key operations
+        const subtlePrivate = factory.getMessageSigner('ECDSA', CryptoFactoryScope.Private);
+
+        // retrieve key from key vault
+        const kvJwk = (await keyStoreKeyVault.get(reference, new KeyStoreOptions({publicKeyOnly: false}))).getKey<JsonWebKey>();
+
+        // Get crypto key from JWK
+        const key = <CryptoKey>await subtlePrivate.importKey(
+            'jwk',
+            kvJwk,
+            algorithm,
+            true,
+            ['sign', 'verify']);
+
+        // Create ECDSA signature. Reference subtleKv to use key on key vault.
+        const signature = await subtlePrivate.sign(
             <EcdsaParams>{
                 name: 'ECDSA',
                 hash: { name: 'SHA-256' }

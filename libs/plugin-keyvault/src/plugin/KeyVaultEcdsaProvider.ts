@@ -87,13 +87,14 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
     }    
 
     const kidParts = jwk.kid!.split('/');
+    let secretType: boolean = kidParts[3] === 'secrets';
 
-    if (kidParts[3] !== 'keys') {
-      throw new Error(`Imported key must be of type keys`);
+    if (!['keys', 'secrets'].includes(kidParts[3]) ) {
+      throw new Error(`Imported key must be of type keys or secrets`);
     }
 
     if (kidParts.length <= 5 ) {      
-      const container: IKeyContainer = (await (<KeyStoreKeyVault>this.keyStore).get(new KeyReference(kidParts[4], KeyStoreKeyVault.KEYS), new KeyStoreOptions({latestVersion: true})));
+      const container: IKeyContainer = (await (<KeyStoreKeyVault>this.keyStore).get(new KeyReference(kidParts[4], secretType ? KeyStoreKeyVault.SECRETS : KeyStoreKeyVault.KEYS), new KeyStoreOptions({latestVersion: true})));
       const kvKey = container.getKey<JsonWebKey>();
       jwk.kid = kvKey.kid;
     }

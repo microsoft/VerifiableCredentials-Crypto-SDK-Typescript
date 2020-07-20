@@ -50,109 +50,115 @@ export default class KeyStoreKeyVault implements IKeyStore {
      * @param [options] Options for retrieving.
    */
   public async get(keyReference: KeyReference, options: KeyStoreOptions = new KeyStoreOptions({ extractable: false })): Promise<any> {
-    const client = this.getKeyStoreClient(keyReference.type);
-    const versionList: any[] = [];
-    if (keyReference.type === KeyStoreKeyVault.SECRETS) {
-      // Get extractable secrets 
-      // Check the cache first
-      try {
-        //const cached = await this.cache.get(keyReference, options);
-        //return cached;
-      } catch {
-        // the key was not in the cache
-        console.log(`${keyReference} not found in cache`)
-      }
-
-      const secretClient: SecretClient = <SecretClient>client;
-      if (options.latestVersion) {
-        const secret = await secretClient.getSecret(keyReference.keyReference);
-        (<any>secret).keyType = 'Oct';
+    try {
+      const client = this.getKeyStoreClient(keyReference.type);
+      const versionList: any[] = [];
+      if (keyReference.type === KeyStoreKeyVault.SECRETS) {
+        // Get extractable secrets 
+        // Check the cache first
         try {
-          secret.value = JSON.parse(<string>secret.value);
-          (<any>secret).keyType = (<any>secret.value).kty;
-        } catch (e) {
-          // no key container in secret
-          console.log(`parsing of latest version of key from keyvault failed: ${keyReference.keyReference}`);
+          //const cached = await this.cache.get(keyReference, options);
+          //return cached;
+        } catch {
+          // the key was not in the cache
+          console.log(`${keyReference} not found in cache`)
         }
-
-        versionList.push(secret);
-      } else {
-        for await (const keyProperties of secretClient.listPropertiesOfSecretVersions(keyReference.keyReference)) {
-          let secret = await secretClient.getSecret(keyReference.keyReference, { version: keyProperties.version! });
+  
+        const secretClient: SecretClient = <SecretClient>client;
+        if (options.latestVersion) {
+          const secret = await secretClient.getSecret(keyReference.keyReference);
           (<any>secret).keyType = 'Oct';
           try {
             secret.value = JSON.parse(<string>secret.value);
             (<any>secret).keyType = (<any>secret.value).kty;
-          } catch {
+          } catch (e) {
             // no key container in secret
-            console.log(`parsing of versions of key from keyvault failed: ${keyReference.keyReference}`);
+            console.log(`parsing of latest version of key from keyvault failed: ${keyReference.keyReference}`);
           }
-
+  
           versionList.push(secret);
+        } else {
+          for await (const keyProperties of secretClient.listPropertiesOfSecretVersions(keyReference.keyReference)) {
+            let secret = await secretClient.getSecret(keyReference.keyReference, { version: keyProperties.version! });
+            (<any>secret).keyType = 'Oct';
+            try {
+              secret.value = JSON.parse(<string>secret.value);
+              (<any>secret).keyType = (<any>secret.value).kty;
+            } catch {
+              // no key container in secret
+              console.log(`parsing of versions of key from keyvault failed: ${keyReference.keyReference}`);
+            }
+  
+            versionList.push(secret);
+          }
         }
-      }
-    } else {
-      // Get non extractable keys returning public keys
-      const keyClient: KeyClient = <KeyClient>client;
-      if (options.latestVersion) {
-        const key = await keyClient.getKey(keyReference.keyReference);
-        versionList.push(key);
       } else {
-        for await (const keyProperties of keyClient.listPropertiesOfKeyVersions(keyReference.keyReference)) {
-          const key = await keyClient.getKey(keyReference.keyReference, { version: keyProperties.version! });
+        // Get non extractable keys returning public keys
+        const keyClient: KeyClient = <KeyClient>client;
+        if (options.latestVersion) {
+          const key = await keyClient.getKey(keyReference.keyReference);
           versionList.push(key);
-        }
-      }
-    }
-
-    let container: KeyContainer | undefined = undefined;
-    let keyContainerItem: CryptographicKey | undefined;
-    for (let inx = versionList.length - 1; inx >= 0; inx--) {
-      const version = versionList[inx];
-      const kty = (<string>version.keyType).toLocaleUpperCase();
-      if (kty === 'OCT') {
-        const value = version.value;
-        keyContainerItem = new OctKey(value)
-        if (container) {
-          container.add(keyContainerItem);
         } else {
-          container = new KeyContainer(keyContainerItem);
-        }
-      } else {
-        if (keyReference.type === KeyStoreKeyVault.SECRETS) {
-          if (kty === 'EC') {
-            keyContainerItem = options.publicKeyOnly ?
-              new EcPublicKey(version.key ? version.key : version.value as any) : new EcPrivateKey(version.key ? version.key : version.value as any);
-          } else {
-            keyContainerItem = options.publicKeyOnly ?
-              new RsaPublicKey(version.key ? version.key : version.value as any) : new RsaPrivateKey(version.key ? version.key : version.value as any);
-          }
-        } else {
-          if (kty === 'EC') {
-            keyContainerItem = new EcPublicKey(version.key ? version.key : version.value as any);
-          } else {
-            keyContainerItem = new RsaPublicKey(version.key ? version.key : version.value as any);
+          for await (const keyProperties of keyClient.listPropertiesOfKeyVersions(keyReference.keyReference)) {
+            const key = await keyClient.getKey(keyReference.keyReference, { version: keyProperties.version! });
+            versionList.push(key);
           }
         }
-
-        if (container) {
-          container.add(keyContainerItem);
+      }
+  
+      let container: KeyContainer | undefined = undefined;
+      let keyContainerItem: CryptographicKey | undefined;
+      for (let inx = versionList.length - 1; inx >= 0; inx--) {
+        const version = versionList[inx];
+        const kty = (<string>version.keyType).toLocaleUpperCase();
+        if (kty === 'OCT') {
+          const value = version.value;
+          keyContainerItem = new OctKey(value)
+          if (container) {
+            container.add(keyContainerItem);
+          } else {
+            container = new KeyContainer(keyContainerItem);
+          }
         } else {
-          container = new KeyContainer(keyContainerItem);
+          if (keyReference.type === KeyStoreKeyVault.SECRETS) {
+            if (kty === 'EC') {
+              keyContainerItem = options.publicKeyOnly ?
+                new EcPublicKey(version.key ? version.key : version.value as any) : new EcPrivateKey(version.key ? version.key : version.value as any);
+            } else {
+              keyContainerItem = options.publicKeyOnly ?
+                new RsaPublicKey(version.key ? version.key : version.value as any) : new RsaPrivateKey(version.key ? version.key : version.value as any);
+            }
+          } else {
+            if (kty === 'EC') {
+              keyContainerItem = new EcPublicKey(version.key ? version.key : version.value as any);
+            } else {
+              keyContainerItem = new RsaPublicKey(version.key ? version.key : version.value as any);
+            }
+          }
+  
+          if (container) {
+            container.add(keyContainerItem);
+          } else {
+            container = new KeyContainer(keyContainerItem);
+          }
+        }
+  
+        // cache the private key
+        if (keyContainerItem && keyReference.type === KeyStoreKeyVault.SECRETS) {
+          await this.cache.save(keyReference, keyContainerItem);
         }
       }
-
-      // cache the private key
-      if (keyContainerItem && keyReference.type === KeyStoreKeyVault.SECRETS) {
-        await this.cache.save(keyReference, keyContainerItem);
+  
+      if (!container) {
+        throw new Error(`The secret with reference '${keyReference.keyReference}' has not usable secrets`);
       }
+  
+      return container;
+      } catch (e) {
+        console.error(`Could not retrieve ${JSON.stringify(keyReference)}. Error: ${e}`);
+        throw e;
     }
 
-    if (!container) {
-      throw new Error(`The secret with reference '${keyReference.keyReference}' has not usable secrets`);
-    }
-
-    return container;
   }
 
   /**
@@ -176,12 +182,14 @@ export default class KeyStoreKeyVault implements IKeyStore {
       if (typeof key === 'object') {
         (<any>key).kid = kid;
         const serialKey = JSON.stringify(key);
-        await secretClient.setSecret(keyReference.keyReference, serialKey);
+        const value = await secretClient.setSecret(keyReference.keyReference, serialKey);
+        //(<any>key).kid = value.properties.id;
       } else {
-        key = new OctKey(base64url.encode(<string>key));
         (<any>key).kid = kid;
+        key = new OctKey(base64url.encode(<string>key));
         const serialKey = JSON.stringify(key);
-        await secretClient.setSecret(keyReference.keyReference, serialKey);
+        const value = await secretClient.setSecret(keyReference.keyReference, serialKey);
+        //(<any>key).kid = value.properties.id;
       }
 
     } else {
