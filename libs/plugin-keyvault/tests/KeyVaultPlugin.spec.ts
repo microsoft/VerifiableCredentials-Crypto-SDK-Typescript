@@ -18,6 +18,7 @@ const tenantId = Credentials.tenantGuid;
 const clientId = Credentials.clientId;
 const clientSecret = encodeURI(Credentials.clientSecret);
 const vaultUri = Credentials.vaultUri;
+const keyVaultEnable = vaultUri.startsWith('https://');
 
 const subtle = new Subtle();
 // const random = (length: number) => Math.random().toString(36).substring(length);
@@ -41,6 +42,11 @@ afterEach(() => {
 });
 
 describe('KeyVaultPlugin', () => {
+  if (!keyVaultEnable) {
+    console.log('Key vault is enabled. Add your credentials to Credentials.ts')
+    return;
+  }
+
   const alg = { name: 'ECDSA', namedCurve: 'SECP256K1', hash: { name: 'SHA-256' } };
   it('should generate a key', async () => {
     const name = 'ECDSA-sign-EC';
@@ -188,6 +194,11 @@ describe('KeyVaultPlugin', () => {
 });
 
 describe('rsa-oaep', () => {
+  if (!keyVaultEnable) {
+    console.log('Key vault is enabled. Add your credentials to Credentials.ts')
+    return;
+  }
+
   const alg = { name: 'RSA-OAEP', hash: 'SHA-256', modulusLength: 2048, publicExponent: new Uint8Array([0x01, 0x00, 0x01]) };
   it('should decrypt a message', async () => {
     const name = 'RSA-OAEP-decrypt-RSA';

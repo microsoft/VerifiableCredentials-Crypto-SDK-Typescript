@@ -18,6 +18,7 @@ const tenantId = Credentials.tenantGuid;
 const clientId = Credentials.clientId;
 const clientSecret = encodeURI(Credentials.clientSecret);
 const vaultUri = Credentials.vaultUri;
+const keyVaultEnable = vaultUri.startsWith('https://');
 
 let originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
 const subtle: Subtle = new Subtle();
@@ -42,6 +43,11 @@ afterEach(() => {
 
 describe('KeyStoreKeyVault', () => {
   const alg = { name: 'ECDSA', namedCurve: 'SECP256K1', hash: { name: 'SHA-256' } };
+  if (!keyVaultEnable) {
+    console.log('Key vault is enabled. Add your credentials to Credentials.ts')
+    return;
+  }
+
   it('should list a named generated key', async () => {
     const name = 'KvTest-KeyStoreKeyVault' + Math.random().toString(10).substr(2);
     const cache = new KeyStoreInMemory();
