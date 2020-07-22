@@ -3,19 +3,21 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { ProtectionFormat } from 'verifiablecredentials-crypto-sdk-typescript-protocol-jose/lib';
-import { Crypto, Jose } from './index';
+import { Crypto, Jose, CryptoBuilder } from './index';
 
 /**
  * Builder class for the JOSE protocol
  */
 export default class JoseBuilder {
-  constructor(private _crypto: Crypto) {
+  constructor(crypto?: Crypto) {
+    this._crypto = crypto || this._crypto;
   }
 
   private _protectedHeader: object = {};
   private _unprotectedHeader: object = {};
   private _serializationFormat: string = ProtectionFormat.JwsCompactJson;
   private _jwtProtocol: object | undefined;
+  private _crypto: Crypto = new Crypto(new CryptoBuilder());
 
   /**
    * Gets the crypto object

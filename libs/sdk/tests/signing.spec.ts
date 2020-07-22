@@ -5,7 +5,6 @@
 
 import { ClientSecretCredential } from '@azure/identity';
 import { CryptoFactoryManager, KeyStoreInMemory, Subtle, KeyStoreFactory, CryptoFactoryScope, KeyReference, JsonWebKey, CryptoFactory, CryptoFactoryNode, KeyType, KeyStoreOptions } from '../lib/index';
-import { KeyClient } from '@azure/keyvault-keys';
 import Credentials from './Credentials';
 
 describe('signing', () => {
@@ -94,7 +93,7 @@ describe('signing', () => {
     it('should sign with secp256k1 imported key on key vault', async () => {
 
         if (!keyVaultEnabled) {
-            console.log('This test only works on key vault');
+            console.log('This test only works on key vault. Add your key vault credentials to Credentials.ts');
             return;
         }
 
@@ -157,7 +156,7 @@ describe('signing', () => {
     it('should sign with secp256k1 imported secret on key vault', async () => {
         
         if (!keyVaultEnabled) {
-            console.log('This test only works on key vault');
+            console.log('This test only works on key vault. Add your key vault credentials to Credentials.ts');
             return;
         }
 

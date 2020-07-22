@@ -43,7 +43,7 @@ __Supported protocols:__
 - [JSON Web Signature (JWS) - RFC 7515](https://tools.ietf.org/html/rfc7515).
 - [JSON Web Encryption (JWE) - RFC 7516](https://tools.ietf.org/html/rfc7516) - experimental.
 - [JSON Web Key (JWK) - RFC 7517](https://tools.ietf.org/html/rfc7517).
-- [JSON Web Token (JWT) - RFC 7519. Only signed payloads](https://tools.ietf.org/html/rfc7519).
+- [JSON Web Token (JWT) - RFC 7519. Only signed payloads](https://tools.ietf.org/html/rfc7519) - experimental.
 
 ## Goal - Pluggable Crypto layers
 
@@ -67,6 +67,69 @@ KeyStore is an abstraction of where cryptographic keys are stored. This SDK prov
 KeyStores can be created by honoring the IKeyStore interface, as such application builder can write their own plugins with new key stores.
 
 You can use the KeyStoreFactory.create('KeyStoreInMemory') to create the KeyStore, KeyStoreInMemory in this case.
+## CryptoFactory
+
+The CryptoFactory defines which KeyStore to use and which plugins for which algorithms. You can make your own CryptoFactory and add your own plugins to it. Have a look to CrytoFactoryNode which is the default crypto factory. It maps the EDDSA algorithm to a special provider because EDDSA is not implemented in nodejs crypto.
+
+    export default class CryptoFactoryNode extends CryptoFactory {  
+       /**  
+        * Constructs a new CryptoFactoryNode  
+        * @param keyStore used to store private keys  
+        * @param crypto Default subtle crypto used for e.g. hashing.  
+        */  
+        constructor (keyStore: IKeyStore, crypto: any) {  
+            super(keyStore, crypto);  
+            const subtleCrypto: any = new SubtleCryptoElliptic(crypto);  
+            this.addMessageSigner('EdDSA', {subtleCrypto, scope: CryptoFactoryScope.All});  
+            this.addMessageSigner('EDDSA', {subtleCrypto, scope: CryptoFactoryScope.All});  
+            this.addMessageSigner('ed25519', {subtleCrypto, scope: CryptoFactoryScope.All});  
+        }  
+    }
+
+Use the CryptoFactoryManager.create('CryptoFactoryNode', new Subtle()) factory method to create the default Subtle API.
+
+## Payload protection API
+
+The SDK has a high-level API intended to protect payloads. Apps will typically use this high-level API.
+
+Setup the payload protection object as JOSE and generate a signing key:
+
+        const keyReference = new KeyReference('neo');
+        let crypto = new CryptoBuilder()
+            .useSigningKeyReference(keyReference)
+            .build();
+
+        let jose: IPayloadProtectionSigning = new JoseBuilder(crypto)
+            .build();
+
+        // Generate and save a signing key
+        crypto = await crypto.generateKey(KeyUse.Signature);
+
+Create the JWS signature and serialize the signature
+
+        // Sign the payload
+        jose = await jose.sign(payload);
+
+        // Serialize the signature
+        const signature = jose.serialize();
+
+Deserialize the signature and validate it
+
+        // Deserialize the received signature
+        jose = jose.deserialize(signature);
+
+        const validated = await jose.verify();
+
+
+Running the same sample on key vault requires the following change in the setup:
+
+        const keyReference = new KeyReference('neo', 'key');
+        let crypto = new CryptoBuilder()
+            .useKeyVault(credentials, Credentials.vaultUri)
+            .useSigningKeyReference(keyReference)
+            .build();
+    Mark that keyReference has the type 'key', meaning we will be using key vault keys.
+
 
 ## Subtle
 
@@ -112,26 +175,6 @@ Checkout the /samples folder for samples. Have a look at the subtle API examples
 
 Use the SubtleCryptoFactory.create('SubtleCryptoNode') factory method to create the default Subtle API.
 
-## CryptoFactory
-
-The CryptoFactory defines which KeyStore to use and which plugins for which algorithms. You can make your own CryptoFactory and add your own plugins to it. Have a look to CrytoFactoryNode which is the default crypto factory. It maps the EDDSA algorithm to a special provider because EDDSA is not implemented in nodejs crypto.
-
-    export default class CryptoFactoryNode extends CryptoFactory {  
-    /**  
-        * Constructs a new CryptoFactoryNode  
-        * @param keyStore used to store private keys  
-        * @param crypto Default subtle crypto used for e.g. hashing.  
-        */  
-        constructor (keyStore: IKeyStore, crypto: any) {  
-            super(keyStore, crypto);  
-            const subtleCrypto: any = new SubtleCryptoElliptic(crypto);  
-            this.addMessageSigner('EdDSA', {subtleCrypto, scope: CryptoFactoryScope.All});  
-            this.addMessageSigner('EDDSA', {subtleCrypto, scope: CryptoFactoryScope.All});  
-            this.addMessageSigner('ed25519', {subtleCrypto, scope: CryptoFactoryScope.All});  
-        }  
-    }
-
-Use the CryptoFactoryManager.create('CryptoFactoryNode', new Subtle()) factory method to create the default Subtle API.
 
 ## Pairwise keys
 

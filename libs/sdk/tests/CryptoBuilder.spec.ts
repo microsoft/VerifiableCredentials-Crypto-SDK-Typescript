@@ -11,7 +11,6 @@ describe('CryptoBuilder', () => {
         let builder = new CryptoBuilder();
         expect(builder.cryptoFactory.constructor.name).toEqual('CryptoFactory');
         expect(builder.keyStore.constructor.name).toEqual('KeyStoreInMemory');
-        expect(builder.payloadProtectionProtocol.constructor.name).toEqual('Jose');
         expect(builder.subtle.constructor.name).toEqual('Subtle');
         expect(builder.signingKeyReference).toBeUndefined();
         expect(builder.signingAlgorithm).toEqual('ES256K');

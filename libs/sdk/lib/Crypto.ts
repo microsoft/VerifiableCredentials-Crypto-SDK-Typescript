@@ -26,7 +26,10 @@ export default class Crypto {
   public async generateKey(keyUse: KeyUse) {
     if (keyUse === KeyUse.Signature) {
       const algorithm = CryptoHelpers.jwaToWebCrypto(this.builder.signingAlgorithm);
-      const subtle = this.builder.cryptoFactory.getMessageSigner(this.builder.signingAlgorithm, CryptoFactoryScope.Private);
+      const importKey = this.builder.signingKeyReference?.type === 'secret';
+      const subtle =  importKey ?
+        this.builder.subtle :
+        this.builder.cryptoFactory.getMessageSigner(this.builder.signingAlgorithm, CryptoFactoryScope.Private);
 
       this.signingKey = await subtle.generateKey(
         algorithm,
@@ -36,7 +39,7 @@ export default class Crypto {
           keyReference: this.builder.signingKeyReference
         });
 
-      // export key
+        // export key
       let jwk: JsonWebKey;
       if ((<CryptoKeyPair>this.signingKey).privateKey) {
         jwk = <JsonWebKey>await subtle.exportKey('jwk', (<CryptoKeyPair>this.signingKey).privateKey);

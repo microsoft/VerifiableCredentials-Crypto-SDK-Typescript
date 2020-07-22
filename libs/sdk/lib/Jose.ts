@@ -6,7 +6,7 @@
 import { IJwsSigningOptions, JwsToken, ProtectionFormat } from 'verifiablecredentials-crypto-sdk-typescript-protocol-jose/lib';
 import { IPayloadProtectionSigning, CryptoProtocolError, IProtocolCryptoToken } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
 import { PublicKey, JoseConstants } from 'verifiablecredentials-crypto-sdk-typescript-keys';
-import { JoseBuilder } from './index';
+import { JoseBuilder, KeyStoreOptions } from './index';
 
 export default class Jose implements IPayloadProtectionSigning {
 
@@ -22,10 +22,7 @@ export default class Jose implements IPayloadProtectionSigning {
   /**
    * Signs contents using the given private key reference.
    *
-   * @param signingKeyReference Reference to the signing key.
    * @param payload to sign.
-   * @param format of the final signature.
-   * @param options used for the signature. These options override the options provided in the constructor.
    * @returns Signed payload in requested format.
    */
   public async sign(payload: Buffer | object): Promise<IPayloadProtectionSigning> {
@@ -41,26 +38,25 @@ export default class Jose implements IPayloadProtectionSigning {
    * Verify the signature.
    *
    * @param validationKeys Public key to validate the signature.
-   * @param payload that was signed
-   * @param signature on payload  
-   * @param options used for the signature. These options override the options provided in the constructor.
    * @returns True if signature validated.
    */
-  public async verify(validationKeys: PublicKey[]): Promise<boolean> {
+  public async verify(validationKeys?: PublicKey[]): Promise<boolean> {
     const jwsOptions: IJwsSigningOptions = Jose.optionsFromBuilder(this.builder);
     if (!this._token) {
       return Promise.reject('Import a token by deserialize');
     }
 
-    const result = await this._token.verify(validationKeys, jwsOptions);
+    if (!validationKeys) {
+      const validationKeyContainer = await this.builder.crypto.builder.keyStore.get(this.builder.crypto.builder.signingKeyReference!, new KeyStoreOptions({publicKeyOnly: true}));
+      validationKeys = [validationKeyContainer.getKey<PublicKey>()]
+    }
+
+    const result = await this._token.verify(validationKeys!, jwsOptions);
     return result;
   }
 
   /**
   * Serialize a cryptographic token
-  * @param token The crypto token to serialize.
-  * @param format Specify the serialization format. If not specified, use default format.
-  * @param options used for the decryption. These options override the options provided in the constructor.
   */
   public serialize(): string {
     const protocolFormat: ProtectionFormat = Jose.getProtectionFormat(this.builder.serializationFormat);
@@ -81,8 +77,6 @@ export default class Jose implements IPayloadProtectionSigning {
   /**
    * Deserialize a cryptographic token
    * @param token The crypto token to deserialize.
-   * @param format Specify the serialization format. If not specified, use default format.
-   * @param options used for the decryption. These options override the options provided in the constructor.
    */
   public deserialize(token: string): IPayloadProtectionSigning {
     const protocolFormat: ProtectionFormat = Jose.getProtectionFormat(this.builder.serializationFormat);

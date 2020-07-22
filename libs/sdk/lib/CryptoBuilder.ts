@@ -12,7 +12,6 @@ export default class CryptoBuilder {
   private _subtle: Subtle = new SubtleCryptoNode().getSubtleCrypto();
   private _cryptoFactory: CryptoFactory = new CryptoFactory(this.keyStore, this.subtle);
 
-  private _payloadProtectionProtocol: IPayloadProtectionSigning = new JoseBuilder(this.build()).build();
   private _signingKeyReference: KeyReference | undefined;
   private _signingKeyOptions: KeyStoreOptions = { 
     publicKeyOnly: false,  // get private key, key vault only returns public key
@@ -100,6 +99,7 @@ export default class CryptoBuilder {
    */
   public useCryptoFactory(value: CryptoFactory): CryptoBuilder {
     this._cryptoFactory = value;
+    this._keyStore = value.keyStore;
     return this;
   }
 
@@ -108,13 +108,6 @@ export default class CryptoBuilder {
    */
   public get subtle(): Subtle {
     return this._subtle;
-  }
-
-  /**
-   * Gets the payload protect protocol
-   */
-  public get payloadProtectionProtocol(): IPayloadProtectionSigning {
-    return this._payloadProtectionProtocol;
   }
 
   /**

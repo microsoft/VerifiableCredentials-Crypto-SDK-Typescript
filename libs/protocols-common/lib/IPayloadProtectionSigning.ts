@@ -25,26 +25,18 @@ export interface IPayloadProtectionSigning {
    * Verify the signature.
    *
    * @param validationKeys Public key to validate the signature.
-   * @param payload that was signed
-   * @param signature on payload  
-   * @param options used for the signature. These options override the options provided in the constructor.
    * @returns True if signature validated.
    */
-  verify(validationKeys: PublicKey[]): Promise<boolean>;
+  verify(validationKeys?: PublicKey[]): Promise<boolean>;
 
   /**
    * Serialize a cryptographic token
-   * @param token The crypto token to serialize.
-   * @param format Specify the serialization format. If not specified, use default format.
-   * @param options used for the decryption. These options override the options provided in the constructor.
    */
   serialize(): string;
 
   /**
    * Deserialize a cryptographic token
    * @param token The crypto token to serialize.
-   * @param format Specify the serialization format. If not specified, use default format.
-   * @param options used for the decryption. These options override the options provided in the constructor.
    */
   deserialize(token: string): IPayloadProtectionSigning;
 }
