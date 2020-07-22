@@ -163,4 +163,16 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
     const pair = <CryptoKeyPair>{ publicKey: cryptoKey };
     return pair;
   }
+
+  /**
+   * Export key to jwk
+   * @param format must be 'jwk'
+   * @param key Key to export in jwk
+   */
+  async onExportKey(format: KeyFormat, key: CryptoKey): Promise<JsonWebKey> {
+    if (format !== 'jwk') {
+      throw new Error(`Export key only supports jwk`);
+    }
+    return <Promise<JsonWebKey>>this.subtle.exportKey(format, key);
+  }
 }

@@ -154,7 +154,7 @@ describe('signing', () => {
         expect(result).toBeTruthy();
     });
 
-    fit('should sign with secp256k1 imported secret on key vault', async () => {
+    it('should sign with secp256k1 imported secret on key vault', async () => {
         
         if (!keyVaultEnabled) {
             console.log('This test only works on key vault');
