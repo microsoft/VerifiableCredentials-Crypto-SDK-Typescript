@@ -42,6 +42,7 @@ export default class Crypto {
         // export key
       let jwk: JsonWebKey;
       if ((<CryptoKeyPair>this.signingKey).privateKey) {
+        this.builder.signingKeyReference!.cryptoKey = (<CryptoKeyPair>this.signingKey).privateKey;
         jwk = <JsonWebKey>await subtle.exportKey('jwk', (<CryptoKeyPair>this.signingKey).privateKey);
       } else if ((<CryptoKeyPair>this.signingKey).publicKey) {
         this.builder.signingKeyReference!.cryptoKey = (<CryptoKeyPair>this.signingKey).publicKey;

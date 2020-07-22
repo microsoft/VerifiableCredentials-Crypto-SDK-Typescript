@@ -89,7 +89,7 @@ describe('Jose Signing', () => {
         expect(validated).toBeTruthy();
     });
 
-    xit('should sign in key vault with an imported key and validate a message protected by JWS', async () => {
+    it('should sign in key vault with an imported key and validate a message protected by JWS', async () => {
 
 
         if (!keyVaultEnabled) {
@@ -104,8 +104,8 @@ describe('Jose Signing', () => {
         const subtle =  new Subtle();
         const cryptoFactory = new CryptoFactoryNode(new KeyStoreKeyVault(credentials, Credentials.vaultUri, new KeyStoreInMemory()), subtle);
         let crypto = new CryptoBuilder()
-            .useCryptoFactory(cryptoFactory)
             .useKeyVault(credentials, Credentials.vaultUri)
+            .useCryptoFactory(cryptoFactory)
             .useSigningKeyReference(keyReference)
             .build();
 
