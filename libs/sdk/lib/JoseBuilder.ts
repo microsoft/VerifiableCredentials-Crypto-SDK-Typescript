@@ -2,8 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { ProtectionFormat } from 'verifiablecredentials-crypto-sdk-typescript-protocol-jose/lib';
-import { Crypto, Jose, CryptoBuilder } from './index';
+import { Crypto, Jose, CryptoBuilder, ProtectionFormat } from './index';
 
 /**
  * Builder class for the JOSE protocol

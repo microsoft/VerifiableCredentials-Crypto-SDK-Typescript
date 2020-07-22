@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IJwsSigningOptions, JwsToken, ProtectionFormat } from 'verifiablecredentials-crypto-sdk-typescript-protocol-jose/lib';
+import { IJwsSigningOptions, JwsToken } from 'verifiablecredentials-crypto-sdk-typescript-protocol-jose/lib';
 import { IPayloadProtectionSigning, CryptoProtocolError, IProtocolCryptoToken } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
 import { PublicKey, JoseConstants } from 'verifiablecredentials-crypto-sdk-typescript-keys';
-import { JoseBuilder, KeyStoreOptions } from './index';
+import { JoseBuilder, KeyStoreOptions, ProtectionFormat } from './index';
 
 export default class Jose implements IPayloadProtectionSigning {
 
