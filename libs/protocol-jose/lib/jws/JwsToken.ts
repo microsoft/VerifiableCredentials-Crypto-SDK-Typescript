@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { PublicKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
-import { IKeyStore, CryptoAlgorithm, ProtectionFormat, KeyReferenceOptions, KeyStoreOptions } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { IKeyStore, CryptoAlgorithm, ProtectionFormat, KeyReference, KeyStoreOptions } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { CryptoFactory, SubtleCryptoExtension, ISubtleCryptoExtension, CryptoHelpers } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
-import { CryptoProtocolError, IPayloadProtectionOptions, ICryptoToken } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
+import { IProtocolCryptoToken, CryptoProtocolError, IPayloadProtectionOptions, ICryptoToken } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
 import base64url from 'base64url';
 import { TSMap } from 'typescript-map';
 import IJwsFlatJson from './IJwsFlatJson';
@@ -343,15 +343,13 @@ export default class JwsToken implements IJwsGeneralJson {
    * @returns Signed payload in compact JWS format.
    */
   public async sign(
-    signingKeyReference: string | KeyReferenceOptions,
+    signingKeyReference: KeyReference,
     payload: Buffer,
     format: ProtectionFormat,
     options?: IJwsSigningOptions
   ): Promise<JwsToken> {
     const keyStore: IKeyStore = this.getKeyStore(options);
     const cryptoFactory: CryptoFactory = this.getCryptoFactory(options);
-    const keyReferenceInStore = typeof signingKeyReference === 'object' ? signingKeyReference.keyReference : signingKeyReference;
-    const extractable = typeof signingKeyReference === 'object' ? signingKeyReference.extractable : true;
 
     // tslint:disable-next-line:no-suspicious-comment
     // TODO support for multiple signatures
@@ -361,7 +359,7 @@ export default class JwsToken implements IJwsGeneralJson {
     const jwsToken = new JwsToken(this.options);
 
     // Get signing key public key
-    const jwk: PublicKey = (await keyStore.get(keyReferenceInStore, new KeyStoreOptions({publicKeyOnly: true, extractable}))).getKey<PublicKey>();
+    const jwk: PublicKey = (await keyStore.get(signingKeyReference, new KeyStoreOptions({publicKeyOnly: true}))).getKey<PublicKey>();
     const jwaAlgorithm: string = jwk.alg || JoseConstants.DefaultSigningAlgorithm;
     const algorithm: CryptoAlgorithm = CryptoHelpers.jwaToWebCrypto(jwaAlgorithm);
 
@@ -480,7 +478,7 @@ export default class JwsToken implements IJwsGeneralJson {
    * @param cryptoToken to convert
    * @param protectOptions options for the token
    */
-   public static fromCryptoToken(cryptoToken: ICryptoToken, protectOptions: IPayloadProtectionOptions): JwsToken {
+  public static fromCryptoToken(cryptoToken: ICryptoToken, protectOptions: IPayloadProtectionOptions): JwsToken {
     const options = JwsToken.fromPayloadProtectionOptions(protectOptions);
     const jwsToken = new JwsToken(options);
     jwsToken.payload = <Buffer>cryptoToken.get(JoseConstants.tokenPayload);
@@ -495,7 +493,7 @@ export default class JwsToken implements IJwsGeneralJson {
    * @param jwsToken to convert
    * @param options used for the signature. These options override the options provided in the constructor.
    */
-   public static toCryptoToken(protocolFormat: ProtectionFormat, jwsToken: JwsToken, options: IPayloadProtectionOptions): ICryptoToken {
+  public static toCryptoToken(protocolFormat: ProtectionFormat, jwsToken: JwsToken, options: IPayloadProtectionOptions): ICryptoToken {
     const cryptoToken = new JoseToken(options);
     cryptoToken.set(JoseConstants.tokenPayload, jwsToken.payload);
     cryptoToken.set(JoseConstants.tokenSignatures, jwsToken.signatures);

@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
  import { JweToken, JoseHelpers, IJweEncryptionOptions } from '../lib/index'
- import { KeyStoreInMemory, ProtectionFormat } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+ import { KeyStoreInMemory, ProtectionFormat, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
  import { CryptoFactory, SubtleCryptoNode } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
  import { KeyOperation, RsaPrivateKey, KeyContainer } from 'verifiablecredentials-crypto-sdk-typescript-keys';
  import base64url from 'base64url';
@@ -39,7 +39,7 @@ describe('JweToken standard', () => {
 
       const key = new RsaPrivateKey(privateKey);
       
-      await keyStore.save('key', key);
+      await keyStore.save(new KeyReference('key'), key);
       const jweToken = new JweToken(options);
       const cipher = await jweToken.encrypt([key.getPublicKey()], payload, ProtectionFormat.JweCompactJson);
       const protectedHeader = JoseHelpers.encodeHeader(cipher.protected);
@@ -118,7 +118,7 @@ describe('JweToken standard', () => {
             }
             const key = new RsaPrivateKey(privateKey);
       
-            await keyStore.save('key', key);
+            await keyStore.save(new KeyReference('key'), key);
             const jweToken = new JweToken(options);
             const cipher = await jweToken.encrypt([key.getPublicKey()], payload, ProtectionFormat.JweCompactJson);
             expect(JoseHelpers.encodeHeader(cipher.protected)).toEqual('eyJhbGciOiJSU0EtT0FFUC0yNTYiLCJlbmMiOiJBMjU2R0NNIiwia2lkIjoia2V5MSJ9');

@@ -1,11 +1,11 @@
-import { SubtleCrypto, CryptoFactory, SubtleCryptoNode } from '../lib';
+import { Subtle, CryptoFactory, SubtleCryptoNode } from '../lib';
 import { KeyStoreInMemory } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { verify } from 'crypto';
 import base64url from 'base64url';
 
 // Samples are based on  https://github.com/diafygi/webcrypto-examples
-describe('SubtleCrypto', () => {
-    const subtle = new SubtleCrypto();
+describe('Subtle', () => {
+    const subtle = new Subtle();
 
     const genKey = async () => {
         const cryptoKey = await subtle.generateKey(
@@ -29,9 +29,9 @@ describe('SubtleCrypto', () => {
         return ran.slice(0, byteLen);
     }
 
-    it('should create SubtleCrypto', () => {
-        const subtle = new SubtleCrypto();
-        expect(subtle.constructor.name).toEqual('SubtleCrypto');
+    it('should create Subtle', () => {
+        const subtle = new Subtle();
+        expect(subtle.constructor.name).toEqual('Subtle');
     });
 
     it('should generate key', async () => {

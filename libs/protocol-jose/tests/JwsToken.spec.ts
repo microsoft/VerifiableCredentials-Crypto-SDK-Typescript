@@ -5,7 +5,7 @@
 
 import { JwsToken, JoseConstants, IJwsSigningOptions, JoseProtocol } from '../lib/index'
 import { IPayloadProtectionOptions } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
-import { KeyStoreInMemory, ProtectionFormat, KeyReferenceOptions } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { KeyStoreInMemory, ProtectionFormat, KeyReference, KeyStoreOptions } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { CryptoFactory, SubtleCryptoNode, SubtleCryptoExtension } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import { OctKey, PublicKey, KeyContainer } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import { TSMap } from "typescript-map";
@@ -15,7 +15,7 @@ describe('JwsToken', () => {
     const payload = 'test payload';
     const keyStore = new KeyStoreInMemory();
     const seedReference = 'seed';
-    await keyStore.save(seedReference, new OctKey('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'));
+    await keyStore.save(new KeyReference(seedReference), new OctKey('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'));
     const subtle = SubtleCryptoNode.getSubtleCrypto();
     const options: IJwsSigningOptions = {
         algorithm: <Algorithm> { name: 'ECDSA', namedCurve: 'secp256k1', hash: { name: 'SHA-256' } },
@@ -27,16 +27,16 @@ describe('JwsToken', () => {
       (<any>privateKey).alg = 'ES256K';
       (<any>privateKey).defaultSignAlgorithm = 'ES256K';
       
-      await keyStore.save('key', privateKey);
+      await keyStore.save(new KeyReference('key'), privateKey);
       const jwsToken = new JwsToken(options);
-      const signature = await jwsToken.sign('key', Buffer.from(payload), ProtectionFormat.JwsGeneralJson);
+      const signature = await jwsToken.sign(new KeyReference('key'), Buffer.from(payload), ProtectionFormat.JwsGeneralJson);
       expect(signature).toBeDefined();
   });
   it('should create a jws token with JWT header', async () => {
     const payload = 'test payload';
     const keyStore = new KeyStoreInMemory();
     const seedReference = 'seed';
-    await keyStore.save(seedReference, new OctKey('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'));
+    await keyStore.save(new KeyReference(seedReference), new OctKey('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'));
     const subtle = SubtleCryptoNode.getSubtleCrypto();
     const options: IJwsSigningOptions = {
         protected: new TSMap([['typ', 'JWT']]), 
@@ -49,16 +49,16 @@ describe('JwsToken', () => {
       (<any>privateKey).alg = 'ES256K';
       (<any>privateKey).defaultSignAlgorithm = 'ES256K';
       
-      await keyStore.save('key', privateKey);
+      await keyStore.save(new KeyReference('key'), privateKey);
       const jwsToken = new JwsToken(options);
-      const signature = await jwsToken.sign('key', Buffer.from(payload), ProtectionFormat.JwsGeneralJson);
+      const signature = await jwsToken.sign(new KeyReference('key'), Buffer.from(payload), ProtectionFormat.JwsGeneralJson);
       expect((<TSMap<string, string>>signature.signatures[0].protected).get('typ')).toEqual('JWT');
   });
   it('should create a jws token by means of key reference options', async () => {
     const payload = 'test payload';
     const keyStore = new KeyStoreInMemory();
     const seedReference = 'seed';
-    await keyStore.save(seedReference, new OctKey('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'));
+    await keyStore.save(new KeyReference(seedReference), new OctKey('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'));
     const subtle = SubtleCryptoNode.getSubtleCrypto();
     const options: IJwsSigningOptions = {
         algorithm: <Algorithm> { name: 'ECDSA', namedCurve: 'secp256k1', hash: { name: 'SHA-256' } },
@@ -70,15 +70,15 @@ describe('JwsToken', () => {
       (<any>privateKey).alg = 'ES256K';
       (<any>privateKey).defaultSignAlgorithm = 'ES256K';
       
-      await keyStore.save('key', privateKey);
+      await keyStore.save(new KeyReference('key'), privateKey);
       const jwsToken = new JwsToken(options);
-      const signature = await jwsToken.sign(new KeyReferenceOptions({ keyReference: 'key' }), Buffer.from(payload), ProtectionFormat.JwsGeneralJson);
+      const signature = await jwsToken.sign(new KeyReference('key'), Buffer.from(payload), ProtectionFormat.JwsGeneralJson);
       expect(signature).toBeDefined();
   });
   it('should create, validate and serialize a JwsToken', async () => {
     const payload = 'The true sign of intelligence is not knowledge but imagination.';      
     const keyStore = new KeyStoreInMemory();
-    await keyStore.save('seed', new OctKey('ABEE'));
+    await keyStore.save(new KeyReference('seed'), new OctKey('ABEE'));
     const cryptoFactory = new CryptoFactory(keyStore, SubtleCryptoNode.getSubtleCrypto())
     const options: IPayloadProtectionOptions = {
         cryptoFactory,
@@ -93,10 +93,10 @@ describe('JwsToken', () => {
     const privateKey = await generator.generatePairwiseKey(alg, 'seed', 'persona','peer');
     expect((<any>privateKey).alg).toBeUndefined();
     (<any>privateKey).alg = 'RS256';
-    await keyStore.save('key', privateKey);
+    await keyStore.save(new KeyReference('key'), privateKey);
 
     // sign
-    const signature = await options.payloadProtection.sign('key', Buffer.from(payload), 'JwsGeneralJson', options);
+    const signature = await options.payloadProtection.sign(new KeyReference('key'), Buffer.from(payload), 'JwsGeneralJson', options);
     const signatures = signature.get(JoseConstants.tokenSignatures);
     expect((<TSMap<string, string>>signatures[0].protected).get('typ')).toEqual('JWT');
     expect((<TSMap<string, string>>signatures[0].protected).get('alg')).toEqual((<any>privateKey).alg);
@@ -118,7 +118,7 @@ describe('JwsToken', () => {
     expect(deserialized.get(JoseConstants.tokenPayload)).toEqual(signature.get(JoseConstants.tokenPayload));
 
     // validate
-    const publicKeyContainer = (await keyStore.get('key')).getKey<PublicKey>();
+    const publicKeyContainer = (await keyStore.get(new KeyReference('key'), new KeyStoreOptions({publicKeyOnly: true}))).getKey<PublicKey>();
     const result = await options.payloadProtection.verify([publicKeyContainer], Buffer.from(payload), signature, options);
     expect(result.result).toBeTruthy();
 
@@ -152,7 +152,7 @@ describe('JwsToken', () => {
     it('should set headers in JwsToken', async () => {
       const payload = 'The true sign of intelligence is not knowledge but imagination.';      
       const keyStore = new KeyStoreInMemory();
-      await keyStore.save('seed', new OctKey('ABEE'));
+      await keyStore.save(new KeyReference('seed'), new OctKey('ABEE'));
       const cryptoFactory = new CryptoFactory(keyStore, SubtleCryptoNode.getSubtleCrypto())
       const options: IPayloadProtectionOptions = {
           cryptoFactory: cryptoFactory,
@@ -167,11 +167,11 @@ describe('JwsToken', () => {
       const generator = new SubtleCryptoExtension(cryptoFactory);
       const privateKey = await generator.generatePairwiseKey(alg, 'seed', 'persona','peer');
       (<any>privateKey).alg = 'ES256K';
-      await keyStore.save('key', privateKey);
-      let publicKey = await keyStore.get('key');
+      await keyStore.save(new KeyReference('key'), privateKey);
+      let publicKey = await keyStore.get(new KeyReference('key'));
 
       // sign
-      const signature = await options.payloadProtection.sign('key', Buffer.from(payload), 'JwsGeneralJson', options);
+      const signature = await options.payloadProtection.sign(new KeyReference('key'), Buffer.from(payload), 'JwsGeneralJson', options);
       const signatures = signature.get(JoseConstants.tokenSignatures);
       expect(signatures[0].protected.get('test')).toEqual('elo');
       expect(signatures[0].protected.get('kid')).toEqual('random');
@@ -194,7 +194,7 @@ describe('JwsToken', () => {
       expect(deserialized.get(JoseConstants.tokenPayload)).toEqual(signature.get(JoseConstants.tokenPayload));
   
       // validate
-      const publicKeyContainer = (await keyStore.get('key')).getKey<PublicKey>();
+      const publicKeyContainer = (await keyStore.get(new KeyReference('key'), new KeyStoreOptions({publicKeyOnly: true}))).getKey<PublicKey>();
       const result = await options.payloadProtection.verify([publicKeyContainer], Buffer.from(payload), signature, options);
       expect(result.result).toBeTruthy();
   

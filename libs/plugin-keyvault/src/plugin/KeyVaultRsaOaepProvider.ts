@@ -2,9 +2,9 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { SubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
+import { Subtle } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import { CryptoKey } from 'webcrypto-core';
-import { IKeyStore, CryptoError } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { IKeyStore, CryptoError, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import base64url from 'base64url';
 import KeyVaultProvider from './KeyVaultProvider';
 import KeyStoreKeyVault from '../keyStore/KeyStoreKeyVault';
@@ -32,7 +32,7 @@ export default class KeyVaultRsaOaepProvider extends KeyVaultProvider {
    * @param keyStore The key vault key store
    */
   constructor (
-    crypto: SubtleCrypto,
+    crypto: Subtle,
     keyStore: IKeyStore) {
     super(crypto, keyStore);
   }
@@ -62,47 +62,25 @@ export default class KeyVaultRsaOaepProvider extends KeyVaultProvider {
    * @param keyUsages sign or verify
    */
   async onGenerateKey (algorithm: RsaKeyGenParams, extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKeyPair> {
-    const publicKey: any = await this.generate('RSA', algorithm, extractable, keyUsages);
-    const jwk = {
+    const [name, publicKey] = await this.generate('RSA', algorithm, extractable, keyUsages);
+    const jwk: any = {
       kid: publicKey.id,
       kty: 'RSA',
       use: 'enc',
       e: base64url.encode(publicKey.key.e),
       n: base64url.encode(publicKey.key.n)
     };
-    const cryptoKey = await this.subtle.importKey('jwk', jwk, algorithm, extractable, keyUsages);
+
+    // convert key to crypto key
+    const cryptoKey = await this.subtle.importKey('jwk', jwk, algorithm, true, keyUsages);
 
     // need to keep track of kid. cryptoKey is not extensible
     (<any>cryptoKey.algorithm).kid = jwk.kid;
+    
+    // Save public key in cach
+    await (<KeyStoreKeyVault>this.keyStore).cache.save(new KeyReference(name, KeyStoreKeyVault.KEYS), jwk);
+
     const pair = <CryptoKeyPair> {publicKey: cryptoKey};
     return pair;
-  }
-  /**
-   * Import jwk key. Return @class CryptoKey as the internal format of a key.
-   * @param format must be 'jwk'
-   * @param key Key to export in jwk
-   * @param algorithm for key generation
-   * @param extractable is true if the key is exportable
-   * @param keyUsages sign or verify
-   */
-  async onImportKey(format: KeyFormat,
-    keyData: JsonWebKey, algorithm: EcKeyImportParams, extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKey> {
-    if (format !== 'jwk') {
-      throw new Error(`Import key only supports jwk`);
-    }
-
-    return this.subtle.importKey(format, keyData, algorithm, extractable,keyUsages);
-  }
-
-  /**
-   * Export key to jwk
-   * @param format must be 'jwk'
-   * @param key Key to export in jwk
-   */
-  async onExportKey(format: KeyFormat, key: CryptoKey): Promise<JsonWebKey> {
-    if (format !== 'jwk') {
-      throw new Error(`Export key only supports jwk`);
-    }
-    return <JsonWebKey>this.subtle.exportKey(format, key);
   }
 }

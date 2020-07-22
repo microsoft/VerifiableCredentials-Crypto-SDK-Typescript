@@ -1,24 +1,42 @@
-import { CryptoFactory } from './index';
-import {  CryptoKey } from 'webcrypto-core';
-import { CryptoFactoryScope } from './CryptoFactory';
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+ import {  CryptoKey } from 'webcrypto-core';
+import { SubtleCrypto } from 'webcrypto-core';
+import { KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+
 const { Crypto } = require("@peculiar/webcrypto");
 const clone = require('clone');
 
 // Named curves
 const CURVE_P256K = 'P-256K';
 const CURVE_K256 = 'K-256';
-const CURVE_SECP256K1 = 'secp256k1';
+const CURVE_SECP256K1 = 'SECP256K1';
 
+export interface IKeyGenerationOptions {
+    /**
+     * Specify the reference of the key
+     */
+    keyReference?: KeyReference,
+
+    /**
+     * Specify the curve for the key to generate
+     */
+    curve?: string
+}
 
 /**
  * Wrapper class for W3C subtle crypto.
  * A subtle crypto class is the actual crypto library to be used.
  */
-export default class SubtleCrypto {
+export default class Subtle extends SubtleCrypto {
    
-    private subtle = new Crypto().subtle;
+    private subtle: SubtleCrypto = new Crypto().subtle;
 
     constructor() {
+        super();
     }
 
     /**
@@ -27,9 +45,19 @@ export default class SubtleCrypto {
      */
     public algorithmTransform(algorithm: any) {
         if (algorithm.namedCurve) {
-            if (algorithm.namedCurve === CURVE_P256K || algorithm.namedCurve === CURVE_SECP256K1) {
+            const curve = (<string>algorithm.namedCurve).toUpperCase();
+            if (curve === CURVE_P256K || curve === CURVE_SECP256K1) {
                 const alg = clone(algorithm);
                 alg.namedCurve = CURVE_K256;
+                algorithm = alg;
+            }
+        }
+
+        if (algorithm.crv) {
+            const curve = (<string>algorithm.crv).toUpperCase();
+            if (curve === CURVE_P256K || curve === CURVE_SECP256K1) {
+                const alg = clone(algorithm);
+                alg.crv = CURVE_K256;
                 return alg;
             }
         }
@@ -43,7 +71,8 @@ export default class SubtleCrypto {
    */
     public keyImportTransform(jwk: any) {
         if (jwk.crv) {
-            if (jwk.crv === CURVE_P256K || jwk.crv === CURVE_SECP256K1) {
+            const curve = (<string>jwk.crv).toUpperCase();
+            if (curve === CURVE_P256K || curve === CURVE_SECP256K1) {
                 const clonedKey = clone(jwk);
                 clonedKey.crv = CURVE_K256;
                 return clonedKey;
@@ -59,7 +88,8 @@ export default class SubtleCrypto {
      */
     public keyExportTransform(jwk: any) {
         if (jwk.crv) {
-            if (jwk.crv === CURVE_P256K || jwk.crv === CURVE_K256) {
+            const curve = (<string>jwk.crv).toUpperCase();
+            if (curve === CURVE_P256K || curve === CURVE_K256) {
                 const clonedKey = clone(jwk);
                 clonedKey.crv = CURVE_SECP256K1;
                 return clonedKey;
@@ -77,7 +107,7 @@ export default class SubtleCrypto {
     }
 
 
-    public async generateKey(algorithm: Algorithm, extractable: boolean, keyUsages: KeyUsage[], _options?: any): Promise<CryptoKeyPair | CryptoKey> {
+    public async generateKey(algorithm: Algorithm, extractable: boolean, keyUsages: KeyUsage[], _options?: IKeyGenerationOptions): Promise<CryptoKeyPair | CryptoKey> {
         algorithm = this.algorithmTransform(algorithm);
         const result = await this.subtle.generateKey(algorithm, extractable, keyUsages);
 
@@ -112,9 +142,8 @@ export default class SubtleCrypto {
         return result;
     }
 
-    //public async exportKey(format: "raw" | "spki" | "pkcs8", key: CryptoKey): Promise<ArrayBuffer>;
-    //public async exportKey(format: "jwk", key: CryptoKey): Promise<JsonWebKey>;
-    //public async exportKey(format: KeyFormat, key: CryptoKey): Promise<JsonWebKey | ArrayBuffer>;
+    public async exportKey(format: "raw" | "spki" | "pkcs8", key: CryptoKey): Promise<ArrayBuffer>;
+    public async exportKey(format: "jwk", key: CryptoKey): Promise<JsonWebKey>;
     public async exportKey(format: KeyFormat, key: CryptoKey): Promise<JsonWebKey | ArrayBuffer> {
 
         let result = await this.subtle.exportKey(format, key);

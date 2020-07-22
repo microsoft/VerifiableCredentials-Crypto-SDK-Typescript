@@ -4,11 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import base64url from 'base64url';
-import { SubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
+import { Subtle, IKeyGenerationOptions } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import { CryptoKey } from 'webcrypto-core';
 import KeyVaultProvider from './KeyVaultProvider';
 import KeyStoreKeyVault from '../keyStore/KeyStoreKeyVault';
-import { IKeyStore, CryptoError } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { IKeyStore, CryptoError, KeyReference, KeyStoreOptions } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { JsonWebKey, IKeyContainer } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 
 /**
  * Wrapper class for key vault plugin
@@ -33,7 +34,7 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
    * @param keyStore The key vault key store
    */
   constructor(
-    subtle: SubtleCrypto,
+    subtle: Subtle,
     keyStore: IKeyStore) {
     super(subtle, keyStore);
   }
@@ -57,6 +58,65 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
     const signature = await client.sign(<any>'ECDSA256', new Uint8Array(hash));
     return signature.result;
   }
+  /**
+   * Import jwk key. Return @class CryptoKey as the internal format of a key.
+   * This method does not import any key material into key vault.
+   * @param format must be 'jwk'
+   * @param jwk Key to export in jwk
+   * @param algorithm for key generation
+   * @param extractable is true if the key is exportable
+   * @param keyUsages sign or verify
+   */
+  async onImportKey(format: KeyFormat,
+    jwk: JsonWebKey, _algorithm: EcKeyImportParams, _extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKey> {
+
+    if (format !== 'jwk') {
+      throw new Error(`Import key only supports jwk`);
+    }
+
+    if (jwk.kty?.toUpperCase() !== 'EC' ){
+      throw new Error(`Import key only supports kty EC`);
+    }
+
+    if (jwk.crv?.toUpperCase() !== 'SECP256K1'){
+      throw new Error(`Import key only supports crv SECP256K1`);
+    }
+
+    if (!jwk.kid && jwk.kid!.startsWith('https://')){
+      throw new Error(`Imported key must have a kid in the format https://<vault>/keys/<name>/<version>`);
+    }    
+
+    const kidParts = jwk.kid!.split('/');
+    let secretType: boolean = kidParts[3] === 'secrets';
+
+    if (!['keys', 'secrets'].includes(kidParts[3]) ) {
+      throw new Error(`Imported key must be of type keys or secrets`);
+    }
+
+    if (kidParts.length <= 5 ) {      
+      const container: IKeyContainer = (await (<KeyStoreKeyVault>this.keyStore).get(new KeyReference(kidParts[4], secretType ? KeyStoreKeyVault.SECRETS : KeyStoreKeyVault.KEYS), new KeyStoreOptions({latestVersion: true})));
+      const kvKey = container.getKey<JsonWebKey>();
+      jwk.kid = kvKey.kid;
+    }
+
+    const alg = <EcKeyAlgorithm>this.subtle.algorithmTransform({
+      name: "ECDSA",
+      namedCurve: "SECP256K1",
+    });
+
+    // convert key to crypto key
+    const cryptoKey: CryptoKey = await this.subtle.importKey(
+      'jwk',
+      jwk,
+      alg,
+      true,
+      keyUsages);
+
+    // need to keep track of kid. cryptoKey is not extensible
+    (<any>cryptoKey.algorithm).kid = jwk.kid;
+
+    return cryptoKey;
+  }
 
   /**
    * Generate key pair. Return @class CryptoKey as @class EllipticCurveSubtleKey.
@@ -65,51 +125,43 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
    * @param extractable is true if the key is exportable
    * @param keyUsages sign or verify
    */
-  async onGenerateKey(algorithm: EcKeyGenParams, extractable: boolean, keyUsages: KeyUsage[], options?: any): Promise<CryptoKeyPair> {
+  async onGenerateKey(algorithm: EcKeyGenParams, extractable: boolean, keyUsages: KeyUsage[], options?: IKeyGenerationOptions): Promise<CryptoKeyPair> {
     if (!options) {
       options = { curve: 'SECP256K1' }
     } else {
       options.curve = 'SECP256K1';
     }
 
-    const publicKey: any = await this.generate('EC', algorithm, extractable, keyUsages, options);
-    const jwk = {
+    const [name, publicKey] = await this.generate('EC', algorithm, extractable, keyUsages, options);
+    const jwk: any = {
       kid: publicKey.id,
       kty: 'EC',
       use: 'sig',
       x: base64url.encode(publicKey.key.x),
       y: base64url.encode(publicKey.key.y)
     };
-    const cryptoKey: CryptoKey = await this.subtle.importKey(
-      'jwk', 
-      jwk, <EcKeyAlgorithm>{   //these are the algorithm options
+
+    const alg = <EcKeyAlgorithm>this.subtle.algorithmTransform({
       name: "ECDSA",
-      namedCurve: "secp256k1", 
-    }, 
-    extractable, 
-    keyUsages);
+      namedCurve: "SECP256K1",
+    });
+
+    // convert key to crypto key
+    const cryptoKey: CryptoKey = await this.subtle.importKey(
+      'jwk',
+      jwk,
+      alg,
+      true,
+      keyUsages);
 
     // need to keep track of kid. cryptoKey is not extensible
     (<any>cryptoKey.algorithm).kid = jwk.kid;
-    const pair = <CryptoKeyPair> {publicKey: cryptoKey};
+
+    // Save public key in cach
+    await (<KeyStoreKeyVault>this.keyStore).cache.save(new KeyReference(name, KeyStoreKeyVault.KEYS), jwk);
+
+    const pair = <CryptoKeyPair>{ publicKey: cryptoKey };
     return pair;
-  }
-
-  /**
-   * Import jwk key. Return @class CryptoKey as the internal format of a key.
-   * @param format must be 'jwk'
-   * @param key Key to export in jwk
-   * @param algorithm for key generation
-   * @param extractable is true if the key is exportable
-   * @param keyUsages sign or verify
-   */
-  async onImportKey(format: KeyFormat,
-    keyData: JsonWebKey, algorithm: EcKeyImportParams, extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKey> {
-    if (format !== 'jwk') {
-      throw new Error(`Import key only supports jwk`);
-    }
-
-    return this.subtle.importKey(format, keyData, algorithm, extractable,keyUsages);
   }
 
   /**
@@ -121,6 +173,6 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
     if (format !== 'jwk') {
       throw new Error(`Export key only supports jwk`);
     }
-    return <JsonWebKey>this.subtle.exportKey(format, key);
+    return <Promise<JsonWebKey>>this.subtle.exportKey(format, key);
   }
 }

@@ -12,3 +12,4 @@
  import JoseConstants from './JoseConstants';
  import JweHeader from './jwe/IJweBase';
  export { JoseToken, JweHeader, JoseProtocol, JweToken, JwsToken, JoseHelpers, IJweEncryptionOptions, JoseConstants, IJwsSigningOptions };
+ 

@@ -8,16 +8,18 @@ describe('EcPrivateKey', () =>{
             d: 'AQAB',
             x: 'AQAB',
             y: 'AQAB',
-            alg: 'secp256k1'
+            alg: 'ES256K',
+            crv: 'secp256k1'
         };
 
         let ecPrivateKey = new EcPrivateKey(key);
-        expect(ecPrivateKey.alg).toEqual('secp256k1');
+        expect(ecPrivateKey.alg).toEqual('ES256K');
+        expect(ecPrivateKey.crv).toEqual('secp256k1');
         expect((<any>ecPrivateKey.getPublicKey()).d).toBeUndefined();
         expect((<any>ecPrivateKey.getPublicKey()).x).toEqual('AQAB');
 
         (<any>key).d = base64url.toBuffer('AQAB');
         ecPrivateKey = new EcPrivateKey(key);
-        expect(ecPrivateKey.alg).toEqual('secp256k1');
+        expect(ecPrivateKey.alg).toEqual('ES256K');
     });
 });

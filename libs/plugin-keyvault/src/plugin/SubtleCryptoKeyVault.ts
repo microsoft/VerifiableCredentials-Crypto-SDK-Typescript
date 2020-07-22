@@ -5,16 +5,30 @@
 
 import { SubtleCrypto } from 'webcrypto-core';
 import { IKeyStore } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
-import { ISubtleCrypto } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
+import { ISubtleCrypto, IKeyGenerationOptions } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import KeyVaultEcdsaProvider from './KeyVaultEcdsaProvider';
 import KeyVaultRsaOaepProvider from './KeyVaultRsaOaepProvider';
 
 /**
- * Subtle crypto class
+ * SubtleCrypto crypto class
  */
 export default class SubtleCryptoKeyVault extends SubtleCrypto implements ISubtleCrypto {
-  private static crypto: SubtleCrypto = new SubtleCrypto();
-  
+
+  /**
+   * Override generateKey to support additional options argument
+   * @param algorithm for key generation
+   * @param extractable True if key is extractable
+   * @param keyUsages For the key
+   * @param options Options used to define optional name
+   */
+  public async generateKey(algorithm: Algorithm, extractable: boolean, keyUsages: KeyUsage[], options?: IKeyGenerationOptions) {
+    this.checkRequiredArguments(arguments, options ? 4 : 3, "generateKey");
+    const preparedAlgorithm = this.prepareAlgorithm(algorithm);
+    const provider: any = this.getProvider(preparedAlgorithm.name);
+    const result = await provider.generateKey({ ...preparedAlgorithm, name: provider.name }, extractable, keyUsages, options);
+    return result;
+  }
+
   /**
    * Create a new instance of @class SubtleCryptoKeyVault
    * @param subtle A default subtle crypto object. Can be used for local crypto functions

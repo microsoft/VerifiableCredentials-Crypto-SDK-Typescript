@@ -12,7 +12,7 @@ describe('SubtleCryptoFactory', () => {
 
   it('should create SubtleCryptoNode', () => {
     const crypto = SubtleCryptoFactory.create('SubtleCryptoNode');
-    expect(crypto.constructor.name).toEqual('SubtleCrypto');
+    expect(crypto.constructor.name).toEqual('Subtle');
 
     // negative cases
     expect(() => SubtleCryptoFactory.create('xxx')).toThrowError(`Subtle crypto 'xxx' not found`)

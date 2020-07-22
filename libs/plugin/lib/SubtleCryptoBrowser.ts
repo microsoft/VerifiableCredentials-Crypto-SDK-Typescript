@@ -11,14 +11,14 @@ import { ISubtleCrypto } from './index';
   **/
  export default class SubtleCryptoBrowser implements ISubtleCrypto {
  /**
- * Returns the @class SubtleCrypto implementation for the browser environment
+ * Returns the @class Subtle implementation for the browser environment
  */
  public getSubtleCrypto(): any {
   return SubtleCryptoBrowser.getSubtleCrypto();
  }   
 
    /**
-    * Returns the @class SubtleCrypto implementation for the current environment
+    * Returns the @class Subtle implementation for the current environment
     */
    public static getSubtleCrypto(): SubtleCrypto {
     // tslint:disable-next-line:no-typeof-undefined

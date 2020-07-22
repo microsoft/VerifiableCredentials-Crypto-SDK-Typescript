@@ -76,7 +76,7 @@ describe('CryptoFactory', () => {
     expect(subtle.keyImportTransform(jwk, CryptoFactoryScope.All)).toEqual(jwk);
     expect(subtle.keyImportTransform(jwk, CryptoFactoryScope.All)).toEqual(jwk);
     jwk.crv = 'K-256';
-    expect(subtle.keyExportTransform(jwk, CryptoFactoryScope.All)).toEqual({crv: 'secp256k1'});
+    expect(subtle.keyExportTransform(jwk, CryptoFactoryScope.All)).toEqual({crv: 'SECP256K1'});
     jwk.crv = 'secp256k1';
     expect(subtle.keyImportTransform(jwk, CryptoFactoryScope.All)).toEqual({crv: 'K-256'});
   });

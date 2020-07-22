@@ -52,6 +52,10 @@ export default abstract class JsonWebKey {
    */
   public alg?: string;
 
+  /**
+   * Curve intended for use with this key
+   */
+  public crv?: string;
    /**
     * Create instance of @class JsonWebKey
     */
@@ -61,6 +65,7 @@ export default abstract class JsonWebKey {
     this.use = key.use;
     this.key_ops = key.key_ops;
     this.alg = key.alg;
+    this.crv = key.crv;
   }
 
   /**

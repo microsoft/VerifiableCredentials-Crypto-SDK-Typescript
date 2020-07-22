@@ -21,7 +21,7 @@ class EcPrivateKey extends EcPublicKey_1.default {
         /**
          * ECDSA w/ secp256k1 Curve
          */
-        this.alg = 'secp256k1';
+        this.alg = 'ES256K';
         this.d = typeof key.d === 'string' ? key.d : base64url_1.default.encode(key.d);
     }
     /**

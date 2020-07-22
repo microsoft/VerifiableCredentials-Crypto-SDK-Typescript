@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { PublicKey, JoseConstants } from 'verifiablecredentials-crypto-sdk-typescript-keys';
-import { ProtectionFormat, KeyReferenceOptions } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { ProtectionFormat, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { TSMap } from 'typescript-map';
 import { IJwtSigningOptions } from '../IJoseOptions';
 import { JwsToken } from '../index';
@@ -35,7 +35,7 @@ export default class JwtToken {
    * @returns Signed payload in compact JWT format.
    */
   public async sign(
-    signingKeyReference: string | KeyReferenceOptions,
+    signingKeyReference: KeyReference,
     payload: object,
     options?: IJwtSigningOptions
   ): Promise<JwsToken> {

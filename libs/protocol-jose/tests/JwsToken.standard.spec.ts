@@ -5,7 +5,7 @@
 
 import base64url from "base64url";
 import { JwsToken, IJwsSigningOptions } from '../lib/index'
-import { KeyStoreInMemory, ProtectionFormat } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { KeyStoreInMemory, ProtectionFormat, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { CryptoFactory, SubtleCryptoNode, CryptoFactoryScope } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import { CryptoFactoryNode } from 'verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites';
 import { KeyOperation, RsaPrivateKey, KeyContainer, OkpPrivateKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
@@ -44,9 +44,9 @@ describe('JwsToken standard RSA', () => {
       };
       const key = new RsaPrivateKey(privateKey);
 
-      await keyStore.save('key', key);
+      await keyStore.save(new KeyReference('key'), key);
       const jwsToken = new JwsToken(options);
-      const signature = await jwsToken.sign('key', payloadBuffer, ProtectionFormat.JwsCompactJson);
+      const signature = await jwsToken.sign(new KeyReference('key'), payloadBuffer, ProtectionFormat.JwsCompactJson);
       expect(signature).toBeDefined();
       const encodedPayload = 'eyJpc3MiOiJqb2UiLA0KICJleHAiOjEzMDA4MTkzODAsDQogImh0dHA6Ly9leGFtcGxlLmNvbS9pc19yb290Ijp0cnVlfQ';
       const encodedProtected = 'eyJhbGciOiJSUzI1NiJ9';
@@ -108,9 +108,9 @@ describe('JwsToken standard ed25519', () => {
     };
     const key = new OkpPrivateKey(privateKey);
 
-    await keyStore.save('key', key);
+    await keyStore.save(new KeyReference('key'), key);
     const jwsToken = new JwsToken(options);
-    const signature = await jwsToken.sign('key', payloadBuffer, ProtectionFormat.JwsCompactJson);
+    const signature = await jwsToken.sign(new KeyReference('key'), payloadBuffer, ProtectionFormat.JwsCompactJson);
     expect(signature).toBeDefined();
     const encodedPayload = 'RXhhbXBsZSBvZiBFZDI1NTE5IHNpZ25pbmc';
     const encodedProtected = 'eyJhbGciOiJFZERTQSJ9';

@@ -2,15 +2,15 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { SubtleCrypto } from './index';
-import { CryptoAlgorithm, KeyReferenceOptions } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { Subtle } from './index';
+import { CryptoAlgorithm, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { PrivateKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import { CryptoFactoryScope } from './CryptoFactory';
 
 /**
  * Interface for the Subtle Crypto extensions
  */
-export default interface ISubtleCryptoExtension extends SubtleCrypto {
+export default interface ISubtleCryptoExtension extends Subtle {
   /**
    * Generate a pairwise key
    * @param algorithm for the key
@@ -29,7 +29,7 @@ export default interface ISubtleCryptoExtension extends SubtleCrypto {
    * @param keyReference points to key in the key store
    * @param data to sign
    */
-   signByKeyStore(algorithm: CryptoAlgorithm, keyReference: string | KeyReferenceOptions, data: BufferSource): PromiseLike<ArrayBuffer>;  
+   signByKeyStore(algorithm: CryptoAlgorithm, keyReference: string | KeyReference, data: BufferSource): PromiseLike<ArrayBuffer>;  
 
    /**
    * Verify with JWK.

@@ -5,7 +5,7 @@
  
 // tslint:disable-next-line: import-name
 import {CryptoFactory, SubtleCryptoExtension, SubtleCryptoNode, PairwiseKey } from '../lib/index';
-import { KeyStoreInMemory } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { KeyStoreInMemory, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { PrivateKey, EcPrivateKey, OctKey, KeyContainer } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import base64url from 'base64url';
 
@@ -61,7 +61,7 @@ describe('PairwiseKey', () => {
   // Default Crypto factory
   keyStore = new KeyStoreInMemory();
   const seed = new OctKey('ABDE');
-  await keyStore.save(seedReference, seed);
+  await keyStore.save(new KeyReference(seedReference), seed);
   defaultCryptoFactory = new CryptoFactory(keyStore, subtle);
   subtleCryptoExtensions = new SubtleCryptoExtension(defaultCryptoFactory);
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
@@ -97,7 +97,7 @@ describe('PairwiseKey', () => {
   it('should generate a masterkey', async (done) => {
     const keyStore = new KeyStoreInMemory();
     const seed = new OctKey(base64url.encode(Buffer.from('abcdefg')));
-    await keyStore.save(seedReference, seed);
+    await keyStore.save(new KeyReference(seedReference), seed);
     const pairwise = new PairwiseKey(new CryptoFactory(keyStore, subtle));
     let masterkey = await (<any>pairwise).generatePersonaMasterKey(seedReference, 'persona');
     let encoded = base64url.encode(masterkey);
@@ -118,10 +118,10 @@ describe('PairwiseKey', () => {
     const alg = supportedKeyGenerationAlgorithms[KeyGenerationAlgorithm_ECDSA];
     const pairwiseKeys = require('./Pairwise.EC.json');
     const seed = new OctKey(base64url.encode('xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi'));
-    await keyStore.save('masterSeed', seed);
+    await keyStore.save(new KeyReference('masterSeed'), seed);
  
     const seedReference = 'masterkey';
-    await keyStore.save(seedReference, seed);
+    await keyStore.save(new KeyReference(seedReference), seed);
     for (inx = 0; inx < nrIds; inx++) {
       const persona: string = 'abcdef';
       let id = `${inx}`;
@@ -144,7 +144,7 @@ describe('PairwiseKey', () => {
     const pairwiseKeys = require('./Pairwise.RSA.json');
     const seed = new OctKey(base64url.encode(Buffer.from('xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi')));
     const seedReference = 'masterkey';
-    await keyStore.save(seedReference, seed);
+    await keyStore.save(new KeyReference(seedReference), seed);
     for (let inx = 0; inx < 30; inx++) {
       const persona: string = 'abcdef';
       let id = `${inx}`;
@@ -166,7 +166,7 @@ describe('PairwiseKey', () => {
     alg.modulusLength = 2048;
     const seed = new OctKey(base64url.encode(Buffer.from('xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi')));
     const seedReference = 'masterkey';
-    await keyStore.save(seedReference, seed);
+    await keyStore.save(new KeyReference(seedReference), seed);
     const persona: string = 'did:persona';
     const peer = 'did:peer';
 
@@ -182,9 +182,9 @@ describe('PairwiseKey', () => {
     const alg = supportedKeyGenerationAlgorithms[KeyGenerationAlgorithm_ECDSA];
     // Generate key
     const pairwiseKey1: PrivateKey = await subtleCryptoExtensions.generatePairwiseKey(<any>alg, seedReference, 'did:persona', 'did:peer');
-    keyStore.save('key', pairwiseKey1);
+    keyStore.save(new KeyReference('key'), pairwiseKey1);
     const data = Buffer.from('1234567890');
-    const signature = await subtleCryptoExtensions.signByKeyStore(alg, 'key', Buffer.from('1234567890'));
+    const signature = await subtleCryptoExtensions.signByKeyStore(alg, new KeyReference('key'), Buffer.from('1234567890'));
     const verify = await subtleCryptoExtensions.verifyByJwk(alg, pairwiseKey1.getPublicKey(), signature, data);
     expect(verify).toBeTruthy();
   });
@@ -215,8 +215,8 @@ describe('PairwiseKey', () => {
     for (let index = 0 ; index < 100; index++) {
       const keyReference = `key-${index}`;
       const keyValue = new OctKey(base64url.encode(`1234567890-${index}`));
-      await keyStore.save(seedReference, keyValue);
-      await keyStore.save(keyReference, keyValue);
+      await keyStore.save(new KeyReference(seedReference), keyValue);
+      await keyStore.save(new KeyReference(keyReference), keyValue);
       const pairwiseKey: EcPrivateKey = <EcPrivateKey> await subtleCryptoExtensions.generatePairwiseKey(<any>alg, keyReference, persona, peer);
       results.push(<string>pairwiseKey.d);
       expect(1).toBe(results.filter(element => element === pairwiseKey.d).length);

@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IKeyStore } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
-import { SubtleCrypto } from './index';
+import { Subtle } from './index';
 
 // Label for default algorithm
 const DEFAULT_ALGORITHM = '*';
@@ -16,7 +16,7 @@ export interface CryptoSuiteMapItem {
   /**
    * The subtle crypto API 
    */
-  subtleCrypto: SubtleCrypto,
+  subtleCrypto: Subtle,
 
   /**
    * Scope to which the subtle crypto API applies
@@ -94,14 +94,14 @@ export default class CryptoFactory {
   /**
    * Default subtle crypto used for e.g. hashing.
    */
-  public defaultCrypto: SubtleCrypto;
+  public defaultCrypto: Subtle;
 
   /**
    * Constructs a new CryptoRegistry
    * @param keyStore used to store private keys
    * @param defaultCrypto Default subtle crypto used for e.g. hashing.
    */
-  constructor (keyStore: IKeyStore, defaultCrypto: SubtleCrypto) {
+  constructor (keyStore: IKeyStore, defaultCrypto: Subtle) {
     this.keyStore = keyStore;
     this.defaultCrypto = defaultCrypto;
     this.keyEncrypters = {'*': [{ subtleCrypto: defaultCrypto, scope: CryptoFactoryScope.All}]};
@@ -127,7 +127,7 @@ export default class CryptoFactory {
    * @param scope The requested scope
    * @returns The corresponding subtle crypto API
    */
-  public getKeyEncrypter (name: string, scope: CryptoFactoryScope): SubtleCrypto {
+  public getKeyEncrypter (name: string, scope: CryptoFactoryScope): Subtle {
     return this.getSubtleCrypto(this.keyEncrypters, name, scope);
   }
 
@@ -147,7 +147,7 @@ export default class CryptoFactory {
    * @param scope The requested scope
    * @returns The corresponding subtle crypto API
    */
-  getSharedKeyEncrypter (name: string, scope: CryptoFactoryScope): SubtleCrypto {
+  getSharedKeyEncrypter (name: string, scope: CryptoFactoryScope): Subtle {
     return this.getSubtleCrypto(this.sharedKeyEncrypters, name, scope);
   }
 
@@ -166,7 +166,7 @@ export default class CryptoFactory {
    * @param scope The requested scope
    * @returns The corresponding subtle crypto API
    */
-  getSymmetricEncrypter (name: string, scope: CryptoFactoryScope): SubtleCrypto {
+  getSymmetricEncrypter (name: string, scope: CryptoFactoryScope): Subtle {
     return this.getSubtleCrypto(this.symmetricEncrypter, name, scope);
   }
   
@@ -185,7 +185,7 @@ export default class CryptoFactory {
    * @param scope The requested scope
    * @returns The corresponding subtle crypto API
    */
-  getMessageSigner (name: string, scope: CryptoFactoryScope): SubtleCrypto {
+  getMessageSigner (name: string, scope: CryptoFactoryScope): Subtle {
     return this.getSubtleCrypto(this.messageSigners, name, scope);
   }
 
@@ -204,7 +204,7 @@ export default class CryptoFactory {
    * @param scope The requested scope
    * @returns The corresponding subtle crypto API
    */
-  getMessageAuthenticationCodeSigner (name: string, scope: CryptoFactoryScope): SubtleCrypto {
+  getMessageAuthenticationCodeSigner (name: string, scope: CryptoFactoryScope): Subtle {
     return this.getSubtleCrypto(this.messageAuthenticationCodeSigners, name, scope);
   }
 
@@ -223,7 +223,7 @@ export default class CryptoFactory {
    * @param scope The requested scope
    * @returns The corresponding subtle crypto API
    */
-  getMessageDigest (name: string, scope: CryptoFactoryScope): SubtleCrypto {
+  getMessageDigest (name: string, scope: CryptoFactoryScope): Subtle {
     return this.getSubtleCrypto(this.messageDigests, name, scope);
   }
 
@@ -250,7 +250,7 @@ export default class CryptoFactory {
    * @param scope The requested scope
    * @returns The corresponding crypto API
    */
-   private getSubtleCrypto (mapper: CryptoSuiteMap, name: string, scope: CryptoFactoryScope): SubtleCrypto {
+   private getSubtleCrypto (mapper: CryptoSuiteMap, name: string, scope: CryptoFactoryScope): Subtle {
     if (mapper[name]) {
       let mapping = mapper[name].filter(item => item.scope === scope);
       if (mapping && mapping.length > 0) {
