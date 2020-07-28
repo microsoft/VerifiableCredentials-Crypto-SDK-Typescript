@@ -7,6 +7,7 @@ import { IJwsSigningOptions, JwsToken } from 'verifiablecredentials-crypto-sdk-t
 import { IPayloadProtectionSigning, CryptoProtocolError, IProtocolCryptoToken } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
 import { PublicKey, JoseConstants } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import { JoseBuilder, KeyStoreOptions, ProtectionFormat } from './index';
+import { TSMap } from 'typescript-map';
 
 export default class Jose implements IPayloadProtectionSigning {
 
@@ -27,6 +28,11 @@ export default class Jose implements IPayloadProtectionSigning {
    */
   public async sign(payload: Buffer | object): Promise<IPayloadProtectionSigning> {
     const jwsOptions: IJwsSigningOptions = Jose.optionsFromBuilder(this.builder);
+
+    // Set the protected header
+    const kid = this.builder.kid || `${this.builder.crypto.builder.did}#${this.builder.crypto.builder.signingKeyReference?.keyReference}`;
+    jwsOptions.protected!.set('kid', kid);
+    jwsOptions.protected!.set('typ', 'JWT');
     const token: JwsToken = new JwsToken(jwsOptions);
     const protectionFormat = Jose.getProtectionFormat(this.builder.serializationFormat);
 
@@ -47,7 +53,7 @@ export default class Jose implements IPayloadProtectionSigning {
     }
 
     if (!validationKeys) {
-      const validationKeyContainer = await this.builder.crypto.builder.keyStore.get(this.builder.crypto.builder.signingKeyReference!, new KeyStoreOptions({publicKeyOnly: true}));
+      const validationKeyContainer = await this.builder.crypto.builder.keyStore.get(this.builder.crypto.builder.signingKeyReference!, new KeyStoreOptions({ publicKeyOnly: true }));
       validationKeys = [validationKeyContainer.getKey<PublicKey>()]
     }
 
@@ -68,7 +74,7 @@ export default class Jose implements IPayloadProtectionSigning {
       case ProtectionFormat.JwsFlatJson:
       case ProtectionFormat.JwsCompactJson:
       case ProtectionFormat.JwsGeneralJson:
-        return this._token.serialize(protocolFormat);``
+        return this._token.serialize(protocolFormat); ``
       default:
         throw new CryptoProtocolError(JoseConstants.Jose, `Serialization format '${this.builder.serializationFormat}' is not supported`);
     }
@@ -144,10 +150,22 @@ export default class Jose implements IPayloadProtectionSigning {
    * @param protectOptions to convert
    */
   public static optionsFromBuilder(builder: JoseBuilder): IJwsSigningOptions {
-    return <IJwsSigningOptions> {
+
+    const protectedHeader = new TSMap();
+    if (builder.protectedHeader) {
+      const header: any = builder.protectedHeader;
+      Object.keys(header).forEach(key => protectedHeader.set(key, header[key]));
+    }
+
+    const unprotectedHeader = new TSMap();
+    if (builder.unprotectedHeader) {
+      const header: any = builder.unprotectedHeader;
+      Object.keys(header).forEach(key => unprotectedHeader.set(key, header[key]));
+    }
+    return <IJwsSigningOptions>{
       cryptoFactory: builder.crypto.builder.cryptoFactory,
-      protectedHeader: builder.protectedHeader, 
-      unprotectedHeader: builder.unprotectedHeader
+      protected: protectedHeader,
+      unprotected: unprotectedHeader
     };
   }
 

@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Crypto, Jose, CryptoBuilder, ProtectionFormat } from './index';
+import { Crypto, Jose, CryptoBuilder, ProtectionFormat, IPayloadProtectionSigning } from './index';
 
 /**
  * Builder class for the JOSE protocol
@@ -12,11 +12,15 @@ export default class JoseBuilder {
     this._crypto = crypto || this._crypto;
   }
 
-  private _protectedHeader: object = {};
+  private _protectedHeader: object = {typ: 'JWT'};
   private _unprotectedHeader: object = {};
   private _serializationFormat: string = ProtectionFormat.JwsCompactJson;
   private _jwtProtocol: object | undefined;
+  private _kid: string | undefined;
   private _crypto: Crypto = new Crypto(new CryptoBuilder());
+
+  // Set the default protocol
+  private _signingProtocol: IPayloadProtectionSigning = this.build();
 
   /**
    * Gets the crypto object
@@ -102,7 +106,7 @@ export default class JoseBuilder {
     * @param serializationFormat Define properties that need to be added to the unprotected header
     * @returns The jose builder
     */
-  public useSerializationFormat(serializationFormat: string): JoseBuilder {
+   public useSerializationFormat(serializationFormat: string): JoseBuilder {
     this._serializationFormat = serializationFormat;
     return this;
   }
@@ -113,6 +117,39 @@ export default class JoseBuilder {
     */
   public get serializationFormat(): string {
     return this._serializationFormat;
+  }
+
+  /**
+    * Sets the kid in protected header.
+    * @param kid Define kid for header
+    * @returns The jose builder
+    */
+   public useKid(kid: string): JoseBuilder {
+    this._kid = kid;
+    return this;
+  }
+
+  /**
+    * Gets the kid in protected header. 
+    * @returns The serialization format.
+    */
+  public get kid(): string | undefined {
+    return this._kid;
+  }
+  
+  /**
+   * Get the protocol used for signing
+   */
+  public get signingProtocol(): IPayloadProtectionSigning {
+    return this._signingProtocol;
+  }
+
+  /**
+   * Set the  protocol used for signing
+   */
+  public  useSigningProtocol(signingProtocol: IPayloadProtectionSigning): JoseBuilder {
+    this._signingProtocol = signingProtocol;
+    return this;
   }
 
 }

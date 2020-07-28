@@ -23,29 +23,52 @@ export default class Crypto {
     return this._builder;
   }
 
-  public async generateKey(keyUse: KeyUse) {
+  public async generateKey(keyUse: KeyUse, type: string = 'signing') {
+    let keyReference: KeyReference;
+    let jwaAlalgorithm: string;
+    switch (type) {
+      case 'signing':
+        if (this.builder.signingKeyReference) {
+          keyReference = this.builder.signingKeyReference;
+        } else {
+          throw new Error('signingKeyReference is not defined in crypto');
+        }
+        jwaAlalgorithm = this.builder.signingAlgorithm
+        break;
+      case 'recovery':
+        if (this.builder.recoveryKeyReference) {
+          keyReference = this.builder.recoveryKeyReference;
+        } else {
+          throw new Error('recoveryKeyReference is not defined in crypto');
+        }
+        jwaAlalgorithm = this.builder.recoveryAlgorithm;
+        break;
+      default:
+        throw new Error(`Key generation type '${type}' not supported`);
+    }
+
     if (keyUse === KeyUse.Signature) {
-      const algorithm = CryptoHelpers.jwaToWebCrypto(this.builder.signingAlgorithm);
-      const importKey = this.builder.signingKeyReference?.type === 'secret';
-      const subtle =  importKey ?
+      const w3cAlgorithm = CryptoHelpers.jwaToWebCrypto(jwaAlalgorithm);
+      const importKey = keyReference?.type === 'secret';
+      const subtle = importKey ?
         this.builder.subtle :
-        this.builder.cryptoFactory.getMessageSigner(this.builder.signingAlgorithm, CryptoFactoryScope.Private);
+        this.builder.cryptoFactory.getMessageSigner(jwaAlalgorithm, CryptoFactoryScope.Private);
 
       this.signingKey = await subtle.generateKey(
-        algorithm,
+        w3cAlgorithm,
         this.builder.signingKeyIsExtractable,
         ['sign', 'verify'],
         {
-          keyReference: this.builder.signingKeyReference
+          keyReference: keyReference
         });
 
-        // export key
+      // export key
       let jwk: JsonWebKey;
       if ((<CryptoKeyPair>this.signingKey).privateKey) {
-        this.builder.signingKeyReference!.cryptoKey = (<CryptoKeyPair>this.signingKey).privateKey;
+        keyReference!.cryptoKey = (<CryptoKeyPair>this.signingKey).privateKey;
         jwk = <JsonWebKey>await subtle.exportKey('jwk', (<CryptoKeyPair>this.signingKey).privateKey);
       } else if ((<CryptoKeyPair>this.signingKey).publicKey) {
-        this.builder.signingKeyReference!.cryptoKey = (<CryptoKeyPair>this.signingKey).publicKey;
+        keyReference!.cryptoKey = (<CryptoKeyPair>this.signingKey).publicKey;
         return this;
       } else {
         if (!this.builder.signingKeyIsExtractable) {
@@ -54,7 +77,7 @@ export default class Crypto {
         jwk = <JsonWebKey>await subtle.exportKey('jwk', <CryptoKey>this.signingKey);
       }
 
-      await this.builder.keyStore.save(this.builder.signingKeyReference!,jwk);
+      await this.builder.keyStore.save(keyReference!, jwk);
       return this;
 
     } else {

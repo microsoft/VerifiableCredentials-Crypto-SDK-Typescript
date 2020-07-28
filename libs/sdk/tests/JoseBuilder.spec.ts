@@ -11,10 +11,12 @@ describe('JoseBuilder', () => {
         let builder = new JoseBuilder(crypto);
         expect(builder.crypto).toEqual(crypto);
         expect(builder.jwtProtocol).toBeUndefined();
-        expect(builder.protectedHeader).toEqual({});
+        let header = {typ: 'JWT'};
+        expect(builder.protectedHeader).toEqual(header);
         expect(builder.unprotectedHeader).toEqual({});
         expect(builder.protocol).toEqual('JOSE');
         expect(builder.serializationFormat).toEqual('JwsCompactJson');
+        expect(builder.signingProtocol.constructor.name).toEqual('Jose');
 
         builder  = builder.useJwtProtocol({});
         expect(builder.protocol).toEqual('JWT');
