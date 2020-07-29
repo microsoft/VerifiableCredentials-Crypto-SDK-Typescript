@@ -138,7 +138,9 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
       kty: 'EC',
       use: 'sig',
       x: base64url.encode(publicKey.key.x),
-      y: base64url.encode(publicKey.key.y)
+      y: base64url.encode(publicKey.key.y),
+      alg:'ES256K',
+      crv: 'SECP256K1'
     };
 
     const alg = <EcKeyAlgorithm>this.subtle.algorithmTransform({

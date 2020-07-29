@@ -8,8 +8,7 @@ import { Crypto, Jose, CryptoBuilder, ProtectionFormat, IPayloadProtectionSignin
  * Builder class for the JOSE protocol
  */
 export default class JoseBuilder {
-  constructor(crypto?: Crypto) {
-    this._crypto = crypto || this._crypto;
+  constructor(private _crypto: Crypto) {
   }
 
   private _protectedHeader: object = {typ: 'JWT'};
@@ -17,10 +16,6 @@ export default class JoseBuilder {
   private _serializationFormat: string = ProtectionFormat.JwsCompactJson;
   private _jwtProtocol: object | undefined;
   private _kid: string | undefined;
-  private _crypto: Crypto = new Crypto(new CryptoBuilder());
-
-  // Set the default protocol
-  private _signingProtocol: IPayloadProtectionSigning = this.build();
 
   /**
    * Gets the crypto object
@@ -135,21 +130,6 @@ export default class JoseBuilder {
     */
   public get kid(): string | undefined {
     return this._kid;
-  }
-  
-  /**
-   * Get the protocol used for signing
-   */
-  public get signingProtocol(): IPayloadProtectionSigning {
-    return this._signingProtocol;
-  }
-
-  /**
-   * Set the  protocol used for signing
-   */
-  public  useSigningProtocol(signingProtocol: IPayloadProtectionSigning): JoseBuilder {
-    this._signingProtocol = signingProtocol;
-    return this;
   }
 
 }

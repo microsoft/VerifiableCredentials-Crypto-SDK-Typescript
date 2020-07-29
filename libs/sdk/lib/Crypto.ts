@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { KeyReference, CryptoBuilder, KeyUse, CryptoHelpers, CryptoFactoryScope, JsonWebKey, KeyContainer } from './index';
+import { KeyReference, CryptoBuilder, KeyUse, CryptoHelpers, CryptoFactoryScope, JsonWebKey, KeyContainer, IPayloadProtectionSigning, JoseBuilder } from './index';
 import { CryptoKey } from 'webcrypto-core';
 
 /**
@@ -11,6 +11,10 @@ import { CryptoKey } from 'webcrypto-core';
 export default class Crypto {
 
   private signingKey: CryptoKeyPair | CryptoKey | undefined;
+
+  
+  // Set the default protocol
+  private _signingProtocol: IPayloadProtectionSigning = new JoseBuilder(this).build();
 
   constructor(
     private _builder: CryptoBuilder) {
@@ -83,6 +87,21 @@ export default class Crypto {
     } else {
       throw new Error('not implemented');
     }
+  }
+  
+  /**
+   * Get the protocol used for signing
+   */
+  public get signingProtocol(): IPayloadProtectionSigning {
+    return this._signingProtocol;
+  }
+
+  /**
+   * Set the  protocol used for signing
+   */
+  public  useSigningProtocol(signingProtocol: IPayloadProtectionSigning): Crypto {
+    this._signingProtocol = signingProtocol;
+    return this;
   }
 }
 

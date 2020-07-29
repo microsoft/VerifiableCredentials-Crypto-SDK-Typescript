@@ -16,7 +16,6 @@ describe('JoseBuilder', () => {
         expect(builder.unprotectedHeader).toEqual({});
         expect(builder.protocol).toEqual('JOSE');
         expect(builder.serializationFormat).toEqual('JwsCompactJson');
-        expect(builder.signingProtocol.constructor.name).toEqual('Jose');
 
         builder  = builder.useJwtProtocol({});
         expect(builder.protocol).toEqual('JWT');

@@ -71,12 +71,10 @@ describe('Jose', () => {
 
             // Check kid
             let serialized = jose.serialize();
-            let splitted = serialized.split('.');
-            expect(splitted.length).toEqual(3);
-            let protectedHeader = JSON.parse(base64url.decode(splitted[0]));
-            expect(protectedHeader.typ).toEqual('JWT');
-            expect(protectedHeader.alg).toEqual('ES256K');
-            expect(protectedHeader.kid).toEqual('did#neo');
+            jose = jose.deserialize(serialized);
+            expect(jose.signatureProtectedHeader['typ']).toEqual('JWT');
+            expect(jose.signatureProtectedHeader.alg).toEqual('ES256K');
+            expect(jose.signatureProtectedHeader.kid).toEqual('did#neo');
 
             jose = (<Jose>jose).builder
                 .useKid('kid')
@@ -85,12 +83,10 @@ describe('Jose', () => {
             expect((<Jose>jose).builder.kid).toEqual('kid');
             jose = await jose.sign(payload);
             serialized = jose.serialize();
-            splitted = serialized.split('.');
-            expect(splitted.length).toEqual(3);
-            protectedHeader = JSON.parse(base64url.decode(splitted[0]));
-            expect(protectedHeader.typ).toEqual('JWT');
-            expect(protectedHeader.alg).toEqual('ES256K');
-            expect(protectedHeader.kid).toEqual('kid');
+            jose = jose.deserialize(serialized);
+            expect(jose.signatureProtectedHeader!.typ).toEqual('JWT');
+            expect(jose.signatureProtectedHeader!.alg).toEqual('ES256K');
+            expect(jose.signatureProtectedHeader!.kid).toEqual('kid');
 
             const jwkPublic = (await crypto.builder.keyStore.get(crypto.builder.signingKeyReference!, new KeyStoreOptions({ publicKeyOnly: true }))).getKey<JsonWebKey>();
 

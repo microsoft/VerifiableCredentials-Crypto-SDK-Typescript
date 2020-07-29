@@ -20,6 +20,25 @@ export default class Jose implements IPayloadProtectionSigning {
   }
 
   private _token: JwsToken | undefined;
+  private _signatureProtectedHeader: any | undefined;
+  private _signatureHeader: any | undefined;
+
+
+  /**
+   * Gets the protected header on the signature
+   */
+  public get signatureProtectedHeader() {
+    return this._signatureProtectedHeader;
+  }
+
+
+  /**
+   * Gets the header on the signature
+   */
+  public get signatureHeader() {
+    return this._signatureHeader;
+  }
+
   /**
    * Signs contents using the given private key reference.
    *
@@ -94,6 +113,18 @@ export default class Jose implements IPayloadProtectionSigning {
       case ProtectionFormat.JwsGeneralJson:
         const jwsProtectOptions = Jose.optionsFromBuilder(this.builder);
         this._token = JwsToken.deserialize(token, jwsProtectOptions);
+        this._signatureProtectedHeader = {};
+        this._signatureHeader = {};
+        const protectedHeader = this._token.signatures[0].protected || new TSMap();
+        const header = this._token.signatures[0].header || new TSMap();
+        Object.keys(protectedHeader.keys()).forEach((index) => {
+          const key = protectedHeader.keys()[parseInt(index)];
+          this._signatureProtectedHeader[key] = protectedHeader.get(key)
+        });
+        Object.keys(header.keys()).forEach((index) => {
+          const key = header.keys()[parseInt(index)];
+          this._signatureHeader[key] = header.get(key)
+        });
         return this;
       default:
         throw new CryptoProtocolError(JoseConstants.Jose, `Serialization format '${this.builder.serializationFormat}' is not supported`);
