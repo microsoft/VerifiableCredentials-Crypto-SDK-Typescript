@@ -23,7 +23,6 @@
     "lint-pr": "tslint --project . --config ./tslint.json"
   },
   "devDependencies": {
-    "@types/jasmine": "^2.8.9",
     "jasmine": "^3.5.0",
     "jasmine-reporters": "^2.3.2",
     "jasmine-spec-reporter": "^4.2.1",
