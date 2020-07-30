@@ -3,27 +3,51 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { JoseBuilder, CryptoFactory, Crypto, Subtle, IKeyStore, KeyStoreFactory, CryptoFactoryManager, SubtleCryptoNode, IPayloadProtection, IPayloadProtectionOptions, KeyStoreInMemory, IPayloadProtectionSigning, TokenCredential, KeyStoreOptions } from './index';
+import { CryptoFactory, Crypto, Subtle, IKeyStore, KeyStoreFactory, CryptoFactoryManager, SubtleCryptoNode, KeyStoreInMemory, IPayloadProtectionSigning, TokenCredential, KeyStoreOptions } from './index';
 import { KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { KeyType } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 
 export default class CryptoBuilder {
-  // Set the default state
+  // Set the default crypto state
   private _keyStore: IKeyStore = new KeyStoreInMemory();
   private _subtle: Subtle = new SubtleCryptoNode().getSubtleCrypto();
   private _cryptoFactory: CryptoFactory = new CryptoFactory(this.keyStore, this.subtle);
 
+  // key references
+  private _recoveryKeyReference: KeyReference | undefined;
   private _signingKeyReference: KeyReference | undefined;
+  private _recoveryKeyOptions: KeyStoreOptions = { 
+    publicKeyOnly: false,  // get private key, key vault only returns public key
+    latestVersion: true    // take last version of the key
+  };
   private _signingKeyOptions: KeyStoreOptions = { 
     publicKeyOnly: false,  // get private key, key vault only returns public key
     latestVersion: true    // take last version of the key
   };
   private _signingAlgorithm: string = 'ES256K';
+  private _recoveryAlgorithm: string = 'ES256K';
+  private _did: string | undefined;
 
   /**
    * Create a crypto builder to provide crypto capabilities
-   * @param signingKeyReference Reference in the key store to the signing key
    */
   constructor() {
+  }
+
+   
+  /**
+   * Get the DID of the requestor
+   */
+  public get did() {
+    return this._did;
+  }
+  
+  /**
+   * Set the DID of the app
+   */
+  public useDid(did: string): CryptoBuilder {
+    this._did = did;
+    return this;
   }
 
   /**
@@ -35,6 +59,27 @@ export default class CryptoBuilder {
     } else {
       return true;
     }
+  }
+
+  /**
+   * Get the reference in the key store to the recovery key
+   */
+  public get recoveryKeyReference(): KeyReference | undefined {
+    return this._recoveryKeyReference;
+  }
+
+  /**
+   * Set the reference in the key store to the recovery key
+   */
+  public  useRecoveryKeyReference(
+    recoveryKeyReference: KeyReference, 
+    options: KeyStoreOptions = { 
+      publicKeyOnly: false,  // get private key, key vault only returns public key
+      latestVersion: true    // take last version of the key
+    } ): CryptoBuilder {
+    this._recoveryKeyReference = recoveryKeyReference;
+    this._recoveryKeyOptions = options;
+    return this;
   }
 
   /**
@@ -73,7 +118,14 @@ export default class CryptoBuilder {
   }
 
   /**
-   * Set the reference in the key store to the signing key
+   * Get the algorithm used for recovery
+   */
+  public get recoveryAlgorithm(): string {
+    return this._recoveryAlgorithm;
+  }
+
+  /**
+   * Set the algortihm use for signing
    */
   public  useSigningAlgorithm(signingAlgorithm: string): CryptoBuilder {
     this._signingAlgorithm = signingAlgorithm;

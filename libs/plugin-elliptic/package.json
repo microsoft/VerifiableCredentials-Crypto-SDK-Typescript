@@ -1,6 +1,6 @@
 {
   "name": "verifiablecredentials-crypto-sdk-typescript-plugin-elliptic",
-  "version": "1.1.10",
+  "version": "1.1.10-preview.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/microsoft/VerifiableCredentials-Crypto-SDK-Typescript.git"
@@ -29,7 +29,7 @@
     "elliptic": "6.5.2",
     "minimalistic-crypto-utils": "1.0.1",
     "sha.js": "^2.4.11",
-    "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.10",
+    "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.10-preview.1",
     "webcrypto-core": "1.1.1"
   },
   "devDependencies": {

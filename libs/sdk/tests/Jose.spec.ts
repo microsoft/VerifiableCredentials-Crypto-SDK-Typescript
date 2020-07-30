@@ -6,6 +6,7 @@
 import { ClientSecretCredential } from '@azure/identity';
 import { JoseBuilder, CryptoBuilder, IPayloadProtectionSigning, CryptographicKey, ProtectionFormat, Jose, KeyUse, KeyStoreOptions, JsonWebKey, KeyReference } from '../lib/index';
 import Credentials from './Credentials';
+import base64url from 'base64url';
 
 describe('Jose', () => {
 
@@ -19,20 +20,22 @@ describe('Jose', () => {
     });
     const cryptoNode = new CryptoBuilder()
         .useSigningKeyReference(new KeyReference('neo'))
+        .useDid('did')
         .build();
 
     // Loop through these crypto factories. If no credentials for Key Vault are present, we skip key vault
     let factories = [cryptoNode];
     //const alg = { name: 'ECDSA', namedCurve: 'secp256k1', hash: { name: 'SHA-256' } };
-            
+
     if (Credentials.vaultUri.startsWith('https')) {
         const credentials = new ClientSecretCredential(Credentials.tenantGuid, Credentials.clientId, Credentials.clientSecret);
 
         const cryptoKeyVault = new CryptoBuilder()
             .useKeyVault(credentials, Credentials.vaultUri)
             .useSigningKeyReference(new KeyReference('neo', 'key'))
+            .useDid('did')
             .build();
-        factories= [cryptoKeyVault, cryptoNode];
+        factories = [cryptoKeyVault, cryptoNode];
     } else {
         console.log('Enter your key vault credentials in Credentials.ts to enable key vault testing')
     }
@@ -43,14 +46,14 @@ describe('Jose', () => {
         const jose = builder.build();
         expect(jose.builder.crypto).toEqual(crypto);
         expect(jose.builder.jwtProtocol).toBeUndefined();
-        expect(jose.builder.protectedHeader).toEqual({});
+        expect(jose.builder.protectedHeader).toEqual({ typ: 'JWT' });
         expect(jose.builder.unprotectedHeader).toEqual({});
         expect(jose.builder.protocol).toEqual('JOSE');
         expect(jose.builder.serializationFormat).toEqual('JwsCompactJson');
         expect(jose.constructor.name).toEqual('Jose');
 
     });
-    
+
     it('should sign and verify', async () => {
         const payload = Buffer.from('The only way you can survive is to spread to another area. There is another organism on this planet that follows the same pattern. Do you know what it is? A virus. Human beings are a disease. A cancer of this planet.');
 
@@ -66,15 +69,55 @@ describe('Jose', () => {
 
             jose = await jose.sign(payload);
 
-            const jwkPublic = (await crypto.builder.keyStore.get(crypto.builder.signingKeyReference!, new KeyStoreOptions({publicKeyOnly: true}))).getKey<JsonWebKey>();
+            // Check kid
+            let serialized = jose.serialize();
+            jose = jose.deserialize(serialized);
+            expect(jose.signatureProtectedHeader['typ']).toEqual('JWT');
+            expect(jose.signatureProtectedHeader.alg).toEqual('ES256K');
+            expect(jose.signatureProtectedHeader.kid).toEqual('did#neo');
+
+            jose = (<Jose>jose).builder
+                .useKid('kid')
+                .build();
+
+            expect((<Jose>jose).builder.kid).toEqual('kid');
+            jose = await jose.sign(payload);
+            serialized = jose.serialize();
+            jose = jose.deserialize(serialized);
+            expect(jose.signatureProtectedHeader!.typ).toEqual('JWT');
+            expect(jose.signatureProtectedHeader!.alg).toEqual('ES256K');
+            expect(jose.signatureProtectedHeader!.kid).toEqual('kid');
+
+            const jwkPublic = (await crypto.builder.keyStore.get(crypto.builder.signingKeyReference!, new KeyStoreOptions({ publicKeyOnly: true }))).getKey<JsonWebKey>();
 
             const validated = await jose.verify([jwkPublic]);
             expect(validated).toBeTruthy();
 
             // negative cases
+            jose = (<Jose>jose).builder
+                .useSerializationFormat('whatever')
+                .build();
+
+            let throwed = false;
+            try {
+                jose.serialize();
+            } catch (e) {
+                throwed = true;
+                expect(e.message).toEqual(`Format 'whatever' is not supported`)
+            }
+            expect(throwed).toBeTruthy();
+            throwed = false;
+            try {
+                jose.deserialize(serialized);
+            } catch (e) {
+                throwed = true;
+                expect(e.message).toEqual(`Format 'whatever' is not supported`)
+            }
+            expect(throwed).toBeTruthy();
+
             // verify has no token
             jose = new JoseBuilder(crypto).build();
-            let throwed = false;
+            throwed = false;
             try {
                 await jose.verify([jwkPublic]);
             } catch (ex) {

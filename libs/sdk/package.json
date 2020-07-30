@@ -1,6 +1,6 @@
 {
   "name": "verifiablecredentials-crypto-sdk-typescript",
-  "version": "1.1.10",
+  "version": "1.1.10-preview.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/microsoft/VerifiableCredentials-Crypto-SDK-Typescript.git"
@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@types/jasmine": "^2.8.9",
+    "@types/node": "12.12.16",
     "jasmine": "^3.2.0",
     "jasmine-reporters": "^2.3.2",
     "jasmine-spec-reporter": "^4.2.1",
@@ -41,16 +42,19 @@
     "@azure/identity": "1.0.0",
     "@azure/keyvault-keys": "4.0.2",
     "@azure/keyvault-secrets": "4.0.2",
-    "verifiablecredentials-crypto-sdk-typescript-keys": "1.1.10",
-    "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.10",
-    "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.10",
-    "verifiablecredentials-crypto-sdk-typescript-plugin-elliptic": "1.1.10",
-    "verifiablecredentials-crypto-sdk-typescript-plugin-factory": "1.1.10",
-    "verifiablecredentials-crypto-sdk-typescript-plugin-keyvault": "1.1.10",
-    "verifiablecredentials-crypto-sdk-typescript-protocol-jose": "1.1.10",
-    "verifiablecredentials-crypto-sdk-typescript-protocols-common": "1.1.10",
-    "verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites": "1.1.10",
-    "@types/node": "12.12.16",
+    "@decentralized-identity/sidetree": "0.9.1",
+    "base64url": "3.0.1",
+    "canonicalize": "1.0.1",
+    "typescript-map": "0.0.7",
+    "verifiablecredentials-crypto-sdk-typescript-keys": "1.1.10-preview.1",
+    "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.10-preview.1",
+    "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.10-preview.1",
+    "verifiablecredentials-crypto-sdk-typescript-plugin-elliptic": "1.1.10-preview.1",
+    "verifiablecredentials-crypto-sdk-typescript-plugin-factory": "1.1.10-preview.1",
+    "verifiablecredentials-crypto-sdk-typescript-plugin-keyvault": "1.1.10-preview.1",
+    "verifiablecredentials-crypto-sdk-typescript-protocol-jose": "1.1.10-preview.1",
+    "verifiablecredentials-crypto-sdk-typescript-protocols-common": "1.1.10-preview.1",
+    "verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites": "1.1.10-preview.1",
     "webcrypto-core": "1.1.1"
   },
   "nyc": {

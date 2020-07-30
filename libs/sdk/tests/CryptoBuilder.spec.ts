@@ -18,6 +18,9 @@ describe('CryptoBuilder', () => {
         builder.useSigningAlgorithm('RSA-OAEP');
         expect(builder.signingAlgorithm).toEqual('RSA-OAEP');
 
+        builder.useDid('did');
+        expect(builder.did).toEqual('did');
+        
         const credential = new ClientSecretCredential('tenantId', 'clientId', 'clientSecret');
         const vault = 'https://keyvault.com';
         const cryptoFactory = new CryptoFactory(KeyStoreFactory.create('KeyStoreKeyVault', credential, vault), new Subtle());
