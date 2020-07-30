@@ -29,7 +29,7 @@
       "summary": "Publish the required packages",
       "description": "Run this command to publish the required packages",
       "safeForSimultaneousRushProcesses": true,
-      "shellCommand": "rush publish -p  --include-all --tag preview-0"
+      "shellCommand": "rush publish -p  --include-all"
     }
   ]
 }
