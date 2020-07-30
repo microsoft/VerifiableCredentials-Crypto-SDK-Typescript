@@ -14,6 +14,28 @@ import { IProtocolCryptoToken } from './IProtocolCryptoToken';
 export interface IPayloadProtectionSigning {
   
   /**
+   * Builder for signing protocol
+   */
+  builder: any;
+
+  /**
+   * Gets the protected header on the signature
+   */
+  signatureProtectedHeader: any;
+
+
+  /**
+   * Gets the header on the signature
+   */
+  signatureHeader: any;
+
+  /**
+   * Gets the payload for the signature
+   */
+  signaturePayload: Buffer | undefined;
+
+
+  /**
    * Signs contents using the given private key reference.
    *
    * @param payload to sign.
