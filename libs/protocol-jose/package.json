@@ -1,6 +1,6 @@
 {
   "name": "verifiablecredentials-crypto-sdk-typescript-protocol-jose",
-  "version": "1.1.10-preview.1",
+  "version": "1.1.10-preview.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/microsoft/VerifiableCredentials-Crypto-SDK-Typescript.git"
@@ -39,11 +39,11 @@
     "typescript": "3.9.2"
   },
   "dependencies": {
-    "verifiablecredentials-crypto-sdk-typescript-keys": "1.1.10-preview.1",
-    "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.10-preview.1",
-    "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.10-preview.1",
-    "verifiablecredentials-crypto-sdk-typescript-protocols-common": "1.1.10-preview.1",
-    "verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites": "1.1.10-preview.1",
+    "verifiablecredentials-crypto-sdk-typescript-keys": "1.1.10-preview.2",
+    "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.10-preview.2",
+    "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.10-preview.2",
+    "verifiablecredentials-crypto-sdk-typescript-protocols-common": "1.1.10-preview.2",
+    "verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites": "1.1.10-preview.2",
     "base64url": "^3.0.1",
     "typescript-map": "0.0.7",
     "webcrypto-core": "1.1.1"
