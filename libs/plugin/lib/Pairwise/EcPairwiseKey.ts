@@ -35,10 +35,10 @@ const SUPPORTED_CURVES = ['K-256', 'P-256K', 'secp256k1', 'ed25519'];
     const crypto: Subtle = cryptoFactory.getMessageAuthenticationCodeSigner(W3cCryptoApiConstants.Hmac, CryptoFactoryScope.Private);
 
     // Generate the master key
-    const alg: CryptoAlgorithm = { name: W3cCryptoApiConstants.Hmac, hash: W3cCryptoApiConstants.Sha256 };
+    const alg: CryptoAlgorithm = { name: W3cCryptoApiConstants.Hmac, hash: W3cCryptoApiConstants.Sha512 };
     const signingKey: JsonWebKey = {
       kty: 'oct',
-      alg: JoseConstants.Hs256,
+      alg: JoseConstants.Hs512,
       k: base64url.encode(personaMasterKey)
     };
 
@@ -48,8 +48,9 @@ const SUPPORTED_CURVES = ['K-256', 'P-256K', 'secp256k1', 'ed25519'];
     if (SUPPORTED_CURVES.indexOf(algorithm.namedCurve) === -1) {
       throw new CryptoError(algorithm, `Curve ${algorithm.namedCurve} is not supported`);
     }
-
-    const privateKey = new BN(Buffer.from(pairwiseKeySeed));
+    
+    let privateKey = new BN(Buffer.from(pairwiseKeySeed));
+    privateKey = privateKey.umod(secp256k1.curve.n);
     const pair = secp256k1.keyPair({ priv: privateKey });
     const pubKey = pair.getPublic();
     const d = privateKey.toArrayLike(Buffer, 'be', 32);

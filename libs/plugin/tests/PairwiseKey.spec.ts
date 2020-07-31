@@ -178,7 +178,7 @@ describe('PairwiseKey', () => {
     done();
   });
 
-  it('should generate a deterministic pairwise key capable of signing', async () => {
+  fit('should generate a deterministic pairwise key capable of signing', async () => {
     const alg = supportedKeyGenerationAlgorithms[KeyGenerationAlgorithm_ECDSA];
     // Generate key
     const pairwiseKey1: PrivateKey = await subtleCryptoExtensions.generatePairwiseKey(<any>alg, seedReference, 'did:persona', 'did:peer');
