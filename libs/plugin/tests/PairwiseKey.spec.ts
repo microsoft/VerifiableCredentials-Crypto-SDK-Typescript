@@ -114,12 +114,13 @@ describe('PairwiseKey', () => {
   // tslint:disable-next-line:mocha-unneeded-done
   it('should generate the same keys as in the EC reference file', async (done) => {
     let inx: number = 0;
-    let nrIds: number = 10;
+    let nrIds: number = 100;
     const alg = supportedKeyGenerationAlgorithms[KeyGenerationAlgorithm_ECDSA];
     const pairwiseKeys = require('./Pairwise.EC.json');
     const seed = new OctKey(base64url.encode('xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi'));
     await keyStore.save(new KeyReference('masterSeed'), seed);
  
+    // for production, seed should be 256 bits.
     const seedReference = 'masterkey';
     await keyStore.save(new KeyReference(seedReference), seed);
     for (inx = 0; inx < nrIds; inx++) {
@@ -130,7 +131,7 @@ describe('PairwiseKey', () => {
       const pairwiseKey: EcPrivateKey = <EcPrivateKey> await subtleCryptoExtensions.generatePairwiseKey(<any>alg, seedReference, persona, id);
       expect(pairwiseKey.kid).toBeDefined();
 
-      // console.log(`{ "pwid": "${id}", "key": "${jwk.d}"},`);
+      console.log(`{ "pwid": "${id}", "key": "${pairwiseKey.d}"},`);
       expect(pairwiseKeys[inx].key).toBe(pairwiseKey.d);
       expect(1).toBe(pairwiseKeys.filter((element: any) => element.key === pairwiseKey.d).length);
     }
