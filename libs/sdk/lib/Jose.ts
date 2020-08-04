@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IJwsSigningOptions, JwsToken } from 'verifiablecredentials-crypto-sdk-typescript-protocol-jose/lib';
+import { IJwsSigningOptions, JwsToken } from 'verifiablecredentials-crypto-sdk-typescript-protocol-jose';
 import { IPayloadProtectionSigning, CryptoProtocolError, IProtocolCryptoToken } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
 import { PublicKey, JoseConstants } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import { JoseBuilder, KeyStoreOptions, ProtectionFormat } from './index';
