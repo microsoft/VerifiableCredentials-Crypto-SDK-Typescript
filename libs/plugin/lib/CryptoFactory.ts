@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IKeyStore } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { IKeyStore, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { Subtle } from './index';
 
 // Label for default algorithm
@@ -22,6 +22,11 @@ export interface CryptoSuiteMapItem {
    * Scope to which the subtle crypto API applies
    */
   scope: CryptoFactoryScope
+
+  /**
+   * secret for secrets and key for keys
+   */
+  keyStoreType: string[]
 }
 
 /**
@@ -104,12 +109,12 @@ export default class CryptoFactory {
   constructor (keyStore: IKeyStore, defaultCrypto: Subtle) {
     this.keyStore = keyStore;
     this.defaultCrypto = defaultCrypto;
-    this.keyEncrypters = {'*': [{ subtleCrypto: defaultCrypto, scope: CryptoFactoryScope.All}]};
-    this.sharedKeyEncrypters = {'*': [{ subtleCrypto: defaultCrypto, scope: CryptoFactoryScope.All}]};
-    this.symmetricEncrypter = {'*': [{ subtleCrypto: defaultCrypto, scope: CryptoFactoryScope.All}]};
-    this.messageSigners = {'*': [{ subtleCrypto: defaultCrypto, scope: CryptoFactoryScope.All}]};
-    this.messageAuthenticationCodeSigners = {'*': [{ subtleCrypto: defaultCrypto, scope: CryptoFactoryScope.All}]};
-    this.messageDigests = {'*': [{ subtleCrypto: defaultCrypto, scope: CryptoFactoryScope.All}]};
+    this.keyEncrypters = {'*': [{ subtleCrypto: defaultCrypto, scope: CryptoFactoryScope.All, keyStoreType: ['secret']}]};
+    this.sharedKeyEncrypters = {'*': [{ subtleCrypto: defaultCrypto, scope: CryptoFactoryScope.All, keyStoreType: ['secret']}]};
+    this.symmetricEncrypter = {'*': [{ subtleCrypto: defaultCrypto, scope: CryptoFactoryScope.All, keyStoreType: ['secret']}]};
+    this.messageSigners = {'*': [{ subtleCrypto: defaultCrypto, scope: CryptoFactoryScope.All, keyStoreType: ['secret']}]};
+    this.messageAuthenticationCodeSigners = {'*': [{ subtleCrypto: defaultCrypto, scope: CryptoFactoryScope.All, keyStoreType: ['secret']}]};
+    this.messageDigests = {'*': [{ subtleCrypto: defaultCrypto, scope: CryptoFactoryScope.All, keyStoreType: ['secret']}]};
   }
 
   /**
@@ -127,8 +132,8 @@ export default class CryptoFactory {
    * @param scope The requested scope
    * @returns The corresponding subtle crypto API
    */
-  public getKeyEncrypter (name: string, scope: CryptoFactoryScope): Subtle {
-    return this.getSubtleCrypto(this.keyEncrypters, name, scope);
+  public getKeyEncrypter (name: string, scope: CryptoFactoryScope, keyReference: KeyReference): Subtle {
+    return this.getSubtleCrypto(this.keyEncrypters, name, scope, keyReference);
   }
 
   /**
@@ -147,8 +152,8 @@ export default class CryptoFactory {
    * @param scope The requested scope
    * @returns The corresponding subtle crypto API
    */
-  getSharedKeyEncrypter (name: string, scope: CryptoFactoryScope): Subtle {
-    return this.getSubtleCrypto(this.sharedKeyEncrypters, name, scope);
+  getSharedKeyEncrypter (name: string, scope: CryptoFactoryScope, keyReference: KeyReference): Subtle {
+    return this.getSubtleCrypto(this.sharedKeyEncrypters, name, scope, keyReference);
   }
 
   /**
@@ -166,8 +171,8 @@ export default class CryptoFactory {
    * @param scope The requested scope
    * @returns The corresponding subtle crypto API
    */
-  getSymmetricEncrypter (name: string, scope: CryptoFactoryScope): Subtle {
-    return this.getSubtleCrypto(this.symmetricEncrypter, name, scope);
+  getSymmetricEncrypter (name: string, scope: CryptoFactoryScope, keyReference: KeyReference): Subtle {
+    return this.getSubtleCrypto(this.symmetricEncrypter, name, scope, keyReference);
   }
   
   /**
@@ -185,8 +190,8 @@ export default class CryptoFactory {
    * @param scope The requested scope
    * @returns The corresponding subtle crypto API
    */
-  getMessageSigner (name: string, scope: CryptoFactoryScope): Subtle {
-    return this.getSubtleCrypto(this.messageSigners, name, scope);
+  getMessageSigner (name: string, scope: CryptoFactoryScope, keyReference: KeyReference): Subtle {
+    return this.getSubtleCrypto(this.messageSigners, name, scope, keyReference);
   }
 
   /**
@@ -204,8 +209,8 @@ export default class CryptoFactory {
    * @param scope The requested scope
    * @returns The corresponding subtle crypto API
    */
-  getMessageAuthenticationCodeSigner (name: string, scope: CryptoFactoryScope): Subtle {
-    return this.getSubtleCrypto(this.messageAuthenticationCodeSigners, name, scope);
+  getMessageAuthenticationCodeSigner (name: string, scope: CryptoFactoryScope, keyReference: KeyReference): Subtle {
+    return this.getSubtleCrypto(this.messageAuthenticationCodeSigners, name, scope, keyReference);
   }
 
   /**
@@ -223,8 +228,8 @@ export default class CryptoFactory {
    * @param scope The requested scope
    * @returns The corresponding subtle crypto API
    */
-  getMessageDigest (name: string, scope: CryptoFactoryScope): Subtle {
-    return this.getSubtleCrypto(this.messageDigests, name, scope);
+  getMessageDigest (name: string, scope: CryptoFactoryScope, keyReference: KeyReference): Subtle {
+    return this.getSubtleCrypto(this.messageDigests, name, scope, keyReference);
   }
 
     /**
@@ -250,7 +255,7 @@ export default class CryptoFactory {
    * @param scope The requested scope
    * @returns The corresponding crypto API
    */
-   private getSubtleCrypto (mapper: CryptoSuiteMap, name: string, scope: CryptoFactoryScope): Subtle {
+   private getSubtleCrypto (mapper: CryptoSuiteMap, name: string, scope: CryptoFactoryScope, _keyReference: KeyReference): Subtle {
     if (mapper[name]) {
       let mapping = mapper[name].filter(item => item.scope === scope);
       if (mapping && mapping.length > 0) {

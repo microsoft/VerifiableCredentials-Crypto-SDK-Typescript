@@ -12,8 +12,10 @@ describe('CryptoBuilder', () => {
         expect(builder.cryptoFactory.constructor.name).toEqual('CryptoFactory');
         expect(builder.keyStore.constructor.name).toEqual('KeyStoreInMemory');
         expect(builder.subtle.constructor.name).toEqual('Subtle');
-        expect(builder.signingKeyReference).toBeUndefined();
+        expect(builder.signingKeyReference.keyReference).toEqual('signing-ES256K');
         expect(builder.signingAlgorithm).toEqual('ES256K');
+        expect(builder.recoveryKeyReference.keyReference).toEqual('recovery-ES256K');
+        expect(builder.recoveryAlgorithm).toEqual('ES256K');
 
         builder.useSigningAlgorithm('RSA-OAEP');
         expect(builder.signingAlgorithm).toEqual('RSA-OAEP');
@@ -44,7 +46,7 @@ describe('CryptoBuilder', () => {
     it('should generate a signing key', async () => {
         let crypto = new CryptoBuilder()
             .useSigningKeyReference(new KeyReference('signingKey'))
-            .useSigningAlgorithm('Rs256')
+            .useSigningAlgorithm('RS256')
             .build();
         crypto = await crypto.generateKey(KeyUse.Signature);
         const jwk = await crypto.builder.keyStore.get(crypto.builder.signingKeyReference!);

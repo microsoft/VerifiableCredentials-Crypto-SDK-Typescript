@@ -20,9 +20,9 @@ export default class CryptoFactoryKeyVault extends CryptoFactory {
   constructor(keyStore: IKeyStore, defaultCrypto: any) {
     super(keyStore, defaultCrypto);
     const subtleCrypto: any = new SubtleCryptoKeyVault(defaultCrypto, <KeyStoreKeyVault>keyStore);
-    this.addMessageSigner('ES256K', { subtleCrypto, scope: CryptoFactoryScope.Private });
-    this.addMessageSigner('ECDSA', { subtleCrypto, scope: CryptoFactoryScope.Private });
-    this.addKeyEncrypter('RSA-OAEP', { subtleCrypto, scope: CryptoFactoryScope.Private });
-    this.addKeyEncrypter('RSA-OAEP-256', { subtleCrypto, scope: CryptoFactoryScope.Private });
+    this.addMessageSigner('ES256K', { subtleCrypto, scope: CryptoFactoryScope.Private, keyStoreType: ['key'] });
+    this.addMessageSigner('ECDSA', { subtleCrypto, scope: CryptoFactoryScope.Private, keyStoreType: ['key'] });
+    this.addKeyEncrypter('RSA-OAEP', { subtleCrypto, scope: CryptoFactoryScope.Private, keyStoreType: ['key'] });
+    this.addKeyEncrypter('RSA-OAEP-256', { subtleCrypto, scope: CryptoFactoryScope.Private, keyStoreType: ['key'] });
   }
 }

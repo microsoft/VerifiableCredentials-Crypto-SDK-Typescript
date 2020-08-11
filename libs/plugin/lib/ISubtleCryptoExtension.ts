@@ -39,16 +39,7 @@ export default interface ISubtleCryptoExtension extends Subtle {
    * @param payload which was signed
    */
    verifyByJwk(algorithm: CryptoAlgorithm, jwk: JsonWebKey, signature: BufferSource, payload: BufferSource): Promise<boolean>;
-        
-  /**
-   * Decrypt with a key referenced in the key store.
-   * The referenced key must be a jwk key.
-   * @param algorithm used for encryption
-   * @param keyReference points to key in the key store
-   * @param cipher to decrypt
-   */
-   decryptByKeyStore(algorithm: CryptoAlgorithm, keyReference: string, cipher: BufferSource): PromiseLike<ArrayBuffer>;  
-  
+       
    /**
    * Decrypt with JWK.
    * @param algorithm used for decryption
@@ -56,20 +47,13 @@ export default interface ISubtleCryptoExtension extends Subtle {
    * @param cipher to decrypt
    */
    decryptByJwk(algorithm: CryptoAlgorithm, jwk: JsonWebKey, cipher: BufferSource): Promise<ArrayBuffer>;
-
-   /**
-   * Encrypt with a jwk key referenced in the key store
+  
+  /**
+   * Decrypt with a key referenced in the key store.
+   * The referenced key must be a jwk key.
    * @param algorithm used for encryption
    * @param keyReference points to key in the key store
-   * @param data to sign
+   * @param cipher to decrypt
    */
-  encryptByJwk(algorithm: CryptoAlgorithm, key: JsonWebKey, data: BufferSource): Promise<ArrayBuffer>;
-
-  /**
-   * Export the key for the selected plugin
-   * @param algorithm associated with the key
-   * @param key The key material to export
-   * @param scope for the key material
-   */
-   exportJwkKey(algorithm: Algorithm, key: CryptoKey, scope: CryptoFactoryScope): Promise<JsonWebKey>;
+   decryptByKeyStore(algorithm: CryptoAlgorithm, keyReference: KeyReference, cipher: BufferSource): PromiseLike<ArrayBuffer>;  
 }   

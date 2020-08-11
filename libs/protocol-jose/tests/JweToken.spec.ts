@@ -63,7 +63,7 @@ describe('JweToken', () => {
     expect(deserialized.get(JoseConstants.tokenRecipients)).toEqual(cipher.get(JoseConstants.tokenRecipients));
 
     // decrypt
-    const decrypted = await options.payloadProtection.decrypt('key', deserialized, options);
+    const decrypted = await options.payloadProtection.decrypt(new KeyReference('key'), deserialized, options);
     expect(decrypted).toEqual(Buffer.from(payload));
 
     // Flat serialization
@@ -142,7 +142,7 @@ describe('JweToken', () => {
             expect(base64url.encode(cipher.ciphertext)).toEqual('5eym8TW_c8SuK0ltJ3rpYIzOeDQz7TALvtu6UG9oMo4vpzs9tX_EFShS8iB7j6jiSdiwkIr3ajwQzaBtQD_A');
 
             // Decrypt
-            const plaintext = await cipher.decrypt('key');
+            const plaintext = await cipher.decrypt(new KeyReference('key'));
             expect(plaintext).toEqual(Buffer.from(payload));
         });
         

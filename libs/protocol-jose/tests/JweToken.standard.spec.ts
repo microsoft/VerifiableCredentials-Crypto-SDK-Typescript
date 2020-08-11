@@ -84,7 +84,7 @@ describe('JweToken standard', () => {
       //expect(parsed.recipients[0].header).toBeUndefined();
 
       // Decrypt
-      const plaintext = await cipher.decrypt('key');
+      const plaintext = await cipher.decrypt(new KeyReference('key'));
       expect(plaintext).toEqual(Buffer.from(payload));
     });
 
@@ -128,7 +128,7 @@ describe('JweToken standard', () => {
             expect(base64url.encode(cipher.ciphertext)).toEqual('5eym8TW_c8SuK0ltJ3rpYIzOeDQz7TALvtu6UG9oMo4vpzs9tX_EFShS8iB7j6jiSdiwkIr3ajwQzaBtQD_A');
 
             // Decrypt
-            const plaintext = await cipher.decrypt('key');
+            const plaintext = await cipher.decrypt(new KeyReference('key'));
             expect(plaintext).toEqual(Buffer.from(payload));
         });
         

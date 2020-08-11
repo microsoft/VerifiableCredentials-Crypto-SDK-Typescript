@@ -16,27 +16,6 @@ describe('Crypto', () => {
 
         crypto = await crypto.generateKey(KeyUse.Signature);
         expect(crypto.builder.signingKeyReference?.cryptoKey).toBeDefined();
-
-        // negative cases
-        let throwed = false;
-        await crypto.generateKey(KeyUse.Encryption)
-            .catch((e) => {
-                expect(e.message).toEqual(`not implemented`);
-                throwed = true;
-            })
-        expect(throwed).toBeTruthy();
-
-        crypto = new CryptoBuilder()
-            .useRecoveryKeyReference(new KeyReference('recovery'))
-            .build();
-
-        throwed = false;
-        await crypto.generateKey(KeyUse.Signature)
-            .catch((e) => {
-                expect(e.message).toEqual(`signingKeyReference is not defined in crypto`);
-                throwed = true;
-            })
-        expect(throwed).toBeTruthy();
     });
 
     it('should generate a recovery key', async () => {
@@ -54,17 +33,6 @@ describe('Crypto', () => {
         await crypto.generateKey(KeyUse.Signature, 'test')
             .catch((e) => {
                 expect(e.message).toEqual(`Key generation type 'test' not supported`);
-                throwed = true;
-            })
-        expect(throwed).toBeTruthy();
-
-        crypto = new CryptoBuilder()
-            .useSigningKeyReference(new KeyReference('signing'))
-            .build();
-        throwed = false;
-        await crypto.generateKey(KeyUse.Signature, 'recovery')
-            .catch((e) => {
-                expect(e.message).toEqual(`recoveryKeyReference is not defined in crypto`);
                 throwed = true;
             })
         expect(throwed).toBeTruthy();

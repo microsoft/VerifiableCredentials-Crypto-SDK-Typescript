@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CryptoAlgorithm } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { CryptoAlgorithm, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { KeyUseFactory, RsaPrivateKey, PrivateKey, KeyType, W3cCryptoApiConstants, JoseConstants } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import CryptoFactory, { CryptoFactoryScope } from "../CryptoFactory";
 import base64url from "base64url";
@@ -113,7 +113,7 @@ type PrimeDelegate = Array<(cryptoFactory: CryptoFactory, inx: number, key: Buff
    */
   private static async generateHashForPrime (cryptoFactory: CryptoFactory, _inx: number, key: Buffer, data: Buffer, deterministicKey: Buffer): Promise<Buffer> {
     // Get the subtle crypto
-    const crypto: Subtle = cryptoFactory.getMessageAuthenticationCodeSigner(W3cCryptoApiConstants.Hmac, CryptoFactoryScope.Private);
+    const crypto: Subtle = cryptoFactory.getMessageAuthenticationCodeSigner(W3cCryptoApiConstants.Hmac, CryptoFactoryScope.Private, new KeyReference('', 'secret'));
 
     // Generate the master key
     const alg: CryptoAlgorithm = { name: W3cCryptoApiConstants.Hmac, hash: W3cCryptoApiConstants.Sha512 };

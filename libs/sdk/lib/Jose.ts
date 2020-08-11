@@ -57,13 +57,13 @@ export default class Jose implements IPayloadProtectionSigning {
     const jwsOptions: IJwsSigningOptions = Jose.optionsFromBuilder(this.builder);
 
     // Set the protected header
-    const kid = this.builder.kid || `${this.builder.crypto.builder.did}#${this.builder.crypto.builder.signingKeyReference?.keyReference}`;
+    const kid = this.builder.kid || `${this.builder.crypto.builder.did}#${this.builder.crypto.builder.signingKeyReference.keyReference}`;
     jwsOptions.protected!.set('kid', kid);
     jwsOptions.protected!.set('typ', 'JWT');
     const token: JwsToken = new JwsToken(jwsOptions);
     const protectionFormat = Jose.getProtectionFormat(this.builder.serializationFormat);
 
-    this._token = await token.sign(this.builder.crypto.builder.signingKeyReference!, <Buffer>payload, protectionFormat);
+    this._token = await token.sign(this.builder.crypto.builder.signingKeyReference, <Buffer>payload, protectionFormat);
     return this;
   }
 

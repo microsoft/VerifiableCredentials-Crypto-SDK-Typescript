@@ -413,7 +413,7 @@ export default class JweToken implements IJweGeneralJson {
     // Get the encryptor extensions
     const encryptor = new SubtleCryptoExtension(cryptoFactory);
     let randomGenerator = CryptoHelpers.jwaToWebCrypto(contentEncryptionAlgorithm);
-    const generator: any = CryptoHelpers.getSubtleCryptoForAlgorithm(cryptoFactory, randomGenerator, CryptoFactoryScope.Public);
+    const generator: any = CryptoHelpers.getSubtleCryptoForAlgorithm(cryptoFactory, randomGenerator, CryptoFactoryScope.Public, new KeyReference('', 'secret'));
 
     // Set the content encryption key
     let contentEncryptionKey: Buffer = this.getContentEncryptionKey(options, false);
@@ -516,14 +516,14 @@ export default class JweToken implements IJweGeneralJson {
    * @returns Signed payload in compact Jwe format.
    */
 // tslint:disable-next-line: max-func-body-length
-   public async decrypt (decryptionKeyReference: string, options?: IJweEncryptionOptions): Promise<Buffer> {
+   public async decrypt (decryptionKeyReference: KeyReference, options?: IJweEncryptionOptions): Promise<Buffer> {
     const cryptoFactory: CryptoFactory = this.getCryptoFactory(options);
 
     // Get the encryptor extensions
     const decryptor = new SubtleCryptoExtension(cryptoFactory);
 
     // get decryption public key
-    let jwk: PublicKey = (await cryptoFactory.keyStore.get(new KeyReference(decryptionKeyReference))).getKey<PublicKey>();
+    let jwk: PublicKey = (await cryptoFactory.keyStore.get(decryptionKeyReference)).getKey<PublicKey>();
 
     // Get the encrypted key
     // Check if kid matches
@@ -572,7 +572,7 @@ export default class JweToken implements IJweGeneralJson {
   return Buffer.from(plaintext);
   }
 
-  private async decryptContentEncryptionKey(recipient: IJweRecipient, decryptor: ISubtleCryptoExtension, decryptionKeyReference: string): Promise<Buffer> {
+  private async decryptContentEncryptionKey(recipient: IJweRecipient, decryptor: ISubtleCryptoExtension, decryptionKeyReference: KeyReference): Promise<Buffer> {
     let keyDecryptionAlgorithm = '';
     if (!recipient.header) {
       keyDecryptionAlgorithm = this.protected.get(JoseConstants.Alg);
