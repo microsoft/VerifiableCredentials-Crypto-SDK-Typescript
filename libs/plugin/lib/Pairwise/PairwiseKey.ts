@@ -70,7 +70,7 @@ import EcPairwiseKey from "./EcPairwiseKey";
     const jwk = <OctKey>(<IKeyContainer> await this.cryptoFactory.keyStore.get(new KeyReference(seedReference), { publicKeyOnly: false})).getKey();
 
     // Get the subtle crypto
-    const crypto: Subtle = this.cryptoFactory.getMessageAuthenticationCodeSigner(W3cCryptoApiConstants.Hmac, CryptoFactoryScope.Private);
+    const crypto: Subtle = this.cryptoFactory.getMessageAuthenticationCodeSigner(W3cCryptoApiConstants.Hmac, CryptoFactoryScope.Private, new KeyReference('', 'secret'));
 
     // Generate the master key
     const alg: CryptoAlgorithm = { name: W3cCryptoApiConstants.Hmac, hash: W3cCryptoApiConstants.Sha512 };

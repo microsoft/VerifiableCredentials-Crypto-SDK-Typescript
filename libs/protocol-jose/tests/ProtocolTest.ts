@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { JoseToken, JoseConstants } from "../lib/index";
 import { ICryptoToken, IVerificationResult, IPayloadProtection, IPayloadProtectionOptions } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
-import { ProtectionFormat } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { ProtectionFormat, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { PublicKey, RsaPrivateKey, OctKey, PrivateKey, KeyContainer } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 
 export default class ProtocolTest implements IPayloadProtection {
@@ -34,7 +34,7 @@ export default class ProtocolTest implements IPayloadProtection {
     });
   }
 
-  public decrypt (_decryptionKeyReference: string, _cipher: ICryptoToken, _options?: IPayloadProtectionOptions): Promise<Buffer> {
+  public decrypt (_decryptionKeyReference: KeyReference, _cipher: ICryptoToken, _options?: IPayloadProtectionOptions): Promise<Buffer> {
     return new Promise(resolve => {
       resolve(Buffer.from(''));
     });

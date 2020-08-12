@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Subtle } from './index';
 import { PublicKey, EcPublicKey, JoseConstants, W3cCryptoApiConstants } from 'verifiablecredentials-crypto-sdk-typescript-keys';
-import { CryptoAlgorithm } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { CryptoAlgorithm, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import CryptoFactory, { CryptoFactoryScope } from './CryptoFactory';
 
 /**
@@ -18,24 +18,24 @@ export default class CryptoHelpers {
    * @param algorithmName Requested algorithm
    * @param hash Optional hash for the algorithm
    */
-  public static getSubtleCryptoForAlgorithm(cryptoFactory: CryptoFactory, algorithm: any, scope: CryptoFactoryScope): Subtle {
+  public static getSubtleCryptoForAlgorithm(cryptoFactory: CryptoFactory, algorithm: any, scope: CryptoFactoryScope, keyReference: KeyReference): Subtle {
     const jwa = CryptoHelpers.webCryptoToJwa(algorithm)
     switch (algorithm.name.toUpperCase()) {
       case 'RSASSA-PKCS1-V1_5':
       case 'ECDSA':
       case 'EDDSA':
-        return cryptoFactory.getMessageSigner(jwa, scope);
+        return cryptoFactory.getMessageSigner(jwa, scope, keyReference);
       case 'RSA-OAEP':
       case 'RSA-OAEP-256':
-        return cryptoFactory.getKeyEncrypter(jwa, scope);
+        return cryptoFactory.getKeyEncrypter(jwa, scope, keyReference);
       case 'AES-GCM':
-        return cryptoFactory.getSymmetricEncrypter(jwa, scope);
+        return cryptoFactory.getSymmetricEncrypter(jwa, scope, keyReference);
       case 'HMAC':
-        return cryptoFactory.getMessageAuthenticationCodeSigner(jwa, scope);
+        return cryptoFactory.getMessageAuthenticationCodeSigner(jwa, scope, keyReference);
       case 'SHA-256':
       case 'SHA-384':
       case 'SHA-512':
-        return cryptoFactory.getMessageDigest(jwa, scope);
+        return cryptoFactory.getMessageDigest(jwa, scope, keyReference);
     }
 
     throw new Error(`Algorithm '${JSON.stringify(algorithm)}' is not supported`);

@@ -185,8 +185,8 @@ export default class KeyStoreKeyVault implements IKeyStore {
         const value = await secretClient.setSecret(keyReference.keyReference, serialKey);
         //(<any>key).kid = value.properties.id;
       } else {
-        (<any>key).kid = kid;
         key = new OctKey(base64url.encode(<string>key));
+        (<any>key).kid = kid;
         const serialKey = JSON.stringify(key);
         const value = await secretClient.setSecret(keyReference.keyReference, serialKey);
         //(<any>key).kid = value.properties.id;

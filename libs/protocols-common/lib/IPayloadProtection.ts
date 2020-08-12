@@ -8,6 +8,7 @@
  import { KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import IVerificationResult from './IVerificationResult';
 import { ICryptoToken } from './ICryptoToken';
+import { Key } from 'readline';
 
 /**
  * Interface defining the implementation of the selected protocol.
@@ -57,7 +58,7 @@ export interface IPayloadProtection {
    * @param options used for the decryption. These options override the options provided in the constructor.
    * @returns Decrypted payload.
    */
-   decrypt (decryptionKeyReference: string, cipher: ICryptoToken, options?: IPayloadProtectionOptions): Promise<Buffer>;
+   decrypt (decryptionKeyReference: KeyReference, cipher: ICryptoToken, options?: IPayloadProtectionOptions): Promise<Buffer>;
 
   /**
    * Serialize a cryptographic token

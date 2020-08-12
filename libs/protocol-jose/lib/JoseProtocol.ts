@@ -80,7 +80,7 @@ export default class JoseProtocol implements IPayloadProtection {
    * @param options used for the decryption. These options override the options provided in the constructor.
    * @returns Decrypted payload.
    */
-   public async decrypt (decryptionKeyReference: string, token: ICryptoToken, options: IPayloadProtectionOptions): Promise<Buffer> {
+   public async decrypt (decryptionKeyReference: KeyReference, token: ICryptoToken, options: IPayloadProtectionOptions): Promise<Buffer> {
     const cipher: JweToken = JweToken.fromCryptoToken(token, options);
     (<any>cipher).options = JweToken.fromPayloadProtectionOptions(options);
     return await cipher.decrypt(decryptionKeyReference);

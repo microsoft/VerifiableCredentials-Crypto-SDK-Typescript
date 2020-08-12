@@ -7,18 +7,19 @@ import { KeyReference, CryptoBuilder, KeyUse, IPayloadProtectionSigning, JoseBui
 import Credentials from './Credentials';
 import { ClientSecretCredential } from '@azure/identity';
 
-const credentials = new ClientSecretCredential(Credentials.tenantGuid, Credentials.clientId, Credentials.clientSecret);
-const keyVaultEnabled = Credentials.vaultUri.startsWith('https');
-
-let originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-beforeEach(async () => {
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
-});
-
-afterEach(() => {
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-});
 describe('Jose Signing', () => {
+    const credentials = new ClientSecretCredential(Credentials.tenantGuid, Credentials.clientId, Credentials.clientSecret);
+    const keyVaultEnabled = Credentials.vaultUri.startsWith('https');
+
+    let originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+    beforeEach(async () => {
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
+    });
+
+    afterEach(() => {
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+    });
+
     it('should sign and validate a message protected by JWS', async () => {
         const payload = Buffer.from('Throughout human history, we have been dependent on machines to survive. Fate, it seems, is not without a sense of irony.');
 
@@ -101,7 +102,7 @@ describe('Jose Signing', () => {
 
         // Setup sample
         const keyReference = new KeyReference('neo', 'secret');
-        const subtle =  new Subtle();
+        const subtle = new Subtle();
         const cryptoFactory = new CryptoFactoryNode(new KeyStoreKeyVault(credentials, Credentials.vaultUri, new KeyStoreInMemory()), subtle);
         let crypto = new CryptoBuilder()
             .useKeyVault(credentials, Credentials.vaultUri)

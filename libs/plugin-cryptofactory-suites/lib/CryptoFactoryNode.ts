@@ -16,8 +16,8 @@ export default class CryptoFactoryNode extends CryptoFactory {
   constructor (keyStore: IKeyStore, crypto: any) {
     super(keyStore, crypto);
     const subtleCrypto: any = new SubtleCryptoElliptic(crypto);
-    this.addMessageSigner('EdDSA', {subtleCrypto, scope: CryptoFactoryScope.All});
-    this.addMessageSigner('EDDSA', {subtleCrypto, scope: CryptoFactoryScope.All});
-    this.addMessageSigner('ed25519', {subtleCrypto, scope: CryptoFactoryScope.All});
+    this.addMessageSigner('EdDSA', {subtleCrypto, scope: CryptoFactoryScope.All, keyStoreType: ['secret', 'key']});
+    this.addMessageSigner('EDDSA', {subtleCrypto, scope: CryptoFactoryScope.All, keyStoreType: ['secret', 'key']});
+    this.addMessageSigner('ed25519', {subtleCrypto, scope: CryptoFactoryScope.All, keyStoreType: ['secret', 'key']});
   }
 }

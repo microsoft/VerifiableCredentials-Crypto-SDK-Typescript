@@ -43,7 +43,7 @@ describe('signing', () => {
 
         for (let inx = 0; inx < factories.length; inx++) {
             // Get the subtle api for private key operations
-            const subtlePrivate = factories[inx].getMessageSigner('ECDSA', CryptoFactoryScope.Private);
+            const subtlePrivate = factories[inx].getMessageSigner('ECDSA', CryptoFactoryScope.Private, new KeyReference('', 'secret'));
             const isKeyVault = subtlePrivate.constructor.name === 'SubtleCryptoKeyVault'
             console.log(`Use subtle ${subtlePrivate.constructor.name}`);
 
@@ -119,7 +119,7 @@ describe('signing', () => {
 
 
         // Get the subtle api for private key operations
-        const subtleKv = cryptoFactoryKeyVault.getMessageSigner('ECDSA', CryptoFactoryScope.Private);
+        const subtleKv = cryptoFactoryKeyVault.getMessageSigner('ECDSA', CryptoFactoryScope.Private, reference);
 
         // retrieve key from key vault
         const kvJwk = (await keyStoreKeyVault.get(reference)).getKey<JsonWebKey>();
@@ -184,7 +184,7 @@ describe('signing', () => {
         const factory = new CryptoFactoryNode(keyStoreKeyVault, subtle);
 
         // Get the subtle api for private key operations
-        const subtlePrivate = factory.getMessageSigner('ECDSA', CryptoFactoryScope.Private);
+        const subtlePrivate = factory.getMessageSigner('ECDSA', CryptoFactoryScope.Private, reference);
 
         // retrieve key from key vault
         const kvJwk = (await keyStoreKeyVault.get(reference, new KeyStoreOptions({publicKeyOnly: false}))).getKey<JsonWebKey>();

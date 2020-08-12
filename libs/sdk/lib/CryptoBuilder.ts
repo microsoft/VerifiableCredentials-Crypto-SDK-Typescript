@@ -13,14 +13,11 @@ export default class CryptoBuilder {
   private _subtle: Subtle = new SubtleCryptoNode().getSubtleCrypto();
   private _cryptoFactory: CryptoFactory = new CryptoFactory(this.keyStore, this.subtle);
 
-  // key references
-  private _recoveryKeyReference: KeyReference | undefined;
-  private _signingKeyReference: KeyReference | undefined;
-  private _recoveryKeyOptions: KeyStoreOptions = { 
+  private _recoveryKeyOptions: KeyStoreOptions = {
     publicKeyOnly: false,  // get private key, key vault only returns public key
     latestVersion: true    // take last version of the key
   };
-  private _signingKeyOptions: KeyStoreOptions = { 
+  private _signingKeyOptions: KeyStoreOptions = {
     publicKeyOnly: false,  // get private key, key vault only returns public key
     latestVersion: true    // take last version of the key
   };
@@ -28,20 +25,26 @@ export default class CryptoBuilder {
   private _recoveryAlgorithm: string = 'ES256K';
   private _did: string | undefined;
 
+  // key references
+  private _recoveryKeyName = `recovery-${this._recoveryAlgorithm}`;
+  private _recoveryKeyReference: KeyReference = new KeyReference(this._recoveryKeyName, 'secret');
+  private _signingKeyName = `signing-${this._signingAlgorithm}`;
+  private _signingKeyReference: KeyReference  = new KeyReference(this._signingKeyName, 'secret');
+
   /**
    * Create a crypto builder to provide crypto capabilities
    */
   constructor() {
   }
 
-   
+
   /**
    * Get the DID of the requestor
    */
   public get did() {
     return this._did;
   }
-  
+
   /**
    * Set the DID of the app
    */
@@ -64,19 +67,19 @@ export default class CryptoBuilder {
   /**
    * Get the reference in the key store to the recovery key
    */
-  public get recoveryKeyReference(): KeyReference | undefined {
+  public get recoveryKeyReference(): KeyReference {
     return this._recoveryKeyReference;
   }
 
   /**
    * Set the reference in the key store to the recovery key
    */
-  public  useRecoveryKeyReference(
-    recoveryKeyReference: KeyReference, 
-    options: KeyStoreOptions = { 
+  public useRecoveryKeyReference(
+    recoveryKeyReference: KeyReference,
+    options: KeyStoreOptions = {
       publicKeyOnly: false,  // get private key, key vault only returns public key
       latestVersion: true    // take last version of the key
-    } ): CryptoBuilder {
+    }): CryptoBuilder {
     this._recoveryKeyReference = recoveryKeyReference;
     this._recoveryKeyOptions = options;
     return this;
@@ -85,7 +88,7 @@ export default class CryptoBuilder {
   /**
    * Get the reference in the key store to the signing key
    */
-  public get signingKeyReference(): KeyReference | undefined {
+  public get signingKeyReference(): KeyReference {
     return this._signingKeyReference;
   }
 
@@ -99,12 +102,12 @@ export default class CryptoBuilder {
   /**
    * Set the reference in the key store to the signing key
    */
-  public  useSigningKeyReference(
-    signingKeyReference: KeyReference, 
-    options: KeyStoreOptions = { 
+  public useSigningKeyReference(
+    signingKeyReference: KeyReference,
+    options: KeyStoreOptions = {
       publicKeyOnly: false,  // get private key, key vault only returns public key
       latestVersion: true    // take last version of the key
-    } ): CryptoBuilder {
+    }): CryptoBuilder {
     this._signingKeyReference = signingKeyReference;
     this._signingKeyOptions = options;
     return this;
@@ -127,7 +130,7 @@ export default class CryptoBuilder {
   /**
    * Set the algortihm use for signing
    */
-  public  useSigningAlgorithm(signingAlgorithm: string): CryptoBuilder {
+  public useSigningAlgorithm(signingAlgorithm: string): CryptoBuilder {
     this._signingAlgorithm = signingAlgorithm;
     return this;
   }
@@ -188,6 +191,14 @@ export default class CryptoBuilder {
       'CryptoFactoryKeyVault',
       this.keyStore!,
       this.subtle!);
+
+    // Check if default key references are used and switch to key as default for key vault
+    if (this.signingKeyReference.keyReference === this._signingKeyName) {
+      this.useSigningKeyReference(new KeyReference(this._signingKeyName, 'key'));
+    }
+    if (this.recoveryKeyReference.keyReference === this._recoveryKeyName) {
+      this.useRecoveryKeyReference(new KeyReference(this._recoveryKeyName, 'key'));
+    }
 
     return this;
   }

@@ -12,7 +12,7 @@ export default class Crypto {
 
   private signingKey: CryptoKeyPair | CryptoKey | undefined;
 
-  
+
   // Set the default protocol
   private _signingProtocol: IPayloadProtectionSigning = new JoseBuilder(this).build();
 
@@ -32,19 +32,11 @@ export default class Crypto {
     let jwaAlalgorithm: string;
     switch (type) {
       case 'signing':
-        if (this.builder.signingKeyReference) {
-          keyReference = this.builder.signingKeyReference;
-        } else {
-          throw new Error('signingKeyReference is not defined in crypto');
-        }
+        keyReference = this.builder.signingKeyReference;
         jwaAlalgorithm = this.builder.signingAlgorithm
         break;
       case 'recovery':
-        if (this.builder.recoveryKeyReference) {
-          keyReference = this.builder.recoveryKeyReference;
-        } else {
-          throw new Error('recoveryKeyReference is not defined in crypto');
-        }
+        keyReference = this.builder.recoveryKeyReference;
         jwaAlalgorithm = this.builder.recoveryAlgorithm;
         break;
       default:
@@ -56,7 +48,7 @@ export default class Crypto {
       const importKey = keyReference?.type === 'secret';
       const subtle = importKey ?
         this.builder.subtle :
-        this.builder.cryptoFactory.getMessageSigner(jwaAlalgorithm, CryptoFactoryScope.Private);
+        this.builder.cryptoFactory.getMessageSigner(jwaAlalgorithm, CryptoFactoryScope.Private, keyReference);
 
       this.signingKey = await subtle.generateKey(
         w3cAlgorithm,
@@ -81,14 +73,16 @@ export default class Crypto {
         jwk = <JsonWebKey>await subtle.exportKey('jwk', <CryptoKey>this.signingKey);
       }
 
-      await this.builder.keyStore.save(keyReference!, jwk);
+      jwk.use = keyUse;
+      jwk.alg = jwaAlalgorithm;
+      await this.builder.keyStore.save(keyReference, jwk);
       return this;
 
     } else {
       throw new Error('not implemented');
     }
   }
-  
+
   /**
    * Get the protocol used for signing
    */
@@ -99,7 +93,7 @@ export default class Crypto {
   /**
    * Set the  protocol used for signing
    */
-  public  useSigningProtocol(signingProtocol: IPayloadProtectionSigning): Crypto {
+  public useSigningProtocol(signingProtocol: IPayloadProtectionSigning): Crypto {
     this._signingProtocol = signingProtocol;
     return this;
   }

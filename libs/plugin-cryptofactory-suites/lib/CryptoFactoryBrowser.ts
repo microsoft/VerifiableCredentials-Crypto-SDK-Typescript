@@ -20,7 +20,7 @@ export default class CryptoFactoryBrowser extends CryptoFactory {
   constructor (keyStore: IKeyStore, crypto: any) {
     super(keyStore, crypto);
     const subtleCrypto: any = new SubtleCryptoElliptic(crypto);
-    this.addMessageSigner('ES256K', {subtleCrypto, scope: CryptoFactoryScope.All});
-    this.addMessageSigner('EdDSA', {subtleCrypto, scope: CryptoFactoryScope.All});
+    this.addMessageSigner('ES256K', {subtleCrypto, scope: CryptoFactoryScope.All, keyStoreType: ['secret', 'key']});
+    this.addMessageSigner('EdDSA', {subtleCrypto, scope: CryptoFactoryScope.All, keyStoreType: ['secret', 'key']});
   }
 }

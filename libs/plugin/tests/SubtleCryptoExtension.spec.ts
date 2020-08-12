@@ -20,7 +20,7 @@ describe('SubtleCryptoExtension', () => {
       true,
       ['sign', 'verify']
     );
-    const jwk = await generator.exportJwkKey(alg, key.privateKey, CryptoFactoryScope.Private);
+    const jwk = await cryptoFactory.defaultCrypto.exportKey('jwk', key.privateKey);
     expect(jwk.d).toBeDefined();
     expect(jwk.x).toBeDefined();
     expect(jwk.y).toBeDefined();
@@ -34,7 +34,7 @@ describe('SubtleCryptoExtension', () => {
       true,
       ['encrypt', 'decrypt']
     );
-    const jwk = await generator.exportJwkKey(alg, key.privateKey, CryptoFactoryScope.Private);
+    const jwk = await cryptoFactory.defaultCrypto.exportKey('jwk', key.privateKey);
     expect(jwk.d).toBeDefined();
     expect(jwk.n).toBeDefined();
     expect(jwk.e).toBeDefined();
@@ -48,7 +48,7 @@ describe('SubtleCryptoExtension', () => {
       true,
       ['encrypt', 'decrypt']
     );
-    const jwk = await generator.exportJwkKey(alg, key, CryptoFactoryScope.Private);
+    const jwk = await cryptoFactory.defaultCrypto.exportKey('jwk', key);
     expect(jwk.k).toBeDefined();
     expect(jwk.kty).toEqual('oct');
   });
