@@ -255,14 +255,14 @@ export default class CryptoFactory {
    * @param scope The requested scope
    * @returns The corresponding crypto API
    */
-   private getSubtleCrypto (mapper: CryptoSuiteMap, name: string, scope: CryptoFactoryScope, _keyReference: KeyReference): Subtle {
+   private getSubtleCrypto (mapper: CryptoSuiteMap, name: string, scope: CryptoFactoryScope, keyReference: KeyReference): Subtle {
     if (mapper[name]) {
-      let mapping = mapper[name].filter(item => item.scope === scope);
+      let mapping = mapper[name].filter(item => item.scope === scope && item.keyStoreType.includes(keyReference.type));
       if (mapping && mapping.length > 0) {
         return mapping[0].subtleCrypto;
       }
       // Check if the algorithm is defined for All scope
-      mapping = mapper[name].filter(item => item.scope === CryptoFactoryScope.All);
+      mapping = mapper[name].filter(item => item.scope === CryptoFactoryScope.All && item.keyStoreType.includes(keyReference.type));
       if (mapping && mapping.length > 0) {
         return mapping[0].subtleCrypto;
       }

@@ -44,6 +44,10 @@ describe('CryptoFactory', () => {
     expect(keyEncrypters.ID).toEqual('SubtleCryptoMock');
     keyEncrypters = factory.getKeyEncrypter(algorithm, CryptoFactoryScope.All, keyReference);
     expect(keyEncrypters.ID).toBeUndefined();
+    keyEncrypters = factory.getKeyEncrypter(algorithm, CryptoFactoryScope.Private, new KeyReference('', 'key'));
+    expect(keyEncrypters.ID).toBeUndefined();
+    keyEncrypters = factory.getKeyEncrypter(algorithm, CryptoFactoryScope.All, new KeyReference('', 'key'));
+    expect(keyEncrypters.ID).toBeUndefined();
     factory.addKeyEncrypter(algorithm, {subtleCrypto: factory.defaultCrypto, scope: CryptoFactoryScope.All, keyStoreType: ['secret']});
     keyEncrypters = factory.getKeyEncrypter(algorithm, CryptoFactoryScope.All, keyReference);
     expect(keyEncrypters.ID).toBeUndefined();
