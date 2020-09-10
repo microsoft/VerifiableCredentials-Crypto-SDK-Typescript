@@ -135,6 +135,37 @@ describe('Jose', () => {
 
     });
 
+
+    it('should sign and verify with JWT protocol', async () => {
+        const payload = {
+            firstName: 'Jules',
+            lastName: 'Winnfield'
+        };
+
+        let crypto = cryptoNode;
+
+        // Generate and save a signing key
+        crypto = await crypto.generateKey(KeyUse.Signature);
+
+        let jose: IPayloadProtectionSigning = new JoseBuilder(crypto)
+            .useJwtProtocol({ someProp: 1 })
+            .build();
+
+        jose = await jose.sign(payload);
+
+        // Check kid
+        let serialized = jose.serialize();
+        jose = jose.deserialize(serialized);
+        expect(jose.signatureProtectedHeader['typ']).toEqual('JWT');
+        expect(jose.signatureProtectedHeader.alg).toEqual('ES256K');
+        expect(jose.signatureProtectedHeader.kid).toEqual('did#neo');
+        const signedPayload: any = JSON.parse(jose.signaturePayload!.toString('utf-8'));
+        expect(signedPayload.someProp).toEqual(1); 
+        expect(signedPayload.jti).toBeDefined(); 
+        expect(signedPayload.exp).toBeDefined(); 
+        expect(signedPayload.nbf).toBeDefined(); 
+    });
+
     it('should check ProtectionFormat', () => {
         expect(Jose.getProtectionFormat('jwsflatjson')).toEqual(ProtectionFormat.JwsFlatJson);
         expect(Jose.getProtectionFormat('JwsCompactJson')).toEqual(ProtectionFormat.JwsCompactJson);

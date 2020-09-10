@@ -3,9 +3,8 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CryptoFactory, Crypto, Subtle, IKeyStore, KeyStoreFactory, CryptoFactoryManager, SubtleCryptoNode, KeyStoreInMemory, IPayloadProtectionSigning, TokenCredential, KeyStoreOptions } from './index';
+import { CryptoFactory, Crypto, Subtle, IKeyStore, KeyStoreFactory, CryptoFactoryManager, SubtleCryptoNode, KeyStoreInMemory, TokenCredential, KeyStoreOptions } from './index';
 import { KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
-import { KeyType } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 
 export default class CryptoBuilder {
   // Set the default crypto state

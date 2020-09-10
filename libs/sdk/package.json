@@ -27,7 +27,8 @@
   },
   "devDependencies": {
     "@types/jasmine": "^2.8.9",
-    "@types/node": "12.12.16",
+    "@types/node": "14.6.2",
+    "@types/uuid": "3.4.4",
     "jasmine": "^3.2.0",
     "jasmine-reporters": "^2.3.2",
     "jasmine-spec-reporter": "^4.2.1",
@@ -46,6 +47,7 @@
     "base64url": "3.0.1",
     "canonicalize": "1.0.1",
     "typescript-map": "0.0.7",
+    "uuid": "7.0.1",
     "verifiablecredentials-crypto-sdk-typescript-keys": "1.1.10-preview.5",
     "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.10-preview.5",
     "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.10-preview.5",

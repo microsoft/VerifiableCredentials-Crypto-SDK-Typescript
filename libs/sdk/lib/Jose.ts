@@ -4,10 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IJwsSigningOptions, JwsToken } from 'verifiablecredentials-crypto-sdk-typescript-protocol-jose';
-import { IPayloadProtectionSigning, CryptoProtocolError, IProtocolCryptoToken } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
+import { IPayloadProtectionSigning, CryptoProtocolError } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
 import { PublicKey, JoseConstants } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import { JoseBuilder, KeyStoreOptions, ProtectionFormat } from './index';
 import { TSMap } from 'typescript-map';
+import { v4 as uuidv4 } from 'uuid';
 
 export default class Jose implements IPayloadProtectionSigning {
 
@@ -23,7 +24,7 @@ export default class Jose implements IPayloadProtectionSigning {
   private _signatureProtectedHeader: any | undefined;
   private _signatureHeader: any | undefined;
   private _signaturePayload: Buffer | undefined;
-  
+
   /**
    * Gets the protected header on the signature
    */
@@ -60,12 +61,55 @@ export default class Jose implements IPayloadProtectionSigning {
     const kid = this.builder.kid || `${this.builder.crypto.builder.did}#${this.builder.crypto.builder.signingKeyReference.keyReference}`;
     jwsOptions.protected!.set('kid', kid);
     jwsOptions.protected!.set('typ', 'JWT');
+
     const token: JwsToken = new JwsToken(jwsOptions);
     const protectionFormat = Jose.getProtectionFormat(this.builder.serializationFormat);
+
+    if (this.builder.jwtProtocol) {
+      if (typeof payload !== 'object') {
+        payload = JSON.parse(payload);
+      }
+
+      // Add standardized properties
+      const current = Math.trunc(Date.now() / 1000);
+      if (!(<any>payload).nbf) {
+        (<any>payload).nbf = current;
+      }
+      if (!(<any>payload).exp) {
+        (<any>payload).exp = current + (60 * 60);
+      }
+
+      if (!(<any>payload).jti) {
+        (<any>payload).jti = uuidv4();
+      }
+
+
+      // Override properties
+      for (let key in this.builder.jwtProtocol) {
+        (<any>payload)[key] = this.builder.jwtProtocol[key];
+      }
+
+    }
+
+    if (typeof payload === 'object') {
+      payload = Buffer.from(JSON.stringify(payload));
+    }
 
     this._token = await token.sign(this.builder.crypto.builder.signingKeyReference, <Buffer>payload, protectionFormat);
     return this;
   }
+
+  
+  /**
+   * Signs contents using the given private key reference.
+   *
+   * @param payload to sign.
+   * @returns Signed payload in requested format.
+   */
+  public async linkedDataProof(_payload: Buffer | object): Promise<IPayloadProtectionSigning> {
+    throw new Error();
+  }
+
 
   /**
    * Verify the signature.
@@ -137,7 +181,7 @@ export default class Jose implements IPayloadProtectionSigning {
         });
 
         // get payload
-        this._signaturePayload =  this._token.payload;
+        this._signaturePayload = this._token.payload;
 
         return this;
       default:

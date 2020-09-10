@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Crypto, Jose, CryptoBuilder, ProtectionFormat, IPayloadProtectionSigning } from './index';
+import { Crypto, Jose, ProtectionFormat } from './index';
 
 /**
  * Builder class for the JOSE protocol
@@ -14,7 +14,8 @@ export default class JoseBuilder {
   private _protectedHeader: object = {typ: 'JWT'};
   private _unprotectedHeader: object = {};
   private _serializationFormat: string = ProtectionFormat.JwsCompactJson;
-  private _jwtProtocol: object | undefined;
+  private _jwtProtocol: { [key: string]: any } | undefined;
+  private _linkedDataProofsProtocol: { [key: string]: any } | undefined;
   private _kid: string | undefined;
 
   /**
@@ -28,7 +29,13 @@ export default class JoseBuilder {
    * Gets the protocol name
    */
   public get protocol() {
-    return this.jwtProtocol ? 'JWT' : 'JOSE';
+    if (this.linkedDataProofsProtocol) {
+      return 'JSONLDProofs';
+    } else if (this.jwtProtocol){
+      return 'JWT';
+    }
+    
+    return 'JOSE';
   }
 
   
@@ -44,7 +51,7 @@ export default class JoseBuilder {
     * @param jwtProtocol Define properties that need to be added to the body for the JWT format
     * @returns The jose builder
     */
-  public useJwtProtocol(jwtProtocol: object): JoseBuilder {
+   public useJwtProtocol(jwtProtocol: { [key: string]: any }): JoseBuilder {
     this._jwtProtocol = jwtProtocol;
     return this;
   }
@@ -54,8 +61,27 @@ export default class JoseBuilder {
     * Gets the JWT protocol. 
     * @returns The JWT protocol. 
     */
-  public get jwtProtocol(): object | undefined {
+  public get jwtProtocol(): { [key: string]: any } | undefined {
     return this._jwtProtocol;
+  }
+
+  /**
+    * Sets JSON linked data proofs protocol. 
+    * @param linkedDataProofsProtocol Define properties that need to be added to the body for the JSON-LD format
+    * @returns The jose builder
+    */
+   public uselinkedDataProofsProtocol(linkedDataProofsProtocol: { [key: string]: any }): JoseBuilder {
+    this._linkedDataProofsProtocol = linkedDataProofsProtocol;
+    return this;
+  }
+
+
+  /**
+    * Gets the JSON linked data proofs protocol. 
+    * @returns The JWT protocol. 
+    */
+  public get linkedDataProofsProtocol(): { [key: string]: any } | undefined {
+    return this._linkedDataProofsProtocol;
   }
 
   /**
