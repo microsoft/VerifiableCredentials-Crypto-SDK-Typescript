@@ -1,6 +1,6 @@
 {
   "name": "verifiablecredentials-crypto-sdk-typescript-keys",
-  "version": "1.1.10-preview.5",
+  "version": "1.1.12-preview.1",
   "description": "Package for managing keys in the DID space.",
   "repository": {
     "type": "git",

@@ -9,6 +9,7 @@ import { PublicKey, JoseConstants } from 'verifiablecredentials-crypto-sdk-types
 import { JoseBuilder, KeyStoreOptions, ProtectionFormat } from './index';
 import { TSMap } from 'typescript-map';
 import { v4 as uuidv4 } from 'uuid';
+import JsonLinkedDataProofs from './JsonLinkedDataProofs';
 
 export default class Jose implements IPayloadProtectionSigning {
 
@@ -20,6 +21,7 @@ export default class Jose implements IPayloadProtectionSigning {
     public builder: JoseBuilder) {
   }
 
+  private _jsonLdProof: object | undefined;
   private _token: JwsToken | undefined;
   private _signatureProtectedHeader: any | undefined;
   private _signatureHeader: any | undefined;
@@ -65,7 +67,17 @@ export default class Jose implements IPayloadProtectionSigning {
     const token: JwsToken = new JwsToken(jwsOptions);
     const protectionFormat = Jose.getProtectionFormat(this.builder.serializationFormat);
 
-    if (this.builder.jwtProtocol) {
+    if (this.isLinkedDataProofsProtocol()) {
+      // Support json ld proofs
+      console.log('Support JSON LD proofs');
+      if (typeof payload !== 'object') {
+        payload = JSON.parse(payload);
+      }
+
+      const jsonLd = new JsonLinkedDataProofs(this);
+      this._jsonLdProof = await jsonLd.sign(payload);
+      console.log(`JSON LD Proof: ${this._jsonLdProof}`);
+    } else if (this.isJwtProtocol()) {
       if (typeof payload !== 'object') {
         payload = JSON.parse(payload);
       }
@@ -73,20 +85,23 @@ export default class Jose implements IPayloadProtectionSigning {
       // Add standardized properties
       const current = Math.trunc(Date.now() / 1000);
       if (!(<any>payload).nbf) {
-        (<any>payload).nbf = current;
+        (<any>payload).nbf = this.builder.jwtProtocol!.nbf || current;
       }
       if (!(<any>payload).exp) {
-        (<any>payload).exp = current + (60 * 60);
+        (<any>payload).exp = this.builder.jwtProtocol!.exp || current + (60 * 60);
       }
 
       if (!(<any>payload).jti) {
-        (<any>payload).jti = uuidv4();
+        (<any>payload).jti = this.builder.jwtProtocol!.jti || uuidv4();
       }
 
 
       // Override properties
       for (let key in this.builder.jwtProtocol) {
-        (<any>payload)[key] = this.builder.jwtProtocol[key];
+        if (key in ['nbf', 'exp', 'jti']) {
+          continue;
+        }
+        (<any>payload)[key] = (<any>payload)[key] || this.builder.jwtProtocol[key];
       }
 
     }
@@ -100,17 +115,6 @@ export default class Jose implements IPayloadProtectionSigning {
   }
 
   
-  /**
-   * Signs contents using the given private key reference.
-   *
-   * @param payload to sign.
-   * @returns Signed payload in requested format.
-   */
-  public async linkedDataProof(_payload: Buffer | object): Promise<IPayloadProtectionSigning> {
-    throw new Error();
-  }
-
-
   /**
    * Verify the signature.
    *
@@ -139,6 +143,14 @@ export default class Jose implements IPayloadProtectionSigning {
     const protocolFormat: ProtectionFormat = Jose.getProtectionFormat(this.builder.serializationFormat);
     if (!this._token) {
       throw new CryptoProtocolError(JoseConstants.Jose, `No token to serialize`);
+    }
+
+    if (this.isLinkedDataProofsProtocol()) {
+      if (this._jsonLdProof) {
+        return JSON.stringify(this._jsonLdProof);
+      }
+
+      throw new CryptoProtocolError('JsonLdProof', `No token to serialize`);
     }
 
     switch (protocolFormat) {
@@ -187,6 +199,20 @@ export default class Jose implements IPayloadProtectionSigning {
       default:
         throw new CryptoProtocolError(JoseConstants.Jose, `Serialization format '${this.builder.serializationFormat}' is not supported`);
     }
+  }
+
+  /**
+   * True if JSON LD proof protocol is selected
+   */
+  private isJwtProtocol(): boolean {
+    return this.builder.jwtProtocol !== undefined;
+  }
+
+  /**
+   * True if JSON LD proof protocol is selected
+   */
+  private isLinkedDataProofsProtocol(): boolean {
+    return this.builder.linkedDataProofsProtocol !== undefined;
   }
 
   /**

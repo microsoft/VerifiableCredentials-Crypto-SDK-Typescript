@@ -46,9 +46,7 @@ export default class Crypto {
     if (keyUse === KeyUse.Signature) {
       const w3cAlgorithm = CryptoHelpers.jwaToWebCrypto(jwaAlalgorithm);
       const importKey = keyReference?.type === 'secret';
-      const subtle = importKey ?
-        this.builder.subtle :
-        this.builder.cryptoFactory.getMessageSigner(jwaAlalgorithm, CryptoFactoryScope.Private, keyReference);
+      const subtle = this.builder.cryptoFactory.getMessageSigner(jwaAlalgorithm, CryptoFactoryScope.Private, keyReference);
 
       this.signingKey = await subtle.generateKey(
         w3cAlgorithm,

@@ -257,7 +257,7 @@ export default class CryptoFactory {
    */
    private getSubtleCrypto (mapper: CryptoSuiteMap, name: string, scope: CryptoFactoryScope, keyReference: KeyReference): Subtle {
     if (mapper[name]) {
-      let mapping = mapper[name].filter(item => item.scope === scope && item.keyStoreType.includes(keyReference.type));
+      let mapping = mapper[name].filter(item => (item.scope === scope || item.scope === CryptoFactoryScope.All) && item.keyStoreType.includes(keyReference.type));
       if (mapping && mapping.length > 0) {
         return mapping[0].subtleCrypto;
       }

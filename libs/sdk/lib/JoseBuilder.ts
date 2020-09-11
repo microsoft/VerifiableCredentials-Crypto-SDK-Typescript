@@ -70,7 +70,7 @@ export default class JoseBuilder {
     * @param linkedDataProofsProtocol Define properties that need to be added to the body for the JSON-LD format
     * @returns The jose builder
     */
-   public uselinkedDataProofsProtocol(linkedDataProofsProtocol: { [key: string]: any }): JoseBuilder {
+   public uselinkedDataProofsProtocol(linkedDataProofsProtocol: { [key: string]: any } = {}): JoseBuilder {
     this._linkedDataProofsProtocol = linkedDataProofsProtocol;
     return this;
   }
