@@ -48,7 +48,7 @@ export default class JsonLinkedDataProofs {
   public async createVerifyData(payload: any, crypto: Crypto, verificationMethod?: string, proofPurpose: string = 'assertionMethod'): Promise<[Buffer, any]> {
     verificationMethod = verificationMethod || `${crypto.builder.did}#${crypto.builder.signingKeyReference}`;
 
-    const type = 'Ed25519Signature2018';  // needs to be calculated
+    const type = 'Ed25519Signature2018';  // needs to be calculated and put in a seperate suite
     const created = new Date().toUTCString();
     const proof: any = {
       '\@context': 'https://w3id.org/security/v2',

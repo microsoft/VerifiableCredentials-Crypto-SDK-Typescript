@@ -70,6 +70,10 @@
     ]
   },
   "files": [
-    "dist/src/**/*"
+    "dist/**",
+    "lib/**",
+    "README.md",
+    "LICENSE",
+    "package.json"
   ]
 }

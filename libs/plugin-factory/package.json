@@ -57,5 +57,12 @@
       "cobertura",
       "html"
     ]
-  }
+  },
+  "files": [
+    "dist/**",
+    "lib/**",
+    "README.md",
+    "LICENSE",
+    "package.json"
+  ]
 }
