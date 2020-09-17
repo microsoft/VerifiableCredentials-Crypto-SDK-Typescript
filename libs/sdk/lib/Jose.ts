@@ -26,7 +26,7 @@ export default class Jose implements IPayloadProtectionSigning {
   private _signatureProtectedHeader: any | undefined;
   private _signatureHeader: any | undefined;
   private _signaturePayload: Buffer | undefined;
-
+  private _jsonLinkedDataProofs: JsonLinkedDataProofs | undefined;
   /**
    * Gets the protected header on the signature
    */
@@ -49,6 +49,13 @@ export default class Jose implements IPayloadProtectionSigning {
     return this._signaturePayload;
   }
 
+  private get jsonLinkedDataProofs() {
+    if (this._jsonLinkedDataProofs) {
+      return this._jsonLinkedDataProofs;
+    }
+
+    return this._jsonLinkedDataProofs = new JsonLinkedDataProofs(this);
+  }
 
   /**
    * Signs contents using the given private key reference.
@@ -74,9 +81,9 @@ export default class Jose implements IPayloadProtectionSigning {
         payload = JSON.parse(payload);
       }
 
-      const jsonLd = new JsonLinkedDataProofs(this);
-      this._jsonLdProof = await jsonLd.sign(payload);
+      this._jsonLdProof = await this.jsonLinkedDataProofs.sign(payload);
       console.log(`JSON LD Proof: ${this._jsonLdProof}`);
+      return this;
     } else if (this.isJwtProtocol()) {
       if (typeof payload !== 'object') {
         payload = JSON.parse(payload);
@@ -114,7 +121,7 @@ export default class Jose implements IPayloadProtectionSigning {
     return this;
   }
 
-  
+
   /**
    * Verify the signature.
    *
@@ -122,14 +129,24 @@ export default class Jose implements IPayloadProtectionSigning {
    * @returns True if signature validated.
    */
   public async verify(validationKeys?: PublicKey[]): Promise<boolean> {
-    const jwsOptions: IJwsSigningOptions = Jose.optionsFromBuilder(this.builder);
-    if (!this._token) {
-      return Promise.reject('Import a token by deserialize');
-    }
-
     if (!validationKeys) {
       const validationKeyContainer = await this.builder.crypto.builder.keyStore.get(this.builder.crypto.builder.signingKeyReference!, new KeyStoreOptions({ publicKeyOnly: true }));
       validationKeys = [validationKeyContainer.getKey<PublicKey>()]
+    }
+
+    if (this.isLinkedDataProofsProtocol()) {
+      // Support json ld proofs
+
+      if (!this._jsonLdProof) {
+        return Promise.reject('Import a credential by deserialize');
+      }
+
+      return this.jsonLinkedDataProofs.verify(validationKeys);
+    }
+
+    const jwsOptions: IJwsSigningOptions = Jose.optionsFromBuilder(this.builder);
+    if (!this._token) {
+      return Promise.reject('Import a token by deserialize');
     }
 
     const result = await this._token.verify(validationKeys!, jwsOptions);
@@ -147,8 +164,8 @@ export default class Jose implements IPayloadProtectionSigning {
 
     if (this.isLinkedDataProofsProtocol()) {
       if (this._jsonLdProof) {
-        return JSON.stringify(this._jsonLdProof);
-      }
+        return this.jsonLinkedDataProofs.serialize();
+        }
 
       throw new CryptoProtocolError('JsonLdProof', `No token to serialize`);
     }
@@ -168,6 +185,12 @@ export default class Jose implements IPayloadProtectionSigning {
    * @param token The crypto token to deserialize.
    */
   public deserialize(token: string): IPayloadProtectionSigning {
+
+    if (this.isLinkedDataProofsProtocol()) {
+      this._jsonLdProof = this.jsonLinkedDataProofs.deserialize(token);
+      return this;
+    }
+
     const protocolFormat: ProtectionFormat = Jose.getProtectionFormat(this.builder.serializationFormat);
     const jwsOptions: IJwsSigningOptions = Jose.optionsFromBuilder(this.builder);
 

@@ -27,34 +27,16 @@ export default class EllipticEdDsaProvider extends EllipticDsaProvider {
    * Different curves supported by the package
    */
   public namedCurves = ['ed25519'];
-  
-  constructor (private crypto: SubtleCrypto) {
-    super(crypto);
-  }
 
   /**
-   * Generate key pair
-   * @param algorithm for key generation
-   * @param extractable is true if the key is exportable
-   * @param keyUsages sign or verify
+   * Different usages supported by the provider
    */
-  async onGenerateKey (algorithm: EcKeyGenParams, extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKeyPair> {
-    const ec = this.getCurve(algorithm.namedCurve);
-    const random: any  = await this.crypto.generateKey(<AesKeyGenParams>{name: 'AES-GCM', length: 256}, true, ['encrypt']);
-    const seed = await (await this.crypto.exportKey('jwk', random)).k;
-    const keyPair = ec.keyFromSecret(seed);
-    if (!keyPair.pub) {
-      keyPair.pub = keyPair.getPublic();
-    }
+  public usages: any = {
+    privateKey: ['sign', 'verify']
+  };
 
-    // Set private key
-    const privateKey: CryptoKey = new EllipticCurveKey(algorithm, extractable, keyUsages, 'private', keyPair);
-
-    // Set public key
-    const pubKey = clone(keyPair);
-    delete pubKey.priv;
-    const publicKey: CryptoKey = new EllipticCurveKey(algorithm, extractable, keyUsages, 'public', pubKey);
-    return <CryptoKeyPair>{ privateKey, publicKey };
+  constructor(private crypto: SubtleCrypto) {
+    super(crypto);
   }
 
   /**
@@ -63,11 +45,11 @@ export default class EllipticEdDsaProvider extends EllipticDsaProvider {
    * @param key used for signing
    * @param data to sign
    */
-  async onSign (algorithm: EcdsaParams, key: CryptoKey, data: ArrayBuffer): Promise<ArrayBuffer> {
-    const ecKey = (<EllipticCurveKey> key).key;
-    data = Buffer.from(data);
-    //(<any> data).length = data.byteLength;
-    const signature = new Buffer(ecKey.sign(Buffer.from(data)).toHex(), 'hex');
+  async onSign(algorithm: EcdsaParams, key: CryptoKey, data: ArrayBuffer): Promise<ArrayBuffer> {
+    const keyPair = (<EllipticCurveKey>key).key;
+    
+    const dataToSign = Buffer.from(data);
+    const signature = new Buffer(keyPair.sign(Buffer.from(dataToSign)).toHex(), 'hex');
     const r = signature.slice(0, 32);
     const s = signature.slice(32);
     if ((<any>algorithm).format === 'DER') {
@@ -77,60 +59,53 @@ export default class EllipticEdDsaProvider extends EllipticDsaProvider {
     return new Uint8Array(Buffer.concat([r, s]));  
   }
 
- /**
+  /**
    * The ECDSA signature verification
    * @param algorithm used for signing
    * @param key used for verify
    * @param signature to validate
    * @param data which was signed sign
    */
-  async onVerify (_algorithm: EcdsaParams, key: CryptoKey, signature: ArrayBuffer, data: ArrayBuffer): Promise<boolean> {
-    const ecKey = (<EllipticCurveKey> key).key;
+  async onVerify(_algorithm: EcdsaParams, key: CryptoKey, signature: ArrayBuffer, data: ArrayBuffer): Promise<boolean> {
+    const ecKey = (<EllipticCurveKey>key).key;
     data = Buffer.from(data);
 
     let signed = new Uint8Array(signature);
+    const ec = this.getCurve((<any>key.algorithm).namedCurve);
     if (signature.byteLength > 65) {
       // DER formatted
       const decodedSignature = SubtleCryptoExtension.fromDer(signed);
       signed = new Uint8Array(decodedSignature[0].length + decodedSignature[1].length);
       signed.set(decodedSignature[0]);
       signed.set(decodedSignature[1], decodedSignature[1].length);
-    } 
-
-    const encoded = utils.encode(signed, 'hex');
-    return ecKey.verify(Buffer.from(data), encoded);
+    }
+    
+    const hexSignature = utils.encode(signed, 'hex');
+    return ecKey.verify(data, hexSignature);  
   }
 
   /**
-   * Export key to jwk
-   * @param format must be 'jwk'
-   * @param key Key to export in jwk
+   * Generate key pair
+   * @param algorithm for key generation
+   * @param extractable is true if the key is exportable
+   * @param keyUsages sign or verify
    */
-  async onExportKey (format: KeyFormat, key: CryptoKey): Promise<JsonWebKey | ArrayBuffer> {
-    //const ec = this.getCurve((<any>key.algorithm).namedCurve);
-    if (format !== 'jwk') {
-      throw new Error(`Export key only supports jwk`);
-    }
+  async onGenerateKey(algorithm: EcKeyGenParams, extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKeyPair> {
+    const ec = this.getCurve(algorithm.namedCurve);
+    const random: any = await this.crypto.generateKey(<AesKeyGenParams>{ name: 'AES-GCM', length: 256 }, true, ['encrypt']);
+    let seed = (await this.crypto.exportKey('jwk', random)).k
+    seed = utils.encode(base64url.toBuffer(seed!), 'hex');
+    const key = ec.keyFromSecret(seed);
+    //const pubBytes = key.getPublic(false, 'hex');
+    //const privBytes = key.getPrivate('hex');
+    const privateKey: any = CryptoKey.create(algorithm, 'private', extractable, keyUsages);
+    privateKey.key = key;
+    const publicKey: any = CryptoKey.create(algorithm, 'public', extractable, keyUsages);
+    publicKey.key = key;
 
-    const cryptoKey: any = (<EllipticCurveKey> key).key;
-    const pubKey = cryptoKey.getPublic();
-    const x = base64url.encode(pubKey);
-
-    const jwk: JsonWebKey = {
-      kty: 'OKP',
-      use: 'sig',
-      crv: (<any> key.algorithm).namedCurve,
-      x: x
-    };
-
-    if (key.type === 'private') {
-      const privKey = cryptoKey.getSecret();
-      jwk.d = base64url.encode(privKey);
-    }
-
-    return jwk;
+    return <CryptoKeyPair>{ privateKey, publicKey };
   }
-  
+
   /**
    * Import jwk key
    * @param format must be 'jwk'
@@ -139,24 +114,58 @@ export default class EllipticEdDsaProvider extends EllipticDsaProvider {
    * @param extractable is true if the key is exportable
    * @param keyUsages sign or verify
    */
-  async onImportKey (format: KeyFormat,
+  async onImportKey(format: KeyFormat,
     keyData: JsonWebKey | ArrayBuffer, algorithm: EcKeyImportParams, extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKey> {
     if (format !== 'jwk') {
       throw new Error(`Import key only supports jwk`);
     }
     const ec = this.getCurve(algorithm.namedCurve);
-    const jwkKey: JsonWebKey = <JsonWebKey> keyData;
+    const jwkKey: any = <JsonWebKey>keyData;
+    let key: any = {};
     if (jwkKey.d) {
-      const pair = ec.keyFromSecret(base64url.toBuffer(jwkKey.d));
-      return new EllipticCurveKey(algorithm, extractable, keyUsages, 'private', pair);
+      const hexKey = utils.encode(base64url.toBuffer(jwkKey.d), 'hex');
+      key = ec.keyFromSecret(hexKey);
+      const privateKey: any = CryptoKey.create(algorithm, 'private', extractable, keyUsages);
+      privateKey.key = key;
+      return privateKey;
+    } else {
+      const hexKey = utils.encode(base64url.toBuffer(jwkKey.x), 'hex');
+      key = ec.keyFromPublic(hexKey);
+      const publicKey: any = CryptoKey.create(algorithm, 'public', extractable, keyUsages);
+      publicKey.key = key;
+      return publicKey
+    }
+  }
+
+  /**
+   * Export key to jwk
+   * @param format must be 'jwk'
+   * @param key Key to export in jwk
+   */
+  async onExportKey(format: KeyFormat, key: CryptoKey): Promise<JsonWebKey | ArrayBuffer> {
+    //const ec = this.getCurve((<any>key.algorithm).namedCurve);
+    if (format !== 'jwk') {
+      throw new Error(`Export key only supports jwk`);
     }
 
-    // verify requires an array
-    const x = Array.from(base64url.toBuffer(<string> jwkKey.x));
-    const pubKey = ec.keyFromPublic(x);
-    return new EllipticCurveKey(algorithm, extractable, keyUsages, 'public', pubKey);
+    const ecKey: any = (<EllipticCurveKey>key).key;
+    const crv = (<any>key.algorithm).namedCurve;
+    let x;
+    const jwk: any = {
+      crv,
+      use: 'sig',
+      alg: 'EDDSA',
+      kty: 'OKP'
+    }
+    if (key.type === 'public') {
+      jwk['x'] = base64url.encode(ecKey.getPublic('hex'), 'hex');
+    } else {
+      jwk['d'] = base64url.encode(ecKey.getSecret('hex'), 'hex');
+      jwk['x'] = base64url.encode(ecKey.getPublic('hex'), 'hex');
+    }
+
+    return jwk;
   }
-           
 
   /**
    * Get the instance that implements the algorithm

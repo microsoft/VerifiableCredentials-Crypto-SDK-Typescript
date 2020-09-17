@@ -92,7 +92,11 @@ export default class Crypto {
    * Set the  protocol used for signing
    */
   public useSigningProtocol(signingProtocol: IPayloadProtectionSigning): Crypto {
-    this._signingProtocol = signingProtocol;
+    if (!signingProtocol) {
+      this._signingProtocol = new JoseBuilder(this).build();
+    } else {
+      this._signingProtocol = signingProtocol;
+    }
     return this;
   }
 }

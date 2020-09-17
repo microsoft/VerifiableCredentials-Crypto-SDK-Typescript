@@ -20,7 +20,6 @@ const clientSecret = encodeURI(Credentials.clientSecret);
 const vaultUri = Credentials.vaultUri;
 const keyVaultEnable = vaultUri.startsWith('https://');
 
-let originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
 const subtle: Subtle = new Subtle();
 
 const logging = require('adal-node').Logging;
@@ -33,6 +32,7 @@ logging.setLoggingOptions({
   loggingWithPII: true  // Determine if you want to log personal identification information. The default value is false.
 });
 
+let originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
 beforeEach(async () => {
   jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
 });

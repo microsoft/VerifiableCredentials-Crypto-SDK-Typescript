@@ -71,6 +71,16 @@ describe('ed25519 - EDDSA', () => {
     expect(newSig).toEqual(sig);
   });
 
+  it('should verify a message with elliptic', async () => {
+    const msg = [101,121,74,104,98,71,99,105,79,105,74,70,90,69,82,84,81,83,73,115,73,109,73,50,78,67,73,54,90,109,70,115,99,50,85,115,73,109,78,121,97,88,81,105,79,108,115,105,89,106,89,48,73,108,49,57,46,121,113,80,10,68,208,46,208,103,142,15,103,14,7,137,6,26,209,71,246,89,188,166,57,11,130,70,76,212,228,57,53,142,38,20,151,33,33,131,196,245,77,53,79,85,251,121,41,219,244,244,226,197,166,162,50,197,197,43,28,195,228,95,245];
+    const signature = [185,80,170,165,233,238,212,94,45,156,64,52,132,6,20,213,166,241,250,78,151,11,82,116,240,249,10,71,143,198,159,18,11,245,158,237,94,233,143,216,119,36,146,82,25,228,5,29,186,118,58,250,254,225,233,72,222,6,35,197,69,68,193,15];
+    const publicKeyHex = base64url.toBuffer('CV-aGlld3nVdgnhoZK0D36Wk-9aIMlZjZOK2XhPMnkQ').toString('hex');
+    
+    var key = ed25519.keyFromPublic(publicKeyHex, 'hex');
+    let result = key.verify(msg, signature);
+    expect(result).toBeTruthy();
+  });
+
   it('should generate a key', async () => {
     const key =  <CryptoKeyPair>(await crypto.generateKey(algGenerate, true, ['sign']));
     expect(key.publicKey.algorithm).toEqual(algGenerate);
@@ -87,13 +97,14 @@ describe('ed25519 - EDDSA', () => {
     expect(exported1.kty).toEqual('OKP');
     expect(exported1.use).toEqual('sig');
     expect(exported1.crv).toEqual('ed25519');
+    expect(exported1.alg).toEqual('EDDSA');
     expect(exported1.d).toBeDefined();
     expect(exported1.x).toBeDefined();
     expect(exported1.y).toBeUndefined();
     
     let imported: any  = await crypto.importKey('jwk', exported1, algGenerate, true, ['sign']);
     let exported2 = await crypto.exportKey('jwk', imported);
-    expect(exported1.kty).toEqual('OKP');
+    expect(exported2.kty).toEqual('OKP');
     expect(exported2.use).toEqual('sig');
     expect(exported2.crv).toEqual('ed25519');
     expect(exported2.d).toEqual(exported1.d);
@@ -146,23 +157,41 @@ describe('ed25519 - EDDSA', () => {
     const signature = await crypto.sign(alg, key, message);
     const r = Buffer.from(signature.slice(0, 32));
     const s = Buffer.from(signature.slice(32));
-    expect(r).toEqual(Buffer.from(signatureReference.slice(0, 64), 'hex'));
-    expect(s).toEqual(Buffer.from(signatureReference.slice(64), 'hex'));
-    const result = await crypto.verify(alg, key, signature, message);
-    expect(result).toBe(true);
+    const R = Buffer.from(signatureReference.slice(0, 64), 'hex');
+    const S = Buffer.from(signatureReference.slice(64), 'hex');
+    expect(r).toEqual(R);
+    expect(s).toEqual(S);
+    //const result = await crypto.verify(alg, key, signature, message);
+    //expect(result).toBe(true);
   });
 
-  it('should sign a message', async () => {
-    const key = await crypto.generateKey(algGenerate, true, ['sign']);
+  it('should sign and verify a message', async () => {
+    const key: any = await crypto.generateKey(algGenerate, true, ['sign']);
 
     const data = 'abcdefg';
     const alg = { name: 'EDDSA', namedCurve: 'ed25519', hash: { name: 'SHA-256' } };
-    const signature = await crypto.sign(alg, (<any> key).privateKey, Buffer.from(data));
+    const signature = await crypto.sign(alg, key.privateKey, Buffer.from(data));
     expect(signature.byteLength).toBeLessThanOrEqual(64);
-    const publicKey: EllipticCurveKey = <EllipticCurveKey>(<CryptoKeyPair> key).publicKey;
+    const publicKey: EllipticCurveKey = <EllipticCurveKey>key.publicKey;
     publicKey.usages = ['verify'];
     const result = await crypto.verify(alg, publicKey, signature, Buffer.from(data));
-    expect(result).toBe(true);
+    expect(result).toBeTruthy();
+  });
+
+  it('should verify RFC 8032 vectors', async () => {
+    const jwk = {
+      crv:'Ed25519',
+      //d: base64url.encode(Buffer.from('4ccd089b28ff96da9db6c346ec114e0f5b8a319f35aba624da8cf6ed4fb8a6fb', 'hex')),
+      x: base64url.encode(Buffer.from('3d4017c3e843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af4660c', 'hex')),
+      kty: 'OKP'
+    };
+    const referenceSignature = Buffer.from('92a009a9f0d4cab8720e820b5f642540a2b27b5416503f8fb3762223ebdb69da085ac1e43e15996e458f3613d0f11d8c387b2eaeb4302aeeb00d291612bb0c00', 'hex');
+    const referenceMessage = Buffer.from([0x72]);
+    const alg = { name: 'EDDSA', namedCurve: 'ed25519', hash: { name: 'SHA-256' } };
+    const cryptoKey = await crypto.importKey('jwk', jwk, alg, true, ['sign', 'verify']);
+    //const signature = await crypto.sign(alg, cryptoKey, referenceMessage);
+    const result = await crypto.verify(alg, cryptoKey, referenceSignature, referenceMessage);
+    expect(result).toBeTruthy();    
   });
 
   it('should sign a message with DER format', async () => {

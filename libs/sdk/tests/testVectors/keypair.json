@@ -1,0 +1,8 @@
+{
+  "keypair_0": {
+    "crv": "Ed25519",
+    "d": "m5N7gTItgWz6udWjuqzJsqX-vksUnxJrNjD5OilScBcJX5oaWV3edV2CeGhkrQPfpaT71ogyVmNk4rZeE8yeRA",
+    "kty": "OKP",
+    "x": "CV-aGlld3nVdgnhoZK0D36Wk-9aIMlZjZOK2XhPMnkQ"
+  }
+}
