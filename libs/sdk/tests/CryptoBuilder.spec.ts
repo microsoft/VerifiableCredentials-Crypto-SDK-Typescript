@@ -9,7 +9,7 @@ import { ClientSecretCredential } from '@azure/identity';
 describe('CryptoBuilder', () => {
     it ('should create a builder', () =>{
         let builder = new CryptoBuilder();
-        expect(builder.cryptoFactory.constructor.name).toEqual('CryptoFactory');
+        expect(builder.cryptoFactory.constructor.name).toEqual('CryptoFactoryNode');
         expect(builder.keyStore.constructor.name).toEqual('KeyStoreInMemory');
         expect(builder.subtle.constructor.name).toEqual('Subtle');
         expect(builder.signingKeyReference.keyReference).toEqual('signing-ES256K');

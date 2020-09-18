@@ -144,6 +144,8 @@ export default class SubtleCryptoExtension extends Subtle implements ISubtleCryp
    * @param payload which was signed
    */
   public async verifyByJwk(algorithm: CryptoAlgorithm, jwk: JsonWebKey, signature: BufferSource, payload: BufferSource): Promise<boolean> {
+    //console.log(`verifyByJwk signature: ${Buffer.from(<Uint8Array>signature).toString('hex')}`);
+    //console.log(`verifyByJwk payload: ${Buffer.from(<Uint8Array>payload).toString('hex')}`);
     const crypto: Subtle = CryptoHelpers.getSubtleCryptoForAlgorithm(this.cryptoFactory, algorithm, CryptoFactoryScope.Public, new KeyReference('', 'secret'));
     jwk = crypto.keyImportTransform(jwk);
     let keyImportAlgorithm: any = CryptoHelpers.getKeyImportAlgorithm(algorithm, jwk);

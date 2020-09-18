@@ -8,7 +8,6 @@ import { SubtleCrypto, CryptoKey } from 'webcrypto-core';
 import EllipticCurveKey from './EllipticCurveKey';
 import base64url from 'base64url';
 import { SubtleCryptoExtension } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
-const clone = require('clone');
 const utils = require('minimalistic-crypto-utils');
 const EC = require('elliptic');
 const eddsa = EC.eddsa;
@@ -69,9 +68,9 @@ export default class EllipticEdDsaProvider extends EllipticDsaProvider {
   async onVerify(_algorithm: EcdsaParams, key: CryptoKey, signature: ArrayBuffer, data: ArrayBuffer): Promise<boolean> {
     const ecKey = (<EllipticCurveKey>key).key;
     data = Buffer.from(data);
+    const hexData = utils.encode(data, 'hex');
 
     let signed = new Uint8Array(signature);
-    const ec = this.getCurve((<any>key.algorithm).namedCurve);
     if (signature.byteLength > 65) {
       // DER formatted
       const decodedSignature = SubtleCryptoExtension.fromDer(signed);

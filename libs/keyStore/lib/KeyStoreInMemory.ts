@@ -62,7 +62,7 @@ export default class KeyStoreInMemory implements IKeyStore {
       const key: any = (<PrivateKey>publicKeyContainer.keys[inx]);
       switch (key.kty.toUpperCase()) {
         case 'EC':
-        case 'OPK':
+        case 'OKP':
           publicKeyContainer.keys[inx] = new EcPublicKey(key);
           break;
         case 'RSA':

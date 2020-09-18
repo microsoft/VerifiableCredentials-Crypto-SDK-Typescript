@@ -3,10 +3,12 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Crypto, ProtectionFormat, JoseBuilder } from './index';
+import { Crypto, JoseBuilder, CryptoHelpers } from './index';
 import { IPayloadProtectionSigning } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
 import { PublicKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import base64url from 'base64url';
+import { CryptoAlgorithm } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { SubtleCryptoExtension } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 const jsonld = require('jsonld');
 const clone = require('clone');
 
@@ -39,12 +41,24 @@ export default class JsonLinkedDataProofs {
     const [verifyData, proof] = await this.createVerifyData(payload, crypto);
 
     // sign payload
+
+
     let jwsSigner: IPayloadProtectionSigning = new JoseBuilder(this._signer.builder.crypto)
       .build();
 
     jwsSigner = await jwsSigner.sign(verifyData);
-    proof.jws = jwsSigner.serialize();
+    const jws = jwsSigner.serialize();
+    const splitter = jws.split('.');
+    // Set payload
+    const payloadToSign = Buffer.concat([Buffer.from(splitter[0]), Buffer.from('.'), verifyData]);
+    
+    const alg = 'eddsa';
+    const algorithm: CryptoAlgorithm = CryptoHelpers.jwaToWebCrypto(alg);
+    const subtleExtension = new SubtleCryptoExtension(crypto.builder.cryptoFactory);
+    const signature = await subtleExtension.signByKeyStore(algorithm, crypto.builder.signingKeyReference, payloadToSign);
 
+    proof.jws = `${splitter[0]}..${base64url.encode(Buffer.from(signature))}`;
+    
     // Add proof, TODO support for multiple proofs
     (<any>payload).proof = proof;
     this._credential = payload;
@@ -76,13 +90,14 @@ export default class JsonLinkedDataProofs {
     if (signParts.length !== 3) {
       throw new Error('Signature is no valid JOSE token');
     }
-    signature = `${signParts[0]}.${base64url.encode(verifyData)}.${signParts[2]}}`;
-
-    // verify signature
-    let jwsCrypto = clone(crypto);
-    jwsCrypto = jwsCrypto.useSigningProtocol(undefined);
-    let validator = await jwsCrypto.signingProtocol.deserialize(signature);
-    const result = await validator.verify(validationKeys);
+    
+    // Set payload
+    const payloadToValidate = Buffer.concat([Buffer.from(signParts[0]), Buffer.from('.'), verifyData]);
+    
+    const alg = 'eddsa';
+    const algorithm: CryptoAlgorithm = CryptoHelpers.jwaToWebCrypto(alg);
+    const subtleExtension = new SubtleCryptoExtension(crypto.builder.cryptoFactory);
+    const result = await subtleExtension.verifyByJwk(algorithm, validationKeys![0], base64url.toBuffer(signParts[2]), payloadToValidate);
     return result;
   }
 
@@ -154,9 +169,9 @@ export default class JsonLinkedDataProofs {
       new Uint8Array(Buffer.from(payloadCanonized))));
 
     const result = Buffer.concat([proofHash, payloadHash]);
-    delete proof['\@context'];
-    console.log(`Hash: ${JSON.stringify(result)}`)
-    return [result, proof];
+    delete embeddedProof['\@context'];
+    console.log(`Hash: ${Buffer.from(result).toString('hex')}`);
+    return [result, embeddedProof];
   }
 
 }

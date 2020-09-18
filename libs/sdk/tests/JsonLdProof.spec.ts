@@ -18,7 +18,6 @@ describe('JSONLD proofs', () => {
 
     it('should sign and verify a credential', async () => {
         let crypto = new CryptoBuilder()
-            .useCryptoFactory(new CryptoFactoryNode(new KeyStoreInMemory(), new Subtle()))
             .useSigningAlgorithm('EdDSA')
             .build();
         crypto = await crypto.generateKey(KeyUse.Signature);
@@ -44,27 +43,17 @@ describe('JSONLD proofs', () => {
         };
 
         jsonLdProof = await jsonLdProof.sign(doc);
-        console.log(jsonLdProof);
-        const publicKey = await (await crypto.builder.keyStore.get(crypto.builder.signingKeyReference, new KeyStoreOptions({ publicKeyOnly: true }))).getKey<PublicKey>();
-        expect(await jsonLdProof.verify([publicKey])).toBeTruthy();
+        //console.log(`${JSON.stringify(jsonLdProof)}`);
+        const publicKey = (await crypto.builder.keyStore.get(crypto.builder.signingKeyReference, new KeyStoreOptions({ publicKeyOnly: true }))).getKey<PublicKey>();
+        const result = await jsonLdProof.verify([publicKey]);
+        expect(result).toBeTruthy();
     });
 
-    fit('should validate test vectors', async () => {
-        const bs58 = require('bs58')
-
-        let b58 = 'dbDmZLTWuEYYZNHFLKLoRkEX4sZykkSLNQLXvMUyMB1'
-        let bytes = bs58.decode(b58);
-        let b64 = base64url.encode(bytes);
-        b58 = '47QbyJEDqmHTzsdg8xzqXD8gqKuLufYRrKWTmB7eAaWHG2EAsQ2GUyqRqWWYT15dGuag52Sf3j4hs2mu7w52mgps'
-        bytes = bs58.decode(b58);
-        b64 = base64url.encode(bytes);
-        console.log(b64);
-
+    it('should validate test vectors', async () => {
         const credential = require('./testVectors/credential.json');
         const keypair = require('./testVectors/keypair.json');
         const serialized = JSON.stringify(credential.vc_0);
         let crypto = new CryptoBuilder()
-            .useCryptoFactory(new CryptoFactoryNode(new KeyStoreInMemory(), new Subtle()))
             .useSigningAlgorithm('EdDSA')
             .build();
         await crypto.builder.keyStore.save(crypto.builder.signingKeyReference, keypair.keypair_0);
@@ -72,7 +61,8 @@ describe('JSONLD proofs', () => {
             .uselinkedDataProofsProtocol()
             .build();
         jsonLdProof = jsonLdProof.deserialize(JSON.stringify(credential.vc_0));
-        const publicKey = await (await crypto.builder.keyStore.get(crypto.builder.signingKeyReference, new KeyStoreOptions({ publicKeyOnly: true }))).getKey<PublicKey>();
+        const keyContainer = await crypto.builder.keyStore.get(crypto.builder.signingKeyReference, new KeyStoreOptions({ publicKeyOnly: true }));
+        const publicKey = keyContainer.getKey<PublicKey>();
         const result = await jsonLdProof.verify([publicKey]);
         expect(result).toBeTruthy();
         console.log(serialized);

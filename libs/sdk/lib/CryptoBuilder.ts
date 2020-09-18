@@ -5,12 +5,13 @@
 
 import { CryptoFactory, Crypto, Subtle, IKeyStore, KeyStoreFactory, CryptoFactoryManager, SubtleCryptoNode, KeyStoreInMemory, TokenCredential, KeyStoreOptions } from './index';
 import { KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { CryptoFactoryNode } from 'verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites';
 
 export default class CryptoBuilder {
   // Set the default crypto state
   private _keyStore: IKeyStore = new KeyStoreInMemory();
   private _subtle: Subtle = new SubtleCryptoNode().getSubtleCrypto();
-  private _cryptoFactory: CryptoFactory = new CryptoFactory(this.keyStore, this.subtle);
+  private _cryptoFactory: CryptoFactory = new CryptoFactoryNode(this.keyStore, this.subtle);
 
   private _recoveryKeyOptions: KeyStoreOptions = {
     publicKeyOnly: false,  // get private key, key vault only returns public key
