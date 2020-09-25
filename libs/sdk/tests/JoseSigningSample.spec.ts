@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { KeyReference, CryptoBuilder, KeyUse, IPayloadProtectionSigning, JoseBuilder, KeyStoreOptions, JsonWebKey, CryptoFactoryNode, KeyStoreKeyVault, KeyStoreInMemory, Subtle } from '../lib/index';
+import { KeyReference, CryptoBuilder, KeyUse, IPayloadProtectionSigning, JoseBuilder, KeyStoreOptions, JsonWebKey, CryptoFactoryNode, KeyStoreKeyVault, KeyStoreInMemory, Subtle, LongFormDid } from '../lib/index';
 import Credentials from './Credentials';
 import { ClientSecretCredential } from '@azure/identity';
 
@@ -166,7 +166,7 @@ describe('Jose Signing', () => {
         expect(validated).toBeTruthy();
     });
 
-    fit('should sign by a key stored in key vault and validate a message protected by JWS - EdDSA', async () => {
+    it('should sign by a key stored in key vault and validate a message protected by JWS - EdDSA', async () => {
 
 
         if (!keyVaultEnabled) {
@@ -192,7 +192,6 @@ describe('Jose Signing', () => {
 
         // Generate and save a signing key
         crypto = await crypto.generateKey(KeyUse.Signature);
-
 
         // Sign the payload
         jose = await jose.sign(payload);
