@@ -4,7 +4,8 @@ describe('OkpPrivateKey', () =>{
     it('should create an OPK key', () => {
         const key = {
             kty: KeyType.EC,
-            d: 'AQAB',
+            crv: 'ed25519',
+            d: 'AQAD',
             x: 'AQAB',
             alg: 'EdDSA'
         };
@@ -13,5 +14,7 @@ describe('OkpPrivateKey', () =>{
         expect(okpPrivateKey.alg).toEqual('EdDSA');
         expect((<any>okpPrivateKey.getPublicKey()).d).toBeUndefined();
         expect((<any>okpPrivateKey.getPublicKey()).x).toEqual('AQAB');
+        expect(<any>okpPrivateKey.alg).toEqual('EdDSA');
+        expect(<any>okpPrivateKey.d).toEqual('AQAD');
     });
 });

@@ -9,8 +9,11 @@ import { PublicKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import base64url from 'base64url';
 import { CryptoAlgorithm } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { SubtleCryptoExtension } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
+import { v4 as uuid } from 'uuid';
 const jsonld = require('jsonld');
 const clone = require('clone');
+const json = require('canonicaljson');
+const bs58 = require('bs58');
 
 export default class JsonLinkedDataProofs {
 
@@ -41,8 +44,6 @@ export default class JsonLinkedDataProofs {
     const [verifyData, proof] = await this.createVerifyData(payload, crypto);
 
     // sign payload
-
-
     let jwsSigner: IPayloadProtectionSigning = new JoseBuilder(this._signer.builder.crypto)
       .build();
 
@@ -51,27 +52,27 @@ export default class JsonLinkedDataProofs {
     const splitter = jws.split('.');
     // Set payload
     const payloadToSign = Buffer.concat([Buffer.from(splitter[0]), Buffer.from('.'), verifyData]);
-    
+
     const alg = 'eddsa';
     const algorithm: CryptoAlgorithm = CryptoHelpers.jwaToWebCrypto(alg);
     const subtleExtension = new SubtleCryptoExtension(crypto.builder.cryptoFactory);
     const signature = await subtleExtension.signByKeyStore(algorithm, crypto.builder.signingKeyReference, payloadToSign);
 
     proof.jws = `${splitter[0]}..${base64url.encode(Buffer.from(signature))}`;
-    
+
     // Add proof, TODO support for multiple proofs
     (<any>payload).proof = proof;
     this._credential = payload;
     return this;
   }
-  
+
   /**
    * Verify the signature.
    *
    * @param validationKeys Public key to validate the signature.
    * @returns True if signature validated.
    */
-  public async verify(validationKeys?: PublicKey[]): Promise<boolean> {
+  public async verifyxxx(validationKeys?: PublicKey[]): Promise<boolean> {
     if (!this._credential) {
       return Promise.reject('Import a credential by deserialize');
     }
@@ -90,14 +91,78 @@ export default class JsonLinkedDataProofs {
     if (signParts.length !== 3) {
       throw new Error('Signature is no valid JOSE token');
     }
-    
+
     // Set payload
     const payloadToValidate = Buffer.concat([Buffer.from(signParts[0]), Buffer.from('.'), verifyData]);
-    
+
     const alg = 'eddsa';
     const algorithm: CryptoAlgorithm = CryptoHelpers.jwaToWebCrypto(alg);
     const subtleExtension = new SubtleCryptoExtension(crypto.builder.cryptoFactory);
     const result = await subtleExtension.verifyByJwk(algorithm, validationKeys![0], base64url.toBuffer(signParts[2]), payloadToValidate);
+    return result;
+  }
+
+  /**
+   * Embed the signature into the payload
+   * @param payload to embed signature
+   */
+  /*
+  public async signJcs(payload: object): Promise<JsonLinkedDataProofs> {
+
+    if (!payload) {
+      throw new Error('JSON LD proofs input is undefined');
+    }
+
+    if (typeof payload !== 'object') {
+      throw new Error('JSON LD proofs input should be an object');
+    }
+    const crypto = this._signer.builder.crypto;
+    const verifyData = await this.createVerifyDataJcs(payload, crypto);
+
+    // sign payload
+    let jwsSigner: IPayloadProtectionSigning = new JoseBuilder(this._signer.builder.crypto)
+      .build();
+
+    // Set payload
+    const payloadToSign = verifyData;
+
+    const alg = 'eddsa';
+    const algorithm: CryptoAlgorithm = CryptoHelpers.jwaToWebCrypto(alg);
+    const subtleExtension = new SubtleCryptoExtension(crypto.builder.cryptoFactory);
+    const signature = await subtleExtension.signByKeyStore(algorithm, crypto.builder.signingKeyReference, payloadToSign);
+
+    proof.signatureValue = `${(Buffer.from(signature))}`;
+
+    // Add proof, TODO support for multiple proofs
+    (<any>payload).proof = proof;
+    this._credential = payload;
+    return this;
+  }
+*/
+  /**
+   * Verify the signature.
+   *
+   * @param validationKeys Public key to validate the signature.
+   * @returns True if signature validated.
+   */
+  public async verify(validationKeys?: PublicKey[]): Promise<boolean> {
+    if (!this._credential) {
+      return Promise.reject('Import a credential by deserialize');
+    }
+
+    // create payload
+    const proof = this._credential.proof;
+    const payload = clone(this._credential);
+    delete payload.proof.signatureValue;
+
+    const crypto = this._signer.builder.crypto;
+    const verifyData = await this.createVerifyDataJcs(payload, crypto, proof);
+
+    const alg = 'eddsa';
+    const algorithm: CryptoAlgorithm = CryptoHelpers.jwaToWebCrypto(alg);
+    const subtleExtension = new SubtleCryptoExtension(crypto.builder.cryptoFactory);
+    const signature = bs58.decode(this._credential.proof.signatureValue);
+    const result = await subtleExtension.verifyByJwk(algorithm, validationKeys![0], signature, verifyData);
     return result;
   }
 
@@ -124,6 +189,42 @@ export default class JsonLinkedDataProofs {
   /**
    * Create the reference data used for verification and signatures
    */
+  public async createVerifyDataJcs(payload: any, crypto: Crypto, proof?: any, verificationMethod?: string): Promise<Buffer> {
+    verificationMethod = verificationMethod || `${crypto.builder.did}#${crypto.builder.signingKeyReference}`;
+
+    let embeddedProof: any;
+    if (!proof) {
+      const type = 'JcsEd25519Signature2020';  // needs to be calculated and put in a seperate suite
+      const created = new Date().toUTCString();
+      const nonce = uuid();
+      embeddedProof = {
+        type,
+        nonce,
+        verificationMethod,
+        created
+      };
+    } else {
+      embeddedProof = clone(proof);
+      delete embeddedProof.signatureValue;
+    }
+    payload.proof = embeddedProof;
+    const payloadCanonized = json.stringify(payload);
+    console.log(`canonz: ${JSON.stringify(payloadCanonized)}`)
+/*
+    let payloadHash = await crypto.builder.subtle.digest(
+      {
+        name: "SHA-256",
+      },
+      new Uint8Array(Buffer.from(payloadCanonized)));
+
+    console.log(`Hash: ${Buffer.from(payloadHash).toString('hex')}`);
+  */
+    return Buffer.from(payloadCanonized);
+  }
+
+  /**
+   * Create the reference data used for verification and signatures
+   */
   public async createVerifyData(payload: any, crypto: Crypto, proof?: any, verificationMethod?: string, proofPurpose: string = 'assertionMethod'): Promise<[Buffer, any]> {
     verificationMethod = verificationMethod || `${crypto.builder.did}#${crypto.builder.signingKeyReference}`;
 
@@ -137,7 +238,7 @@ export default class JsonLinkedDataProofs {
         verificationMethod,
         proofPurpose,
         created
-      };  
+      };
     } else {
       embeddedProof = clone(proof);
       if (!embeddedProof['\@context']) {
@@ -149,7 +250,7 @@ export default class JsonLinkedDataProofs {
       algorithm: 'URDNA2015',
       format: 'application/n-quads'
     });
-    
+
     const payloadCanonized = await jsonld.canonize(payload, {
       algorithm: 'URDNA2015',
       format: 'application/n-quads'

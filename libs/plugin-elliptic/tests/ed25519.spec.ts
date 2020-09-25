@@ -197,6 +197,16 @@ describe('ed25519 - EDDSA', () => {
 
     const references = [
       {
+        name: 'https://identity.foundation/JcsEd25519Signature2020/',
+        jwk: {
+          crv: 'Ed25519',
+          x: base64url.encode(Buffer.from('53015daa95f69cbd3f431ff5a3b2eefe2bb5d9ea0d296607446aab7b7106f3ed', 'hex')),
+          kty: 'OKP'
+        },
+        referenceMessage: Buffer.from('622da77016d54fe46ec12af183ef10cc2d4a76e0e4b81dd4ca0c7f5dcf3a75dc', 'hex'),
+        referenceSignature: Buffer.from('0cf1a48b72223a9e7661912f32681de6c2d135619c147d9154d83a31032321b5b056fb342576dbc2393413805976cb2bb3b428129ea67f28d87ff989b488530c', 'hex')
+      },
+      {
         name: 'https://github.com/digitalbazaar/ed25519-verification-key-2018 reference',
         jwk: {
           crv: 'Ed25519',
