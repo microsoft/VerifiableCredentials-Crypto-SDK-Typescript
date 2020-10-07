@@ -51,6 +51,8 @@ export default class SubtleCryptoExtension extends Subtle implements ISubtleCryp
       let jwk: PrivateKey = (await <Promise<IKeyContainer>>this.keyStore.get(keyReference)).getKey<PrivateKey>();
 
       crypto = CryptoHelpers.getSubtleCryptoForAlgorithm(this.cryptoFactory, algorithm, CryptoFactoryScope.Private, keyReference);
+      jwk = crypto.keyImportTransform(jwk);
+
       const keyImportAlgorithm: any = CryptoHelpers.getKeyImportAlgorithm(algorithm, jwk);
   
       key = await crypto.importKey('jwk', jwk, keyImportAlgorithm, true, ['sign']);

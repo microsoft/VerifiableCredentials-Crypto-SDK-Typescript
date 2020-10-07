@@ -5,28 +5,31 @@
 import { SubtleCrypto } from 'webcrypto-core';
 
 /**
-export class SubtleCryptoBase extends Subtle {
-  public checkRequiredArguments(args: IArguments, size: number, methodName: string) {
-      // ignore size from core implementation and use additional argument
-      console.log(`checkRequiredArguments ${methodName}`);
-
-      switch (methodName) {
-        case "generateKey":
-          return super.checkRequiredArguments(args, 4, methodName); // +1 extra argument
-        default:
-          return super.checkRequiredArguments(args, size, methodName)
-      }
-    }
-}
-**/
-
-/**
  * Interface for the Subtle Crypto 
  */
- export default interface ISubtleCrypto {
- 
-/**
- * Returns the @class SubtleCryptoBase implementation for the nodes environment
+export default interface ISubtleCrypto {
+
+  /**
+   * Returns the @class SubtleCryptoBase implementation for the nodes environment
+   */
+  getSubtleCrypto(): SubtleCrypto;
+
+  /**
+   * Normalize the algorithm so it can be used by underlying crypto.
+   * @param algorithm Algorithm to be normalized
+   */
+  algorithmTransform(algorithm: any): any;
+
+  /**
+ * Normalize the JWK parameters so it can be used by underlying crypto.
+ * @param jwk Json web key to be normalized
  */
- getSubtleCrypto(): SubtleCrypto;
+  keyImportTransform(jwk: any): any;
+
+  /**
+   * Normalize the JWK parameters from the underlying crypto so it is normalized to standardized parameters.
+   * @param jwk Json web key to be normalized
+   */
+  keyExportTransform(jwk: any): any;
+
 }

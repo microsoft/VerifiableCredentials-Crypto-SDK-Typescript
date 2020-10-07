@@ -19,4 +19,28 @@ import { Subtle, ISubtleCrypto } from './index';
   public static getSubtleCrypto(): any {
     return SubtleCryptoNode.crypto;
   }   
+
+  /**
+   * Normalize the algorithm so it can be used by underlying crypto.
+   * @param algorithm Algorithm to be normalized
+   */
+  public algorithmTransform(algorithm: any) {
+    return algorithm;
+  }
+
+  /**
+ * Normalize the JWK parameters so it can be used by underlying crypto.
+ * @param jwk Json web key to be normalized
+ */
+  public keyImportTransform(jwk: any) {
+    return jwk;
+  }
+
+  /**
+   * Normalize the JWK parameters from the underlying crypto so it is normalized to standardized parameters.
+   * @param jwk Json web key to be normalized
+   */
+  public keyExportTransform(jwk: any) {
+    return jwk;
+  }
 }
