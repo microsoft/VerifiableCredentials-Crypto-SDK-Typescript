@@ -10,7 +10,7 @@ import LongFormDid from './LongFormDid';
 import IJsonLinkedDataProofSuite from './IJsonLinkedDataProofSuite';
 import JsonLinkedDataProofsBase from './JsonLinkedDataProofsBase';
 export { JsonLinkedDataProofsBase, IJsonLinkedDataProofSuite, CryptoBuilder, Crypto, JoseBuilder, Jose, LongFormDid };
-export { CryptographicKey, KeyTypeFactory, KeyUseFactory, KeyUse, KeyType, IKeyContainer, KeyContainer, JsonWebKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
+export { PublicKey, CryptographicKey, KeyTypeFactory, KeyUseFactory, KeyUse, KeyType, IKeyContainer, KeyContainer, JsonWebKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 export { KeyReference, KeyStoreOptions, IKeyStore, KeyStoreInMemory, ProtectionFormat } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 export { CryptoFactory, CryptoFactoryScope, CryptoHelpers, Subtle, SubtleCryptoExtension, SubtleCryptoNode } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 export { CryptoFactoryNode } from 'verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites';
