@@ -10,6 +10,7 @@ import KeyVaultProvider from './KeyVaultProvider';
 import KeyStoreKeyVault from '../keyStore/KeyStoreKeyVault';
 import { IKeyStore, CryptoError, KeyReference, KeyStoreOptions } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { JsonWebKey, IKeyContainer } from 'verifiablecredentials-crypto-sdk-typescript-keys';
+import { SignResult } from '@azure/keyvault-keys';
 
 /**
  * Wrapper class for key vault plugin
@@ -55,9 +56,22 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
     }
 
     const client = (<KeyStoreKeyVault>this.keyStore).getCryptoClient(kid);
-    const signature = await client.sign(<any>'ECDSA256', new Uint8Array(hash));
+
+    let signature: SignResult;
+    try {
+      signature = await client.sign(<any>'ES256K', new Uint8Array(hash));
+    } catch (exception) {
+      if (exception.message.startsWith('Key and signing algorithm are incompatible')) {
+        // Added for legacy. Used by keys generated with crv: SECP256K1
+        signature = await client.sign(<any>'ECDSA256', new Uint8Array(hash));
+      } else {
+        throw exception;
+      }
+    }
+
     return signature.result;
   }
+
   /**
    * Import jwk key. Return @class CryptoKey as the internal format of a key.
    * This method does not import any key material into key vault.
@@ -74,34 +88,36 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
       throw new Error(`Import key only supports jwk`);
     }
 
-    if (jwk.kty?.toUpperCase() !== 'EC' ){
+    if (jwk.kty?.toUpperCase() !== 'EC') {
       throw new Error(`Import key only supports kty EC`);
     }
 
-    if (jwk.crv?.toUpperCase() !== 'SECP256K1'){
-      throw new Error(`Import key only supports crv SECP256K1`);
+    if (jwk.crv?.toUpperCase() === 'SECP256K1') {
+      jwk.crv = 'P-256K';
+    } else if (jwk.crv?.toUpperCase() !== 'P-256K') {
+      throw new Error(`Import key only supports crv P-256K`);
     }
 
-    if (!jwk.kid && jwk.kid!.startsWith('https://')){
+    if (!jwk.kid && jwk.kid!.startsWith('https://')) {
       throw new Error(`Imported key must have a kid in the format https://<vault>/keys/<name>/<version>`);
-    }    
+    }
 
     const kidParts = jwk.kid!.split('/');
     let secretType: boolean = kidParts[3] === 'secrets';
 
-    if (!['keys', 'secrets'].includes(kidParts[3]) ) {
+    if (!['keys', 'secrets'].includes(kidParts[3])) {
       throw new Error(`Imported key must be of type keys or secrets`);
     }
 
-    if (kidParts.length <= 5 ) {      
-      const container: IKeyContainer = (await (<KeyStoreKeyVault>this.keyStore).get(new KeyReference(kidParts[4], secretType ? KeyStoreKeyVault.SECRETS : KeyStoreKeyVault.KEYS), new KeyStoreOptions({latestVersion: true})));
+    if (kidParts.length <= 5) {
+      const container: IKeyContainer = (await (<KeyStoreKeyVault>this.keyStore).get(new KeyReference(kidParts[4], secretType ? KeyStoreKeyVault.SECRETS : KeyStoreKeyVault.KEYS), new KeyStoreOptions({ latestVersion: true })));
       const kvKey = container.getKey<JsonWebKey>();
       jwk.kid = kvKey.kid;
     }
 
     const alg = <EcKeyAlgorithm>this.subtle.algorithmTransform({
       name: "ECDSA",
-      namedCurve: "SECP256K1",
+      namedCurve: "P-256K",
     });
 
     // convert key to crypto key
@@ -127,9 +143,9 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
    */
   async onGenerateKey(algorithm: EcKeyGenParams, extractable: boolean, keyUsages: KeyUsage[], options?: IKeyGenerationOptions): Promise<CryptoKeyPair> {
     if (!options) {
-      options = { curve: 'SECP256K1' }
+      options = { curve: 'P-256K' }
     } else {
-      options.curve = 'SECP256K1';
+      options.curve = 'P-256K';
     }
 
     const [name, publicKey] = await this.generate('EC', algorithm, extractable, keyUsages, options);
@@ -139,13 +155,13 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
       use: 'sig',
       x: base64url.encode(publicKey.key.x),
       y: base64url.encode(publicKey.key.y),
-      alg:'ES256K',
-      crv: 'SECP256K1'
+      alg: 'ES256K',
+      crv: 'P-256K'
     };
 
     const alg = <EcKeyAlgorithm>this.subtle.algorithmTransform({
       name: "ECDSA",
-      namedCurve: "SECP256K1",
+      namedCurve: "P-256K",
     });
 
     // convert key to crypto key
