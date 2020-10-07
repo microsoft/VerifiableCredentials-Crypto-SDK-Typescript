@@ -153,7 +153,7 @@ export default class EllipticEdDsaProvider extends EllipticDsaProvider {
     const jwk: any = {
       crv,
       use: 'sig',
-      alg: 'EDDSA',
+      alg: 'EdDSA',
       kty: 'OKP'
     }
     if (key.type === 'public') {
