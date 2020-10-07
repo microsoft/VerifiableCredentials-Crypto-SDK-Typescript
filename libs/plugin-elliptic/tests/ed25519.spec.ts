@@ -261,7 +261,7 @@ describe('ed25519 - EDDSA', () => {
     const key = await crypto.generateKey(algGenerate, true, ['sign']);
 
     const data = 'abcdefg';
-    const alg = { name: 'EDDSA', namedCurve: 'ed25519', hash: { name: 'SHA-256' }, format: 'DER' };
+    const alg = { name: 'EdDSA', namedCurve: 'ed25519', hash: { name: 'SHA-256' }, format: 'DER' };
     const signature = await crypto.sign(alg, (<any>key).privateKey, Buffer.from(data));
     expect(signature.byteLength).toBeGreaterThanOrEqual(70);
     const publicKey: EllipticCurveKey = <EllipticCurveKey>(<any>key).publicKey;
