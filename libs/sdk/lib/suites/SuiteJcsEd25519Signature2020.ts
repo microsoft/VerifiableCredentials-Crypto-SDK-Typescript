@@ -2,8 +2,8 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-
-import { CryptoHelpers, IJsonLinkedDataProofSuite, Crypto, JsonLinkedDataProofsBase, SubtleCryptoExtension } from '../index';
+import JsonLinkedDataProofsBase from '../JsonLinkedDataProofsBase';
+import { CryptoHelpers, IJsonLinkedDataProofSuite, Crypto, SubtleCryptoExtension } from '../index';
 import { IPayloadProtectionSigning } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
 import { PublicKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import { v4 as uuid } from 'uuid';
@@ -30,10 +30,17 @@ export default class SuiteJcsEd25519Signature2020 extends JsonLinkedDataProofsBa
   }
 
   /**
+   * Gets the algorithm for the suite
+   */
+  public get alg(): string{
+    return 'EdDSA';
+  }
+
+  /**
    * Embed the signature into the payload
    * @param payload to embed signature
    */
-  public async sign(payload: any): Promise<IJsonLinkedDataProofSuite> {
+  public async sign(payload: any): Promise<any> {
 
     if (!payload) {
       throw new Error('JSON LD proof input is undefined');
@@ -55,22 +62,30 @@ export default class SuiteJcsEd25519Signature2020 extends JsonLinkedDataProofsBa
     const signature = await subtleExtension.signByKeyStore(algorithm, crypto.builder.signingKeyReference, payloadToSign);
     payload.proof.signatureValue = bs58.encode(signature);
     this._credential = payload;
-    return this;
+    return this._credential;
   }
 
   /**
    * Verify the signature.
    *
    * @param validationKeys Public key to validate the signature.
-   * @returns True if signature validated.
+    * @param signedPayload Optional. The payload to verify
+    * @returns True if signature validated.
    */
-  public async verify(validationKeys?: PublicKey[]): Promise<boolean> {
+  public async verify(validationKeys?: PublicKey[], signedPayload?: any): Promise<boolean> {
+    this._credential = signedPayload ? signedPayload : this._credential;
     if (!this._credential) {
       return Promise.reject('Import a credential by deserialize');
     }
 
+
     // create payload
     const proof = this._credential.proof;
+
+    if (!proof) {
+      return Promise.reject('No proof to validate in signedPayload');
+    }
+
     const payload = clone(this._credential);
     delete payload.proof.signatureValue;
 
@@ -80,7 +95,13 @@ export default class SuiteJcsEd25519Signature2020 extends JsonLinkedDataProofsBa
     const alg = 'eddsa';
     const algorithm: CryptoAlgorithm = CryptoHelpers.jwaToWebCrypto(alg);
     const subtleExtension = new SubtleCryptoExtension(crypto.builder.cryptoFactory);
-    const signature = bs58.decode(this._credential.proof.signatureValue);
+
+    const signatureValue = proof.signatureValue;
+    if (!signatureValue) {
+      return Promise.reject('Proof does not contain the signatureValue');
+    }
+
+    const signature = bs58.decode(signatureValue);
     const result = await subtleExtension.verifyByJwk(algorithm, validationKeys![0], signature, verifyData);
     return result;
   }
@@ -88,15 +109,15 @@ export default class SuiteJcsEd25519Signature2020 extends JsonLinkedDataProofsBa
   /**
   * Serialize a cryptographic token
   */
-  public serialize(): Promise<string> {
-    return super.serialize();
+  public serialize(signedPayload?: any): Promise<string> {
+    return super.serialize(signedPayload);
   }
 
   /**
    * Deserialize a credential
    * @param credential The credential to deserialize.
    */
-  public deserialize(credential: string): Promise<IJsonLinkedDataProofSuite> {
+  public deserialize(credential: string): Promise<any> {
     return super.deserialize(credential);
   }
 

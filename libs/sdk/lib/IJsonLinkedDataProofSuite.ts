@@ -12,26 +12,32 @@ export default interface IJsonLinkedDataProofSuite {
     type: string[];
 
     /**
+     * Gets the algorithm for the suite
+     */
+    alg: string;
+
+    /**
      * Sign the payload
      * @param payload Payload to be signed
      */
-    sign(payload: object): Promise<IJsonLinkedDataProofSuite>;
+    sign(payload: object): Promise<any>;
 
     /**
      * Validate the signature on a credential
      * @param validationKeys Public keys used to validate the signature
+     * @param signedPayload Optional. The payload to verify
      */
-    verify(validationKeys?: PublicKey[]): Promise<boolean>;
+    verify(validationKeys?: PublicKey[], signedPayload?: any): Promise<boolean>;
 
 
     /**
     * Serialize a the payload
     */
-    serialize(): Promise<string>;
+    serialize(signedPayload?: any): Promise<string>;
 
     /**
      * Deserialize a credential
      * @param credential The credential to deserialize.
      */
-    deserialize(credential: string): Promise<IJsonLinkedDataProofSuite>;
+    deserialize(credential: string): Promise<any>;
 }

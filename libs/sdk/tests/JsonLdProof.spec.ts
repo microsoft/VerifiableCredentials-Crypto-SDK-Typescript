@@ -17,7 +17,7 @@ describe('JSONLD proofs', () => {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
     });
 
-    fit('should sign and verify a credential', async () => {
+    it('should sign and verify a credential', async () => {
         let crypto = new CryptoBuilder()
             .useSigningAlgorithm('EdDSA')
             .build();
@@ -25,7 +25,7 @@ describe('JSONLD proofs', () => {
         crypto = await crypto.generateKey(KeyUse.Signature, 'recovery');
         crypto.builder.useDid(await new LongFormDid(crypto).serialize());
         let jsonLdProof: IPayloadProtectionSigning = new JoseBuilder(crypto)
-            .uselinkedDataProofsProtocol()
+            .uselinkedDataProofsProtocol('JcsEd25519Signature2020')
             .build();
 
         const doc = {
@@ -49,65 +49,49 @@ describe('JSONLD proofs', () => {
         expect(result).toBeTruthy();
     });
 
-    it('should validate test vectors', async () => {
-        const credential = require('./testVectors/credential.json');
-        const keypair = require('./testVectors/keypair.json');
-        const serialized = JSON.stringify(credential.vc_0);
-        let crypto = new CryptoBuilder()
-            .useSigningAlgorithm('EdDSA')
-            .build();
-        await crypto.builder.keyStore.save(crypto.builder.signingKeyReference, keypair.keypair_0);
-        let jsonLdProof: IPayloadProtectionSigning = new JoseBuilder(crypto)
-            .uselinkedDataProofsProtocol()
-            .build();
-        jsonLdProof = jsonLdProof.deserialize(JSON.stringify(credential.vc_0));
-        const keyContainer = await crypto.builder.keyStore.get(crypto.builder.signingKeyReference, new KeyStoreOptions({ publicKeyOnly: true }));
-        const publicKey = keyContainer.getKey<PublicKey>();
-        const result = await jsonLdProof.verify([publicKey]);
-        expect(result).toBeTruthy();
-        console.log(serialized);
-    });
     it('should validate reference vector for ed25519 signature 2020', async () => {
-        const sign = bs58.decode('6b23ioXQSAayuw13PGFMCAKqjgqoLTpeXWCy5WRfw28c').toString('hex');
+        // reference https://identity.foundation/JcsEd25519Signature2020/
         const doc = {
-            "id": "did:example:123",
+            "id": "did:test:36FC2p3yXoxcoVBn73qxPx",
             "publicKey": [
-                {
-                    "id": "did:example:123#key-1",
-                    "type": "JcsEd25519Key2020",
-                    "controller": "did:example:123",
-                    "publicKeyBase58": "6b23ioXQSAayuw13PGFMCAKqjgqoLTpeXWCy5WRfw28c"
-                }
+              {
+                "id": "did:test:36FC2p3yXoxcoVBn73qxPx#key-1",
+                "type": "Ed25519VerificationKey2018",
+                "controller": "did:test:36FC2p3yXoxcoVBn73qxPx",
+                "publicKeyBase58": "295nPvQHCdfXT8N275Hme434Z2NqZY5y3NN7rdts8Ew1"
+              }
             ],
+            "authentication": null,
             "service": [
-                {
-                    "id": "schemaID",
-                    "type": "schema",
-                    "serviceEndpoint": "schemaID"
-                }
+              {
+                "id": "test-service-1",
+                "type": "test-service",
+                "serviceEndpoint": "https://test-service.com/test-service"
+              }
             ],
             "proof": {
-                "created": "2020-04-17T18:03:18Z",
-                "verificationMethod": "did:example:123#key-1",
-                "nonce": "7bc22433-2ea4-4d30-abf2-2652bebb26c7",
-                "type": "JcsEd25519Signature2020",
-                "signatureValue": "5TcawVLuoqRjCuu4jAmRqBcKoab1YVqxG8RXnQwvQBHNwP7RhPwXhzhTLVu3dKGposo2mmtfx9AwcqB2Mwnagup1JT5Yr9u3SjzLCc6kx4wW6HG5SKcra4SauhutN94s8Eo"
+              "created": "2020-09-24T16:43:29Z",
+              "proofPurpose": "assertionMethod",
+              "verificationMethod": "did:test:36FC2p3yXoxcoVBn73qxPx#key-1",
+              "nonce": "fd2ccdaa-a9eb-4927-9ad2-3c0ad84546d5",
+              "signatureValue": "2Ha72f5KqowpAeLxF2UvDBYgknLiHeBk9W6g7FHhPTd26M5qDgSfmWrpJareNp3bb9apwfUKysjFmbFcEN4LXLg7",
+              "type": "JcsEd25519Signature2020"
             }
-        };
+          };
 
         const publicKey = {
             kty: 'OKP',
             crv: 'ed25519',
-            x: base64url.encode(Buffer.from('53015daa95f69cbd3f431ff5a3b2eefe2bb5d9ea0d296607446aab7b7106f3ed', 'hex'))
+            x: base64url.encode(Buffer.from('10edbdbe76a73351f28747303f47e98faa00ddd914c05c3dbaba0d6ecfef59a8', 'hex'))
         }
         let crypto = new CryptoBuilder()
-        .useSigningAlgorithm('EdDSA')
-        .build();
-        let jsonLdProof: IPayloadProtectionSigning = new JoseBuilder(crypto)
-            .uselinkedDataProofsProtocol()
+            .useSigningAlgorithm('EdDSA')
             .build();
-        jsonLdProof = jsonLdProof.deserialize(JSON.stringify(doc));
-          const result = await (<any>jsonLdProof).verify([publicKey]);
-          expect(result).toBeTruthy();
+        let jsonLdProof: IPayloadProtectionSigning = new JoseBuilder(crypto)
+            .uselinkedDataProofsProtocol('JcsEd25519Signature2020')
+            .build();
+        jsonLdProof = await jsonLdProof.deserialize(JSON.stringify(doc));
+        const result = await (<any>jsonLdProof).verify([publicKey]);
+        expect(result).toBeTruthy();
     });
 });

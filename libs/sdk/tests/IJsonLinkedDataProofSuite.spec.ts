@@ -18,8 +18,9 @@ describe('SuiteJcsEd25519Signature2020', () => {
         crypto = crypto.builder.useDid(did).build();
 
         const jsonLdProofs = new JoseBuilder(crypto)
-            .uselinkedDataProofsProtocol({})
+            .uselinkedDataProofsProtocol('JcsEd25519Signature2020')
             .build();
+        expect(crypto.builder.signingAlgorithm).toEqual('EdDSA');
 
         let suite: IJsonLinkedDataProofSuite = new SuiteJcsEd25519Signature2020(jsonLdProofs);
         let payload = {
@@ -27,17 +28,19 @@ describe('SuiteJcsEd25519Signature2020', () => {
             prop2: 'prop2'
         };
 
-        suite = await suite.sign(payload);
-        const serialized = await suite.serialize();
+        let signedPayload = await suite.sign(payload);
+        const serialized = await suite.serialize(signedPayload);
         const pl = JSON.parse(serialized);
         expect(pl.proof.signatureValue).toBeDefined();
         expect(pl.prop1).toEqual('prop1');
         expect(pl.prop2).toEqual('prop2');
 
         // Verify
-        suite = await suite.deserialize(serialized);
+        signedPayload = await suite.deserialize(serialized);
         const key = (await crypto.builder.keyStore.get(crypto.builder.signingKeyReference, new KeyStoreOptions({ publicKeyOnly: true }))).getKey<PublicKey>();
-        const result = await suite.verify([key]);
+        let result = await suite.verify([key]);
+        expect(result).toBeTruthy();
+        result = await suite.verify([key], signedPayload);
         expect(result).toBeTruthy();
     });
 
@@ -124,8 +127,8 @@ describe('SuiteJcsEd25519Signature2020', () => {
             const jwk: OkpPublicKey = vectors[vector].publicKey;
 
             // Verify
-            suite = await suite.deserialize(JSON.stringify(payload));
-            const result = await suite.verify([jwk]);
+            const credential = await suite.deserialize(JSON.stringify(payload));
+            const result = await suite.verify([jwk], credential);
             expect(result).toBeTruthy();
         }
     });

@@ -37,10 +37,10 @@ describe('JoseBuilder', () => {
         let builder = new JoseBuilder(crypto);
         expect(builder.protocol).toEqual('JOSE');
         builder = new JoseBuilder(crypto)
-            .uselinkedDataProofsProtocol({});
+            .uselinkedDataProofsProtocol('JcsEd25519Signature2020', {});
         expect(builder.protocol).toEqual('JSONLDProofs');
         builder = new JoseBuilder(crypto)
-            .uselinkedDataProofsProtocol();
+            .uselinkedDataProofsProtocol('JcsEd25519Signature2020');
         expect(builder.protocol).toEqual('JSONLDProofs');
         builder = new JoseBuilder(crypto)
             .useJwtProtocol({});

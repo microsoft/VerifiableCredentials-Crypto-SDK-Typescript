@@ -6,10 +6,9 @@
 import { IJwsSigningOptions, JwsToken } from 'verifiablecredentials-crypto-sdk-typescript-protocol-jose';
 import { IPayloadProtectionSigning, CryptoProtocolError } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
 import { PublicKey, JoseConstants } from 'verifiablecredentials-crypto-sdk-typescript-keys';
-import { JoseBuilder, KeyStoreOptions, ProtectionFormat } from './index';
+import { IJsonLinkedDataProofSuite, JoseBuilder, KeyStoreOptions, ProtectionFormat } from './index';
 import { TSMap } from 'typescript-map';
 import { v4 as uuidv4 } from 'uuid';
-import JsonLinkedDataProofs from './JsonLinkedDataProofs';
 
 export default class Jose implements IPayloadProtectionSigning {
 
@@ -26,7 +25,7 @@ export default class Jose implements IPayloadProtectionSigning {
   private _signatureProtectedHeader: any | undefined;
   private _signatureHeader: any | undefined;
   private _signaturePayload: Buffer | undefined;
-  private _jsonLinkedDataProofs: JsonLinkedDataProofs | undefined;
+
   /**
    * Gets the protected header on the signature
    */
@@ -49,14 +48,6 @@ export default class Jose implements IPayloadProtectionSigning {
     return this._signaturePayload;
   }
 
-  private get jsonLinkedDataProofs() {
-    if (this._jsonLinkedDataProofs) {
-      return this._jsonLinkedDataProofs;
-    }
-
-    return this._jsonLinkedDataProofs = new JsonLinkedDataProofs(this);
-  }
-
   /**
    * Signs contents using the given private key reference.
    *
@@ -74,14 +65,21 @@ export default class Jose implements IPayloadProtectionSigning {
     const token: JwsToken = new JwsToken(jwsOptions);
     const protectionFormat = Jose.getProtectionFormat(this.builder.serializationFormat);
 
-    if (this.isLinkedDataProofsProtocol()) {
+    if (this.builder.isLinkedDataProofsProtocol()) {
       // Support json ld proofs
       console.log('Support JSON LD proofs');
       if (typeof payload !== 'object') {
         payload = JSON.parse(payload);
       }
 
-      this._jsonLdProof = await this.jsonLinkedDataProofs.sign(payload);
+      let suite: IJsonLinkedDataProofSuite;
+      try {
+        suite = this.builder.getLinkedDataProofSuite();
+      } catch (exception) {
+        return Promise.reject(exception.message);
+      }
+
+      this._jsonLdProof = await suite.sign(payload);
       console.log(`JSON LD Proof: ${this._jsonLdProof}`);
       return this;
     } else if (this.isJwtProtocol()) {
@@ -134,14 +132,20 @@ export default class Jose implements IPayloadProtectionSigning {
       validationKeys = [validationKeyContainer.getKey<PublicKey>()]
     }
 
-    if (this.isLinkedDataProofsProtocol()) {
+    if (this.builder.isLinkedDataProofsProtocol()) {
       // Support json ld proofs
 
       if (!this._jsonLdProof) {
         return Promise.reject('Import a credential by deserialize');
       }
 
-      return this.jsonLinkedDataProofs.verify(validationKeys);
+      let suite: IJsonLinkedDataProofSuite;
+      try {
+        suite = this.builder.getLinkedDataProofSuite();
+      } catch (exception) {
+        return Promise.reject(exception.message);
+      }
+      return await suite.verify(validationKeys, this._jsonLdProof);
     }
 
     const jwsOptions: IJwsSigningOptions = Jose.optionsFromBuilder(this.builder);
@@ -156,18 +160,21 @@ export default class Jose implements IPayloadProtectionSigning {
   /**
   * Serialize a cryptographic token
   */
-  public serialize(): string {
+  public async serialize(): Promise<string> {
     const protocolFormat: ProtectionFormat = Jose.getProtectionFormat(this.builder.serializationFormat);
     if (!this._token) {
-      throw new CryptoProtocolError(JoseConstants.Jose, `No token to serialize`);
+      return Promise.reject(`No token to serialize`);
     }
 
-    if (this.isLinkedDataProofsProtocol()) {
+    if (this.builder.isLinkedDataProofsProtocol()) {
       if (this._jsonLdProof) {
-        return this.jsonLinkedDataProofs.serialize();
-        }
 
-      throw new CryptoProtocolError('JsonLdProof', `No token to serialize`);
+        let suite: IJsonLinkedDataProofSuite;
+        suite = this.builder.getLinkedDataProofSuite();
+        return suite.serialize(this._jsonLdProof);
+      }
+
+      return Promise.reject(`No token to serialize`);
     }
 
     switch (protocolFormat) {
@@ -176,7 +183,7 @@ export default class Jose implements IPayloadProtectionSigning {
       case ProtectionFormat.JwsGeneralJson:
         return this._token.serialize(protocolFormat); ``
       default:
-        throw new CryptoProtocolError(JoseConstants.Jose, `Serialization format '${this.builder.serializationFormat}' is not supported`);
+        return Promise.reject(`Serialization format '${this.builder.serializationFormat}' is not supported`);
     }
   }
 
@@ -184,11 +191,17 @@ export default class Jose implements IPayloadProtectionSigning {
    * Deserialize a cryptographic token
    * @param token The crypto token to deserialize.
    */
-  public deserialize(token: string): IPayloadProtectionSigning {
+  public async deserialize(token: string): Promise<IPayloadProtectionSigning> {
 
-    if (this.isLinkedDataProofsProtocol()) {
-      this._jsonLdProof = this.jsonLinkedDataProofs.deserialize(token);
-      return this;
+    if (this.builder.isLinkedDataProofsProtocol()) {
+      let suite: IJsonLinkedDataProofSuite;
+      try {
+        suite = this.builder.getLinkedDataProofSuite();
+        this._jsonLdProof = await suite.deserialize(token);
+        return Promise.resolve(this);
+        } catch (exception) {
+          return Promise.reject(exception.message);
+        }
     }
 
     const protocolFormat: ProtectionFormat = Jose.getProtectionFormat(this.builder.serializationFormat);
@@ -217,10 +230,9 @@ export default class Jose implements IPayloadProtectionSigning {
 
         // get payload
         this._signaturePayload = this._token.payload;
-
-        return this;
+        return Promise.resolve(this);
       default:
-        throw new CryptoProtocolError(JoseConstants.Jose, `Serialization format '${this.builder.serializationFormat}' is not supported`);
+        return Promise.reject(`Serialization format '${this.builder.serializationFormat}' is not supported`);
     }
   }
 
@@ -230,44 +242,6 @@ export default class Jose implements IPayloadProtectionSigning {
   private isJwtProtocol(): boolean {
     return this.builder.jwtProtocol !== undefined;
   }
-
-  /**
-   * True if JSON LD proof protocol is selected
-   */
-  private isLinkedDataProofsProtocol(): boolean {
-    return this.builder.linkedDataProofsProtocol !== undefined;
-  }
-
-  /**
-   * Deserialize a cryptographic token
-   * @param token The crypto token to deserialize.
-   * @param options used for the token. These options override the options provided in the constructor.
-   */
-  /*
-  public static deserialize(token: string, options?: IPayloadProtectionOptions): ICryptoToken {
-    const parts = token.split('.');
-    const protocol = new JoseProtocol();
-
-    if (parts.length === 3) {
-      const deserializationOptions = options ? JwsToken.fromPayloadProtectionOptions(options) : <IJwsSigningOptions>{};
-      return JwsToken.toCryptoToken(ProtectionFormat.JwsCompactJson, JwsToken.deserialize(token, deserializationOptions), <IPayloadProtectionOptions>options);
-    } else if (parts.length === 5) {
-      const deserializationOptions = options ? JweToken.fromPayloadProtectionOptions(options) : <IJweEncryptionOptions>{};
-      return JweToken.toCryptoToken(ProtectionFormat.JweCompactJson, JweToken.deserialize(token, deserializationOptions), <IPayloadProtectionOptions>options);
-    }
-    const parsed = JSON.parse(token);
-    if (parsed[JoseConstants.tokenSignatures] || parsed[JoseConstants.tokenSignature]) {
-      const deserializationOptions = options ? JwsToken.fromPayloadProtectionOptions(options) : <IJwsSigningOptions>{};
-      return JwsToken.toCryptoToken(parsed[JoseConstants.tokenSignatures] ? ProtectionFormat.JwsGeneralJson : ProtectionFormat.JwsFlatJson, JwsToken.deserialize(token, deserializationOptions), <IPayloadProtectionOptions>options);
-    }
-    if (parsed[JoseConstants.tokenRecipients] || parsed[JoseConstants.tokenCiphertext]) {
-      const deserializationOptions = options ? JweToken.fromPayloadProtectionOptions(options) : <IJweEncryptionOptions>{};
-      return JweToken.toCryptoToken(parsed[JoseConstants.tokenRecipients] ? ProtectionFormat.JweGeneralJson : ProtectionFormat.JweFlatJson, JweToken.deserialize(token, deserializationOptions), <IPayloadProtectionOptions>options);
-    }
-
-    throw new CryptoProtocolError(JoseConstants.Jose, 'Unrecognised token to deserialize');
-  }
-*/
 
   // Map string to protection format
   public static getProtectionFormat(format: string): ProtectionFormat {

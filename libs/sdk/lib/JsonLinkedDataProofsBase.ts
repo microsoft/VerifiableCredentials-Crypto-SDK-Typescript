@@ -27,10 +27,17 @@ export default class JsonLinkedDataProofsBase implements IJsonLinkedDataProofSui
   }
 
   /**
+   * Gets the algorithm for the suite
+   */
+  public get alg(): string{
+    return '';
+  }
+
+  /**
    * Embed the signature into the payload
    * @param payload to embed signature
    */
-  public async sign(_payload: object): Promise<IJsonLinkedDataProofSuite> {
+  public async sign(_payload: object): Promise<any> {
     return new Promise((_, reject) => {
       reject('sign not implemented')
     });
@@ -50,9 +57,11 @@ export default class JsonLinkedDataProofsBase implements IJsonLinkedDataProofSui
 
   /**
   * Serialize a cryptographic token
+  * @param signedPayload The payload to serialize
   */
-  public serialize(): Promise<string> {
+  public serialize(signedPayload?: any): Promise<string> {
     return new Promise((resolve, reject) => {
+      this._credential = signedPayload ? signedPayload : this._credential;
       if (!this._credential) {
         reject('No credential to serialize');
       }
@@ -65,10 +74,10 @@ export default class JsonLinkedDataProofsBase implements IJsonLinkedDataProofSui
    * Deserialize a credential
    * @param credential The credential to deserialize.
    */
-  public deserialize(credential: string): Promise<IJsonLinkedDataProofSuite> {
+  public deserialize(credential: string): Promise<any> {
     return new Promise((resolve) => {
       this._credential = JSON.parse(credential);
-      resolve(this);
+      resolve(this._credential);
     });
   }
 }

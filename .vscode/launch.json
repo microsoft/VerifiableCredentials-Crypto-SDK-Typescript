@@ -7,20 +7,6 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch Service",
-      "cwd": "${workspaceFolder}\\AD-DID-PICS-Issuance",
-      "program": "${workspaceFolder}\\AD-DID-PICS-Issuance\\dist\\src\\start.js",
-      "outFiles": [
-        "${workspaceFolder}/**/*.js"
-      ],
-      "preLaunchTask": "run-npm-build",
-      "env": {
-        "JSON_CONFIGURATION": "${workspaceFolder}\\AD-DID-PICS-Issuance\\config.json"
-      }
-    },
-    {
-      "type": "node",
-      "request": "launch",
       "name": "Jasmine - Current file",
       "cwd": "${fileDirname}/..",
       "program": "${fileDirname}/../node_modules/jasmine-ts/lib/index",
@@ -35,6 +21,20 @@
       },
       "console": "internalConsole",
       "trace": true
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Service",
+      "cwd": "${workspaceFolder}\\AD-DID-PICS-Issuance",
+      "program": "${workspaceFolder}\\AD-DID-PICS-Issuance\\dist\\src\\start.js",
+      "outFiles": [
+        "${workspaceFolder}/**/*.js"
+      ],
+      "preLaunchTask": "run-npm-build",
+      "env": {
+        "JSON_CONFIGURATION": "${workspaceFolder}\\AD-DID-PICS-Issuance\\config.json"
+      }
     },
     {
       "type": "node",

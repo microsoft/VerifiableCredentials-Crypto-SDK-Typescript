@@ -6,7 +6,6 @@
 import { ClientSecretCredential } from '@azure/identity';
 import { JoseBuilder, CryptoBuilder, IPayloadProtectionSigning, CryptographicKey, ProtectionFormat, Jose, KeyUse, KeyStoreOptions, JsonWebKey, KeyReference } from '../lib/index';
 import Credentials from './Credentials';
-import base64url from 'base64url';
 
 describe('Jose', () => {
 
@@ -70,8 +69,8 @@ describe('Jose', () => {
             jose = await jose.sign(payload);
 
             // Check kid
-            let serialized = jose.serialize();
-            jose = jose.deserialize(serialized);
+            let serialized = await jose.serialize();
+            jose = await jose.deserialize(serialized);
             expect(jose.signatureProtectedHeader['typ']).toEqual('JWT');
             expect(jose.signatureProtectedHeader.alg).toEqual('ES256K');
             expect(jose.signatureProtectedHeader.kid).toEqual('did#neo');
@@ -82,8 +81,8 @@ describe('Jose', () => {
 
             expect((<Jose>jose).builder.kid).toEqual('kid');
             jose = await jose.sign(payload);
-            serialized = jose.serialize();
-            jose = jose.deserialize(serialized);
+            serialized = await jose.serialize();
+            jose = await jose.deserialize(serialized);
             expect(jose.signatureProtectedHeader!.typ).toEqual('JWT');
             expect(jose.signatureProtectedHeader!.alg).toEqual('ES256K');
             expect(jose.signatureProtectedHeader!.kid).toEqual('kid');
@@ -100,7 +99,7 @@ describe('Jose', () => {
 
             let throwed = false;
             try {
-                jose.serialize();
+                await jose.serialize();
             } catch (e) {
                 throwed = true;
                 expect(e.message).toEqual(`Format 'whatever' is not supported`)
@@ -108,7 +107,7 @@ describe('Jose', () => {
             expect(throwed).toBeTruthy();
             throwed = false;
             try {
-                jose.deserialize(serialized);
+                await jose.deserialize(serialized);
             } catch (e) {
                 throwed = true;
                 expect(e.message).toEqual(`Format 'whatever' is not supported`)
@@ -128,11 +127,15 @@ describe('Jose', () => {
 
             // serialize has no token
             jose = new JoseBuilder(crypto).build();
-            expect(() => jose.serialize()).toThrowError('No token to serialize');
-
+            throwed = false;
+            try {
+                await jose.serialize();
+            } catch (ex) {
+                throwed = true;
+                expect(ex).toEqual('No token to serialize');
+            }
+            expect(throwed).toBeTruthy();
         }
-
-
     });
 
 
@@ -154,8 +157,8 @@ describe('Jose', () => {
         jose = await jose.sign(payload);
 
         // Check kid
-        let serialized = jose.serialize();
-        jose = jose.deserialize(serialized);
+        let serialized = await jose.serialize();
+        jose = await jose.deserialize(serialized);
         expect(jose.signatureProtectedHeader['typ']).toEqual('JWT');
         expect(jose.signatureProtectedHeader.alg).toEqual('ES256K');
         expect(jose.signatureProtectedHeader.kid).toEqual('did#neo');
