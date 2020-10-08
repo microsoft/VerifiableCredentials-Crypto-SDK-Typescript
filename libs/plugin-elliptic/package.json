@@ -1,6 +1,6 @@
 {
   "name": "verifiablecredentials-crypto-sdk-typescript-plugin-elliptic",
-  "version": "1.1.11-preview.3",
+  "version": "1.1.11-preview.4",
   "repository": {
     "type": "git",
     "url": "https://github.com/microsoft/VerifiableCredentials-Crypto-SDK-Typescript.git"
@@ -29,7 +29,7 @@
     "elliptic": "6.5.3",
     "minimalistic-crypto-utils": "1.0.1",
     "sha.js": "^2.4.11",
-    "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.11-preview.3",
+    "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.11-preview.4",
     "webcrypto-core": "1.1.1"
   },
   "devDependencies": {
@@ -39,7 +39,7 @@
     "jasmine": "3.5.0",
     "jasmine-reporters": "2.3.2",
     "jasmine-spec-reporter": "4.2.1",
-    "jasmine-ts": "0.2.1",
+    "jasmine-ts": "0.3.0",
     "ts-loader": "2.3.7",
     "node-fetch": "2.4.1",
     "nyc": "14.1.1",
