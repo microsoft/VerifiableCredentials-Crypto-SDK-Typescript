@@ -51,6 +51,8 @@ export default class SubtleCryptoExtension extends Subtle implements ISubtleCryp
       let jwk: PrivateKey = (await <Promise<IKeyContainer>>this.keyStore.get(keyReference)).getKey<PrivateKey>();
 
       crypto = CryptoHelpers.getSubtleCryptoForAlgorithm(this.cryptoFactory, algorithm, CryptoFactoryScope.Private, keyReference);
+      jwk = crypto.keyImportTransform(jwk);
+
       const keyImportAlgorithm: any = CryptoHelpers.getKeyImportAlgorithm(algorithm, jwk);
   
       key = await crypto.importKey('jwk', jwk, keyImportAlgorithm, true, ['sign']);
@@ -61,7 +63,7 @@ export default class SubtleCryptoExtension extends Subtle implements ISubtleCryp
       <ArrayBuffer>data);
 
     // only applicable for EC algorithms and when no encoding is applied
-    const isElliptic = algorithm.name === 'ECDSA' || algorithm.name === 'EDDSA';
+    const isElliptic = algorithm.name.toUpperCase() === 'ECDSA' || algorithm.name.toUpperCase() === 'EDDSA';
     // EDDSA/ECDSA returns two 32 bit values R & S. Some API's will encode these values in DER
     const format: string = (<any>algorithm).format;
     if (isElliptic && signature.byteLength <= 64 && format) {
@@ -144,14 +146,12 @@ export default class SubtleCryptoExtension extends Subtle implements ISubtleCryp
    * @param payload which was signed
    */
   public async verifyByJwk(algorithm: CryptoAlgorithm, jwk: JsonWebKey, signature: BufferSource, payload: BufferSource): Promise<boolean> {
-    //console.log(`verifyByJwk signature: ${Buffer.from(<Uint8Array>signature).toString('hex')}`);
-    //console.log(`verifyByJwk payload: ${Buffer.from(<Uint8Array>payload).toString('hex')}`);
     const crypto: Subtle = CryptoHelpers.getSubtleCryptoForAlgorithm(this.cryptoFactory, algorithm, CryptoFactoryScope.Public, new KeyReference('', 'secret'));
     jwk = crypto.keyImportTransform(jwk);
     let keyImportAlgorithm: any = CryptoHelpers.getKeyImportAlgorithm(algorithm, jwk);
     
     const key = await crypto.importKey('jwk', jwk, keyImportAlgorithm, true, ['verify']);
-    const isElliptic = algorithm.name === 'ECDSA' || algorithm.name === 'EDDSA';
+    const isElliptic = algorithm.name.toUpperCase() === 'ECDSA' || algorithm.name.toUpperCase() === 'EDDSA';
 
     // The underlying signature validation does not support DER encoding so needs to be removed
     if (isElliptic && signature.byteLength > 64) {

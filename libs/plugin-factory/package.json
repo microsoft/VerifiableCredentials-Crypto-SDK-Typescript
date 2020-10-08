@@ -1,7 +1,7 @@
 {
   "name": "verifiablecredentials-crypto-sdk-typescript-plugin-factory",
   "description": "Factory Package for crypto plugins.",
-  "version": "1.1.12-preview.1",
+  "version": "1.1.11-preview.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/microsoft/VerifiableCredentials-Crypto-SDK-Typescript.git"
@@ -37,10 +37,10 @@
   },
   "dependencies": {
     "@azure/identity": "1.0.0",
-    "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.12-preview.1",
-    "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.12-preview.1",
-    "verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites": "1.1.12-preview.1",
-    "verifiablecredentials-crypto-sdk-typescript-plugin-keyvault": "1.1.12-preview.1",
+    "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.11-preview.3",
+    "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.11-preview.3",
+    "verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites": "1.1.11-preview.3",
+    "verifiablecredentials-crypto-sdk-typescript-plugin-keyvault": "1.1.11-preview.3",
     "@types/node": "12.12.16",
     "webcrypto-core": "1.1.1"
   },

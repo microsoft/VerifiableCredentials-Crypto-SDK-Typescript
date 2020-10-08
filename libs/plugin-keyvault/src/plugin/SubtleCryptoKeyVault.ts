@@ -8,6 +8,12 @@ import { IKeyStore } from 'verifiablecredentials-crypto-sdk-typescript-keystore'
 import { ISubtleCrypto, IKeyGenerationOptions } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import KeyVaultEcdsaProvider from './KeyVaultEcdsaProvider';
 import KeyVaultRsaOaepProvider from './KeyVaultRsaOaepProvider';
+const clone = require('clone');
+
+// Named curves
+const CURVE_P256K = 'P-256K';
+const CURVE_K256 = 'K-256';
+const CURVE_SECP256K1 = 'SECP256K1';
 
 /**
  * SubtleCrypto crypto class
@@ -51,4 +57,45 @@ export default class SubtleCryptoKeyVault extends SubtleCrypto implements ISubtl
     return this;
   }
 
+    /**
+     * Normalize the algorithm so it can be used by underlying crypto.
+     * @param algorithm Algorithm to be normalized
+     */
+    public algorithmTransform(algorithm: any) {
+      return algorithm;
+  }
+
+  /**
+ * Normalize the JWK parameters so it can be used by underlying crypto.
+ * @param jwk Json web key to be normalized
+ */
+  public keyImportTransform(jwk: any) {
+      if (jwk.crv) {
+          const curve = (<string>jwk.crv).toUpperCase();
+          if (curve === CURVE_P256K) {
+              const clonedKey = clone(jwk);
+              clonedKey.crv = CURVE_SECP256K1;
+              return clonedKey;
+          }
+      }
+
+      return jwk;
+  }
+
+  /**
+   * Normalize the JWK parameters from the underlying crypto so it is normalized to standardized parameters.
+   * @param jwk Json web key to be normalized
+   */
+  public keyExportTransform(jwk: any) {
+      if (jwk.crv) {
+          const curve = (<string>jwk.crv).toUpperCase();
+          if (curve === CURVE_P256K || curve === CURVE_K256) {
+              const clonedKey = clone(jwk);
+              clonedKey.crv = CURVE_SECP256K1;
+              return clonedKey;
+          }
+      }
+
+      return jwk;
+  }
 }

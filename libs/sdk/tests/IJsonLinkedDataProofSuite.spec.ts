@@ -1,9 +1,9 @@
-import base64url from 'base64url';
-import { KeyType, OkpPublicKey, PublicKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import base64url from 'base64url';
+import { KeyType, OkpPublicKey, PublicKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import { LongFormDid, CryptoBuilder, IJsonLinkedDataProofSuite, JoseBuilder, KeyUse, KeyStoreOptions } from '../lib';
 import SuiteJcsEd25519Signature2020 from '../lib/suites/SuiteJcsEd25519Signature2020';
 
@@ -31,6 +31,8 @@ describe('SuiteJcsEd25519Signature2020', () => {
         const serialized = await suite.serialize();
         const pl = JSON.parse(serialized);
         expect(pl.proof.signatureValue).toBeDefined();
+        expect(pl.prop1).toEqual('prop1');
+        expect(pl.prop2).toEqual('prop2');
 
         // Verify
         suite = await suite.deserialize(serialized);

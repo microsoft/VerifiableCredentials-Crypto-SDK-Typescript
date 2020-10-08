@@ -3,9 +3,10 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
- import {  CryptoKey } from 'webcrypto-core';
+import { CryptoKey } from 'webcrypto-core';
 import { SubtleCrypto } from 'webcrypto-core';
 import { KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
+import { ISubtleCrypto } from '.';
 
 const { Crypto } = require("@peculiar/webcrypto");
 const clone = require('clone');
@@ -31,12 +32,19 @@ export interface IKeyGenerationOptions {
  * Wrapper class for W3C subtle crypto.
  * A subtle crypto class is the actual crypto library to be used.
  */
-export default class Subtle extends SubtleCrypto {
-   
+export default class Subtle extends SubtleCrypto implements ISubtleCrypto {
+
     private subtle: SubtleCrypto = new Crypto().subtle;
 
     constructor() {
         super();
+    }
+
+    /**
+     * Returns the @class SubtleCrypto implementation for the nodes environment
+     */
+    public getSubtleCrypto(): any {
+        return this;
     }
 
     /**
@@ -147,14 +155,14 @@ export default class Subtle extends SubtleCrypto {
     public async exportKey(format: KeyFormat, key: CryptoKey): Promise<JsonWebKey | ArrayBuffer> {
 
         let result = await this.subtle.exportKey(format, key);
-        result = format === 'jwk' ? this.keyExportTransform(result): result;
+        result = format === 'jwk' ? this.keyExportTransform(result) : result;
 
         return result;
     }
 
     public async importKey(format: KeyFormat, keyData: JsonWebKey | BufferSource, algorithm: Algorithm, extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKey> {
         algorithm = this.algorithmTransform(algorithm);
-        keyData = format === 'jwk' ? this.keyImportTransform(keyData): keyData;
+        keyData = format === 'jwk' ? this.keyImportTransform(keyData) : keyData;
         const key: CryptoKey = await this.subtle.importKey(format, keyData, algorithm, extractable, keyUsages);
         return key;
     }

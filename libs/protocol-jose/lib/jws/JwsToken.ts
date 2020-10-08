@@ -569,9 +569,6 @@ export default class JwsToken implements IJwsGeneralJson {
     const encodedContent = base64url.encode(this.payload);
     const signatureInput = `${encodedProtected}.${encodedContent}`;
     const payload = Buffer.from(signatureInput, 'utf-8');
-    //console.log(`jwstoken payload: ${Buffer.from(payload).toString('hex')}`);
-    //console.log(`jwstoken signature: ${Buffer.from(payloadSignature.signature).toString('hex')}`);
-    //console.log(`jwstoken jws: ${signatureInput}`);
     return validator.verifyByJwk(algorithm, validationKey, payloadSignature.signature, payload);
   }
 

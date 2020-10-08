@@ -20,7 +20,7 @@ export default class EllipticEdDsaProvider extends EllipticDsaProvider {
    *
    * Gets the name of the provider
    */
-  public readonly name = 'EDDSA';
+  public readonly name = 'EdDSA';
 
   /**
    * Different curves supported by the package

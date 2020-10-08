@@ -17,7 +17,7 @@ describe('JSONLD proofs', () => {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
     });
 
-    it('should sign and verify a credential', async () => {
+    fit('should sign and verify a credential', async () => {
         let crypto = new CryptoBuilder()
             .useSigningAlgorithm('EdDSA')
             .build();

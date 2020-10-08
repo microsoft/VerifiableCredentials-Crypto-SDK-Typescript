@@ -10,11 +10,11 @@ import { isJWK } from 'webcrypto-core';
 
 
 const algGenerate = {
-  name: 'EDDSA',
+  name: 'EdDSA',
   namedCurve: 'ed25519'
 };
 
-describe('ed25519 - EDDSA', () => {
+describe('ed25519 - EdDSA', () => {
   let crypto: SubtleCryptoElliptic;
   // tslint:disable:mocha-no-side-effect-code
   const EC = require('elliptic');
@@ -98,7 +98,7 @@ describe('ed25519 - EDDSA', () => {
     expect(exported1.kty).toEqual('OKP');
     expect(exported1.use).toEqual('sig');
     expect(exported1.crv).toEqual('ed25519');
-    expect(exported1.alg).toEqual('EDDSA');
+    expect(exported1.alg).toEqual('EdDSA');
     expect(exported1.d).toBeDefined();
     expect(exported1.x).toBeDefined();
     expect(exported1.y).toBeUndefined();
@@ -131,7 +131,7 @@ describe('ed25519 - EDDSA', () => {
       'd': 'QsI1MjsfmA4nL3zks3h0wfSTq6bqfM5nSacxWiUO_pg',
       'x': '5CW946ZRobK15OJjrL3O3ivW7_lsuekMpCrk8YH21pw'
     }
-    const alg = { name: 'EDDSA', namedCurve: 'ed25519', hash: { name: 'SHA-256' } };
+    const alg = { name: 'EdDSA', namedCurve: 'ed25519', hash: { name: 'SHA-256' } };
     let key: any = await crypto.importKey('jwk', jwk, alg, true, ['sign', 'verify']);
 
     const referenceMessage = Buffer.from('The rain in Spain stays mainly in the plain!');
@@ -152,7 +152,7 @@ describe('ed25519 - EDDSA', () => {
       'd': 'nWGxne_9WmC6hEr0kuwsxERJxWl7MmkZcDusAxyuf2A',
       'x': '11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo'
     }
-    const alg = { name: 'EDDSA', namedCurve: 'ed25519', hash: { name: 'SHA-256' } };
+    const alg = { name: 'EdDSA', namedCurve: 'ed25519', hash: { name: 'SHA-256' } };
     const key: any = await crypto.importKey('jwk', jwk, alg, true, ['sign', 'verify']);
 
     const signature = await crypto.sign(alg, key, message);
@@ -170,7 +170,7 @@ describe('ed25519 - EDDSA', () => {
     const key: any = await crypto.generateKey(algGenerate, true, ['sign']);
 
     const data = 'abcdefg';
-    const alg = { name: 'EDDSA', namedCurve: 'ed25519', hash: { name: 'SHA-256' } };
+    const alg = { name: 'EdDSA', namedCurve: 'ed25519', hash: { name: 'SHA-256' } };
     const signature = await crypto.sign(alg, key.privateKey, Buffer.from(data));
     expect(signature.byteLength).toBeLessThanOrEqual(64);
     const publicKey: EllipticCurveKey = <EllipticCurveKey>key.publicKey;
@@ -181,7 +181,7 @@ describe('ed25519 - EDDSA', () => {
 
   it('should verify test vectors', async () => {
     const validate = async (reference: any) => {
-      const alg = { name: 'EDDSA', namedCurve: 'ed25519', hash: { name: 'SHA-256' } };
+      const alg = { name: 'EdDSA', namedCurve: 'ed25519', hash: { name: 'SHA-256' } };
       let cryptoKey: any;
       let signature: any;
       if (reference.jwk.d) {

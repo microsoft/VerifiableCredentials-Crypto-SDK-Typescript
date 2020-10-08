@@ -1,8 +1,10 @@
+import { IPayloadProtectionSigning } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Crypto, Jose, ProtectionFormat } from './index';
+import { Crypto, IJsonLinkedDataProofSuite, Jose, ProtectionFormat } from './index';
+import SuiteJcsEd25519Signature2020 from './suites/SuiteJcsEd25519Signature2020';
 
 /**
  * Builder class for the JOSE protocol
@@ -15,8 +17,15 @@ export default class JoseBuilder {
   private _unprotectedHeader: object = {};
   private _serializationFormat: string = ProtectionFormat.JwsCompactJson;
   private _jwtProtocol: { [key: string]: any } | undefined;
-  private _linkedDataProofsProtocol: { [key: string]: any } | undefined;
+  private _linkedDataProofsProtocol: ({ [suite: string]: () => IJsonLinkedDataProofSuite }) | undefined;
   private _kid: string | undefined;
+
+  /**
+   * Set the default linked data proof suites
+   */
+  public linkedDataProofSuites: { [suite: string]: () => IJsonLinkedDataProofSuite } = {
+    JcsEd25519Signature2020: () => new SuiteJcsEd25519Signature2020(this.build()) 
+  }
 
   /**
    * Gets the crypto object
@@ -38,6 +47,22 @@ export default class JoseBuilder {
     return 'JOSE';
   }
 
+  /**
+   * Gets the default suite based on crypto.builder.useSigningAlgorithm
+   */
+  public getLinkedDataProofSuite(): IJsonLinkedDataProofSuite {
+    let suite: (() => IJsonLinkedDataProofSuite) | undefined = this.linkedDataProofSuites[this.crypto.builder.signingAlgorithm];
+    if (!suite) {
+      // Check if new suites are passed in
+      suite = this._linkedDataProofsProtocol ? this._linkedDataProofsProtocol[this.crypto.builder.signingAlgorithm] : undefined;
+    }
+
+    if (!suite) {
+      throw new Error(`Suite ${this.crypto.builder.signingAlgorithm} does not exist. Set the default suite by crypto.builder.useSigningAlgorithm.`);
+    }
+
+    return suite();
+  }
   
   /**
    * Build the jose object
@@ -51,7 +76,7 @@ export default class JoseBuilder {
     * @param jwtProtocol Define properties that need to be added to the body for the JWT format
     * @returns The jose builder
     */
-   public useJwtProtocol(jwtProtocol: { [key: string]: any }): JoseBuilder {
+   public useJwtProtocol(jwtProtocol: { [key: string]: any } = {}): JoseBuilder {
     this._jwtProtocol = jwtProtocol;
     return this;
   }
@@ -70,7 +95,7 @@ export default class JoseBuilder {
     * @param linkedDataProofsProtocol Define properties that need to be added to the body for the JSON-LD format
     * @returns The jose builder
     */
-   public uselinkedDataProofsProtocol(linkedDataProofsProtocol: { [key: string]: any } = {}): JoseBuilder {
+   public uselinkedDataProofsProtocol(linkedDataProofsProtocol: { [suite: string]: any } = {}): JoseBuilder {
     this._linkedDataProofsProtocol = linkedDataProofsProtocol;
     return this;
   }

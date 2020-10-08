@@ -40,6 +40,9 @@ describe('JoseBuilder', () => {
             .uselinkedDataProofsProtocol({});
         expect(builder.protocol).toEqual('JSONLDProofs');
         builder = new JoseBuilder(crypto)
+            .uselinkedDataProofsProtocol();
+        expect(builder.protocol).toEqual('JSONLDProofs');
+        builder = new JoseBuilder(crypto)
             .useJwtProtocol({});
         expect(builder.protocol).toEqual('JWT');
     });

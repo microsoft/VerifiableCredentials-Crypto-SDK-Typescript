@@ -12,7 +12,7 @@ describe('CryptoFactory', () => {
     
     const factory = new CryptoFactoryNode(keyStore, SubtleCryptoNode.getSubtleCrypto());
     const messageSigner = factory.getMessageSigner('ed25519', CryptoFactoryScope.All, new KeyReference('', 'secret'));
-    expect((<any>messageSigner).providers.algorithms.includes('EDDSA')).toBeTruthy();
+    expect((<any>messageSigner).providers.algorithms.includes('EdDSA')).toBeTruthy();
     expect((<any>messageSigner).providers.algorithms.includes('ECDSA')).toBeTruthy();
   })
 });
