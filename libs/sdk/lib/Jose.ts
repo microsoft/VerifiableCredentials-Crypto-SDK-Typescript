@@ -82,10 +82,14 @@ export default class Jose implements IPayloadProtectionSigning {
       this._jsonLdProof = await suite.sign(payload);
       console.log(`JSON LD Proof: ${this._jsonLdProof}`);
       return this;
-    } else if (this.isJwtProtocol()) {
-      if (typeof payload !== 'object') {
-        payload = JSON.parse(payload);
-      }
+
+    } else if (typeof payload === 'string') {
+      payload = JSON.parse(payload);
+    } else if (payload instanceof Buffer) {
+      payload = JSON.parse(payload.toString())
+    }
+
+    if (this.isJwtProtocol()) {
 
       // Add standardized properties
       const current = Math.trunc(Date.now() / 1000);
@@ -111,10 +115,7 @@ export default class Jose implements IPayloadProtectionSigning {
 
     }
 
-    if (typeof payload === 'object') {
-      payload = Buffer.from(JSON.stringify(payload));
-    }
-
+    payload = Buffer.from(JSON.stringify(payload));
     this._token = await token.sign(this.builder.crypto.builder.signingKeyReference, <Buffer>payload, protectionFormat);
     return this;
   }
@@ -181,7 +182,7 @@ export default class Jose implements IPayloadProtectionSigning {
       case ProtectionFormat.JwsFlatJson:
       case ProtectionFormat.JwsCompactJson:
       case ProtectionFormat.JwsGeneralJson:
-        return this._token.serialize(protocolFormat); ``
+        return Promise.resolve(this._token.serialize(protocolFormat)); ``
       default:
         return Promise.reject(`Serialization format '${this.builder.serializationFormat}' is not supported`);
     }
@@ -199,9 +200,9 @@ export default class Jose implements IPayloadProtectionSigning {
         suite = this.builder.getLinkedDataProofSuite();
         this._jsonLdProof = await suite.deserialize(token);
         return Promise.resolve(this);
-        } catch (exception) {
-          return Promise.reject(exception.message);
-        }
+      } catch (exception) {
+        return Promise.reject(exception.message);
+      }
     }
 
     const protocolFormat: ProtectionFormat = Jose.getProtectionFormat(this.builder.serializationFormat);

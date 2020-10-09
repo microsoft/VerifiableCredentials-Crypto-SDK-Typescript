@@ -139,7 +139,7 @@ describe('Jose', () => {
     });
 
 
-    it('should sign and verify with JWT protocol', async () => {
+    fit('should sign and verify with JWT protocol', async () => {
         const payload = {
             firstName: 'Jules',
             lastName: 'Winnfield'
@@ -154,20 +154,34 @@ describe('Jose', () => {
             .useJwtProtocol({ someProp: 1 })
             .build();
 
-        jose = await jose.sign(payload);
+            jose = await jose.sign(payload);
 
-        // Check kid
-        let serialized = await jose.serialize();
-        jose = await jose.deserialize(serialized);
-        expect(jose.signatureProtectedHeader['typ']).toEqual('JWT');
-        expect(jose.signatureProtectedHeader.alg).toEqual('ES256K');
-        expect(jose.signatureProtectedHeader.kid).toEqual('did#neo');
-        const signedPayload: any = JSON.parse(jose.signaturePayload!.toString('utf-8'));
-        expect(signedPayload.someProp).toEqual(1); 
-        expect(signedPayload.jti).toBeDefined(); 
-        expect(signedPayload.exp).toBeDefined(); 
-        expect(signedPayload.nbf).toBeDefined(); 
-    });
+            // Check kid
+            let serialized = await jose.serialize();
+            jose = await jose.deserialize(serialized);
+            expect(jose.signatureProtectedHeader['typ']).toEqual('JWT');
+            expect(jose.signatureProtectedHeader.alg).toEqual('ES256K');
+            expect(jose.signatureProtectedHeader.kid).toEqual('did#neo');
+            let signedPayload: any = JSON.parse(jose.signaturePayload!.toString('utf-8'));
+            expect(signedPayload.someProp).toEqual(1); 
+            expect(signedPayload.jti).toBeDefined(); 
+            expect(signedPayload.exp).toBeDefined(); 
+            expect(signedPayload.nbf).toBeDefined(); 
+
+            jose = await jose.sign(Buffer.from(JSON.stringify(payload)));
+
+            // Check kid
+            serialized = await jose.serialize();
+            jose = await jose.deserialize(serialized);
+            expect(jose.signatureProtectedHeader['typ']).toEqual('JWT');
+            expect(jose.signatureProtectedHeader.alg).toEqual('ES256K');
+            expect(jose.signatureProtectedHeader.kid).toEqual('did#neo');
+            signedPayload = JSON.parse(jose.signaturePayload!.toString('utf-8'));
+            expect(signedPayload.someProp).toEqual(1); 
+            expect(signedPayload.jti).toBeDefined(); 
+            expect(signedPayload.exp).toBeDefined(); 
+            expect(signedPayload.nbf).toBeDefined(); 
+            });
 
     it('should check ProtectionFormat', () => {
         expect(Jose.getProtectionFormat('jwsflatjson')).toEqual(ProtectionFormat.JwsFlatJson);
