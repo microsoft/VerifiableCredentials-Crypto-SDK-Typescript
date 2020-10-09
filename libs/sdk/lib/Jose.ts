@@ -4,10 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IJwsSigningOptions, JwsToken } from 'verifiablecredentials-crypto-sdk-typescript-protocol-jose';
-import { IPayloadProtectionSigning, CryptoProtocolError, IProtocolCryptoToken } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
+import { IPayloadProtectionSigning, CryptoProtocolError } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
 import { PublicKey, JoseConstants } from 'verifiablecredentials-crypto-sdk-typescript-keys';
-import { JoseBuilder, KeyStoreOptions, ProtectionFormat } from './index';
+import { IJsonLinkedDataProofSuite, JoseBuilder, KeyStoreOptions, ProtectionFormat } from './index';
 import { TSMap } from 'typescript-map';
+import { v4 as uuidv4 } from 'uuid';
 
 export default class Jose implements IPayloadProtectionSigning {
 
@@ -19,11 +20,12 @@ export default class Jose implements IPayloadProtectionSigning {
     public builder: JoseBuilder) {
   }
 
+  private _jsonLdProof: object | undefined;
   private _token: JwsToken | undefined;
   private _signatureProtectedHeader: any | undefined;
   private _signatureHeader: any | undefined;
   private _signaturePayload: Buffer | undefined;
-  
+
   /**
    * Gets the protected header on the signature
    */
@@ -46,7 +48,6 @@ export default class Jose implements IPayloadProtectionSigning {
     return this._signaturePayload;
   }
 
-
   /**
    * Signs contents using the given private key reference.
    *
@@ -60,12 +61,64 @@ export default class Jose implements IPayloadProtectionSigning {
     const kid = this.builder.kid || `${this.builder.crypto.builder.did}#${this.builder.crypto.builder.signingKeyReference.keyReference}`;
     jwsOptions.protected!.set('kid', kid);
     jwsOptions.protected!.set('typ', 'JWT');
+
     const token: JwsToken = new JwsToken(jwsOptions);
     const protectionFormat = Jose.getProtectionFormat(this.builder.serializationFormat);
+
+    if (this.builder.isLinkedDataProofsProtocol()) {
+      // Support json ld proofs
+      console.log('Support JSON LD proofs');
+      if (typeof payload !== 'object') {
+        payload = JSON.parse(payload);
+      }
+
+      let suite: IJsonLinkedDataProofSuite;
+      try {
+        suite = this.builder.getLinkedDataProofSuite();
+      } catch (exception) {
+        return Promise.reject(exception.message);
+      }
+
+      this._jsonLdProof = await suite.sign(payload);
+      console.log(`JSON LD Proof: ${this._jsonLdProof}`);
+      return this;
+    } else if (this.isJwtProtocol()) {
+      if (typeof payload !== 'object') {
+        payload = JSON.parse(payload);
+      }
+
+      // Add standardized properties
+      const current = Math.trunc(Date.now() / 1000);
+      if (!(<any>payload).nbf) {
+        (<any>payload).nbf = this.builder.jwtProtocol!.nbf || current;
+      }
+      if (!(<any>payload).exp) {
+        (<any>payload).exp = this.builder.jwtProtocol!.exp || current + (60 * 60);
+      }
+
+      if (!(<any>payload).jti) {
+        (<any>payload).jti = this.builder.jwtProtocol!.jti || uuidv4();
+      }
+
+
+      // Override properties
+      for (let key in this.builder.jwtProtocol) {
+        if (key in ['nbf', 'exp', 'jti']) {
+          continue;
+        }
+        (<any>payload)[key] = (<any>payload)[key] || this.builder.jwtProtocol[key];
+      }
+
+    }
+
+    if (typeof payload === 'object') {
+      payload = Buffer.from(JSON.stringify(payload));
+    }
 
     this._token = await token.sign(this.builder.crypto.builder.signingKeyReference, <Buffer>payload, protectionFormat);
     return this;
   }
+
 
   /**
    * Verify the signature.
@@ -74,14 +127,30 @@ export default class Jose implements IPayloadProtectionSigning {
    * @returns True if signature validated.
    */
   public async verify(validationKeys?: PublicKey[]): Promise<boolean> {
-    const jwsOptions: IJwsSigningOptions = Jose.optionsFromBuilder(this.builder);
-    if (!this._token) {
-      return Promise.reject('Import a token by deserialize');
-    }
-
     if (!validationKeys) {
       const validationKeyContainer = await this.builder.crypto.builder.keyStore.get(this.builder.crypto.builder.signingKeyReference!, new KeyStoreOptions({ publicKeyOnly: true }));
       validationKeys = [validationKeyContainer.getKey<PublicKey>()]
+    }
+
+    if (this.builder.isLinkedDataProofsProtocol()) {
+      // Support json ld proofs
+
+      if (!this._jsonLdProof) {
+        return Promise.reject('Import a credential by deserialize');
+      }
+
+      let suite: IJsonLinkedDataProofSuite;
+      try {
+        suite = this.builder.getLinkedDataProofSuite();
+      } catch (exception) {
+        return Promise.reject(exception.message);
+      }
+      return await suite.verify(validationKeys, this._jsonLdProof);
+    }
+
+    const jwsOptions: IJwsSigningOptions = Jose.optionsFromBuilder(this.builder);
+    if (!this._token) {
+      return Promise.reject('Import a token by deserialize');
     }
 
     const result = await this._token.verify(validationKeys!, jwsOptions);
@@ -91,10 +160,21 @@ export default class Jose implements IPayloadProtectionSigning {
   /**
   * Serialize a cryptographic token
   */
-  public serialize(): string {
+  public async serialize(): Promise<string> {
     const protocolFormat: ProtectionFormat = Jose.getProtectionFormat(this.builder.serializationFormat);
     if (!this._token) {
-      throw new CryptoProtocolError(JoseConstants.Jose, `No token to serialize`);
+      return Promise.reject(`No token to serialize`);
+    }
+
+    if (this.builder.isLinkedDataProofsProtocol()) {
+      if (this._jsonLdProof) {
+
+        let suite: IJsonLinkedDataProofSuite;
+        suite = this.builder.getLinkedDataProofSuite();
+        return suite.serialize(this._jsonLdProof);
+      }
+
+      return Promise.reject(`No token to serialize`);
     }
 
     switch (protocolFormat) {
@@ -103,7 +183,7 @@ export default class Jose implements IPayloadProtectionSigning {
       case ProtectionFormat.JwsGeneralJson:
         return this._token.serialize(protocolFormat); ``
       default:
-        throw new CryptoProtocolError(JoseConstants.Jose, `Serialization format '${this.builder.serializationFormat}' is not supported`);
+        return Promise.reject(`Serialization format '${this.builder.serializationFormat}' is not supported`);
     }
   }
 
@@ -111,7 +191,19 @@ export default class Jose implements IPayloadProtectionSigning {
    * Deserialize a cryptographic token
    * @param token The crypto token to deserialize.
    */
-  public deserialize(token: string): IPayloadProtectionSigning {
+  public async deserialize(token: string): Promise<IPayloadProtectionSigning> {
+
+    if (this.builder.isLinkedDataProofsProtocol()) {
+      let suite: IJsonLinkedDataProofSuite;
+      try {
+        suite = this.builder.getLinkedDataProofSuite();
+        this._jsonLdProof = await suite.deserialize(token);
+        return Promise.resolve(this);
+        } catch (exception) {
+          return Promise.reject(exception.message);
+        }
+    }
+
     const protocolFormat: ProtectionFormat = Jose.getProtectionFormat(this.builder.serializationFormat);
     const jwsOptions: IJwsSigningOptions = Jose.optionsFromBuilder(this.builder);
 
@@ -137,44 +229,19 @@ export default class Jose implements IPayloadProtectionSigning {
         });
 
         // get payload
-        this._signaturePayload =  this._token.payload;
-
-        return this;
+        this._signaturePayload = this._token.payload;
+        return Promise.resolve(this);
       default:
-        throw new CryptoProtocolError(JoseConstants.Jose, `Serialization format '${this.builder.serializationFormat}' is not supported`);
+        return Promise.reject(`Serialization format '${this.builder.serializationFormat}' is not supported`);
     }
   }
 
   /**
-   * Deserialize a cryptographic token
-   * @param token The crypto token to deserialize.
-   * @param options used for the token. These options override the options provided in the constructor.
+   * True if JSON LD proof protocol is selected
    */
-  /*
-  public static deserialize(token: string, options?: IPayloadProtectionOptions): ICryptoToken {
-    const parts = token.split('.');
-    const protocol = new JoseProtocol();
-
-    if (parts.length === 3) {
-      const deserializationOptions = options ? JwsToken.fromPayloadProtectionOptions(options) : <IJwsSigningOptions>{};
-      return JwsToken.toCryptoToken(ProtectionFormat.JwsCompactJson, JwsToken.deserialize(token, deserializationOptions), <IPayloadProtectionOptions>options);
-    } else if (parts.length === 5) {
-      const deserializationOptions = options ? JweToken.fromPayloadProtectionOptions(options) : <IJweEncryptionOptions>{};
-      return JweToken.toCryptoToken(ProtectionFormat.JweCompactJson, JweToken.deserialize(token, deserializationOptions), <IPayloadProtectionOptions>options);
-    }
-    const parsed = JSON.parse(token);
-    if (parsed[JoseConstants.tokenSignatures] || parsed[JoseConstants.tokenSignature]) {
-      const deserializationOptions = options ? JwsToken.fromPayloadProtectionOptions(options) : <IJwsSigningOptions>{};
-      return JwsToken.toCryptoToken(parsed[JoseConstants.tokenSignatures] ? ProtectionFormat.JwsGeneralJson : ProtectionFormat.JwsFlatJson, JwsToken.deserialize(token, deserializationOptions), <IPayloadProtectionOptions>options);
-    }
-    if (parsed[JoseConstants.tokenRecipients] || parsed[JoseConstants.tokenCiphertext]) {
-      const deserializationOptions = options ? JweToken.fromPayloadProtectionOptions(options) : <IJweEncryptionOptions>{};
-      return JweToken.toCryptoToken(parsed[JoseConstants.tokenRecipients] ? ProtectionFormat.JweGeneralJson : ProtectionFormat.JweFlatJson, JweToken.deserialize(token, deserializationOptions), <IPayloadProtectionOptions>options);
-    }
-
-    throw new CryptoProtocolError(JoseConstants.Jose, 'Unrecognised token to deserialize');
+  private isJwtProtocol(): boolean {
+    return this.builder.jwtProtocol !== undefined;
   }
-*/
 
   // Map string to protection format
   public static getProtectionFormat(format: string): ProtectionFormat {

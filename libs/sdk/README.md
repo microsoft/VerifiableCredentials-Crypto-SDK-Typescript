@@ -69,7 +69,7 @@ KeyStores can be created by honoring the IKeyStore interface, as such applicatio
 You can use the KeyStoreFactory.create('KeyStoreInMemory') to create the KeyStore, KeyStoreInMemory in this case.
 ## CryptoFactory
 
-The CryptoFactory defines which KeyStore to use and which plugins for which algorithms. You can make your own CryptoFactory and add your own plugins to it. Have a look to CrytoFactoryNode which is the default crypto factory. It maps the EDDSA algorithm to a special provider because EDDSA is not implemented in nodejs crypto.
+The CryptoFactory defines which KeyStore to use and which plugins for which algorithms. You can make your own CryptoFactory and add your own plugins to it. Have a look to CrytoFactoryNode which is the default crypto factory. It maps the EdDSA algorithm to a special provider because EdDSA is not implemented in nodejs crypto.
 
     export default class CryptoFactoryNode extends CryptoFactory {  
        /**  
@@ -81,7 +81,7 @@ The CryptoFactory defines which KeyStore to use and which plugins for which algo
             super(keyStore, crypto);  
             const subtleCrypto: any = new SubtleCryptoElliptic(crypto);  
             this.addMessageSigner('EdDSA', {subtleCrypto, scope: CryptoFactoryScope.All});  
-            this.addMessageSigner('EDDSA', {subtleCrypto, scope: CryptoFactoryScope.All});  
+            this.addMessageSigner('EdDSA', {subtleCrypto, scope: CryptoFactoryScope.All});  
             this.addMessageSigner('ed25519', {subtleCrypto, scope: CryptoFactoryScope.All});  
         }  
     }

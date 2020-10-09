@@ -1,8 +1,10 @@
+import { IPayloadProtectionSigning } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Crypto, Jose, CryptoBuilder, ProtectionFormat, IPayloadProtectionSigning } from './index';
+import { Crypto, IJsonLinkedDataProofSuite, Jose, ProtectionFormat } from './index';
+import SuiteJcsEd25519Signature2020 from './suites/SuiteJcsEd25519Signature2020';
 
 /**
  * Builder class for the JOSE protocol
@@ -11,11 +13,20 @@ export default class JoseBuilder {
   constructor(private _crypto: Crypto) {
   }
 
-  private _protectedHeader: object = {typ: 'JWT'};
+  private _protectedHeader: object = { typ: 'JWT' };
   private _unprotectedHeader: object = {};
   private _serializationFormat: string = ProtectionFormat.JwsCompactJson;
-  private _jwtProtocol: object | undefined;
+  private _jwtProtocol: { [key: string]: any } | undefined;
+  private _linkedDataProofsProtocol: ({ [suite: string]: () => IJsonLinkedDataProofSuite }) | undefined;
+  private _jsonLdProofSuite: string | undefined;
   private _kid: string | undefined;
+
+  /**
+   * Set the default linked data proof suites
+   */
+  public linkedDataProofSuites: { [suite: string]: () => IJsonLinkedDataProofSuite } = {
+    JcsEd25519Signature2020: () => new SuiteJcsEd25519Signature2020(this.build())
+  }
 
   /**
    * Gets the crypto object
@@ -28,10 +39,36 @@ export default class JoseBuilder {
    * Gets the protocol name
    */
   public get protocol() {
-    return this.jwtProtocol ? 'JWT' : 'JOSE';
+    if (this.linkedDataProofsProtocol) {
+      return 'JSONLDProofs';
+    } else if (this.jwtProtocol) {
+      return 'JWT';
+    }
+
+    return 'JOSE';
   }
 
-  
+  /**
+   * Gets the default suite based on _jsonLdProofSuite
+   */
+  public getLinkedDataProofSuite(): IJsonLinkedDataProofSuite {
+    if (!this._jsonLdProofSuite) {
+      throw new Error(`No suite defined. Use jsonBuilder.uselinkedDataProofsProtocol() to specify the suite to use.`);
+    }
+
+    let suite: (() => IJsonLinkedDataProofSuite) | undefined = this.linkedDataProofSuites[this._jsonLdProofSuite];
+    if (!suite) {
+      // Check if new suites are passed in
+      suite = this._linkedDataProofsProtocol ? this._linkedDataProofsProtocol[this._jsonLdProofSuite] : undefined;
+    }
+
+    if (!suite) {
+      throw new Error(`Suite ${this._jsonLdProofSuite} does not exist. Use jsonBuilder.uselinkedDataProofsProtocol() to specify the suite to use.`);
+    }
+
+    return suite();
+  }
+
   /**
    * Build the jose object
    */
@@ -44,7 +81,7 @@ export default class JoseBuilder {
     * @param jwtProtocol Define properties that need to be added to the body for the JWT format
     * @returns The jose builder
     */
-  public useJwtProtocol(jwtProtocol: object): JoseBuilder {
+  public useJwtProtocol(jwtProtocol: { [key: string]: any } = {}): JoseBuilder {
     this._jwtProtocol = jwtProtocol;
     return this;
   }
@@ -54,8 +91,40 @@ export default class JoseBuilder {
     * Gets the JWT protocol. 
     * @returns The JWT protocol. 
     */
-  public get jwtProtocol(): object | undefined {
+  public get jwtProtocol(): { [key: string]: any } | undefined {
     return this._jwtProtocol;
+  }
+
+  /**
+    * Sets JSON linked data proofs protocol. 
+    * @param linkedDataProofsProtocol Define properties that need to be added to the body for the JSON-LD format
+    * @returns The jose builder
+    */
+  public uselinkedDataProofsProtocol(suite: string, linkedDataProofsProtocol: { [suite: string]: any } = {}): JoseBuilder {
+    this._linkedDataProofsProtocol = linkedDataProofsProtocol;
+    this._jsonLdProofSuite = suite;
+
+    // check for valid suite
+    const protocol = this.getLinkedDataProofSuite();
+
+    // Set signing algorithm to match the suite
+    this.crypto.builder.useSigningAlgorithm(protocol.alg);
+    return this;
+  }
+
+  /**
+    * Gets the JSON linked data proofs protocol. 
+    * @returns The JWT protocol. 
+    */
+   public get linkedDataProofsProtocol(): { [key: string]: any } | undefined {
+    return this._linkedDataProofsProtocol;
+  }
+
+  /**
+    * True if the the JSON linked data proofs protocol is enabled. 
+    */
+  public isLinkedDataProofsProtocol(): boolean {
+    return this._linkedDataProofsProtocol !== undefined;
   }
 
   /**
@@ -101,7 +170,7 @@ export default class JoseBuilder {
     * @param serializationFormat Define properties that need to be added to the unprotected header
     * @returns The jose builder
     */
-   public useSerializationFormat(serializationFormat: string): JoseBuilder {
+  public useSerializationFormat(serializationFormat: string): JoseBuilder {
     this._serializationFormat = serializationFormat;
     return this;
   }
@@ -119,7 +188,7 @@ export default class JoseBuilder {
     * @param kid Define kid for header
     * @returns The jose builder
     */
-   public useKid(kid: string): JoseBuilder {
+  public useKid(kid: string): JoseBuilder {
     this._kid = kid;
     return this;
   }

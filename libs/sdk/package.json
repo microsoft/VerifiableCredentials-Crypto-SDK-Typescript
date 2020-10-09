@@ -1,6 +1,6 @@
 {
   "name": "verifiablecredentials-crypto-sdk-typescript",
-  "version": "1.1.11-preview.3",
+  "version": "1.1.11-preview.4",
   "repository": {
     "type": "git",
     "url": "https://github.com/microsoft/VerifiableCredentials-Crypto-SDK-Typescript.git"
@@ -27,7 +27,8 @@
   },
   "devDependencies": {
     "@types/jasmine": "^2.8.9",
-    "@types/node": "12.12.16",
+    "@types/node": "14.6.2",
+    "@types/uuid": "3.4.4",
     "jasmine": "^3.2.0",
     "jasmine-reporters": "^2.3.2",
     "jasmine-spec-reporter": "^4.2.1",
@@ -36,7 +37,7 @@
     "prettier": "^1.18.2",
     "ts-node": "8.5.4",
     "tslint": "^5.20.0",
-    "typescript": "3.9.2"
+    "typescript": "4.0.3"
   },
   "dependencies": {
     "@azure/identity": "1.0.0",
@@ -44,17 +45,22 @@
     "@azure/keyvault-secrets": "4.0.2",
     "@decentralized-identity/sidetree": "0.10.0",
     "base64url": "3.0.1",
+    "bs58": "4.0.1",
     "canonicalize": "1.0.1",
+    "canonicaljson": "^1.0.1",
+    "clone": "2.1.2",
+    "jsonld": "2.0.2",
     "typescript-map": "0.0.7",
-    "verifiablecredentials-crypto-sdk-typescript-keys": "1.1.11-preview.3",
-    "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.11-preview.3",
-    "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.11-preview.3",
-    "verifiablecredentials-crypto-sdk-typescript-plugin-elliptic": "1.1.11-preview.3",
-    "verifiablecredentials-crypto-sdk-typescript-plugin-factory": "1.1.11-preview.3",
-    "verifiablecredentials-crypto-sdk-typescript-plugin-keyvault": "1.1.11-preview.3",
-    "verifiablecredentials-crypto-sdk-typescript-protocol-jose": "1.1.11-preview.3",
-    "verifiablecredentials-crypto-sdk-typescript-protocols-common": "1.1.11-preview.3",
-    "verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites": "1.1.11-preview.3",
+    "uuid": "^8.3.1",
+    "verifiablecredentials-crypto-sdk-typescript-keys": "1.1.11-preview.4",
+    "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.11-preview.4",
+    "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.11-preview.4",
+    "verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites": "1.1.11-preview.4",
+    "verifiablecredentials-crypto-sdk-typescript-plugin-elliptic": "1.1.11-preview.4",
+    "verifiablecredentials-crypto-sdk-typescript-plugin-factory": "1.1.11-preview.4",
+    "verifiablecredentials-crypto-sdk-typescript-plugin-keyvault": "1.1.11-preview.4",
+    "verifiablecredentials-crypto-sdk-typescript-protocol-jose": "1.1.11-preview.4",
+    "verifiablecredentials-crypto-sdk-typescript-protocols-common": "1.1.11-preview.4",
     "webcrypto-core": "1.1.1"
   },
   "nyc": {
@@ -70,5 +76,12 @@
       "cobertura",
       "html"
     ]
-  }
+  },
+  "files": [
+    "dist/**",
+    "lib/**",
+    "README.md",
+    "LICENSE",
+    "package.json"
+  ]
 }

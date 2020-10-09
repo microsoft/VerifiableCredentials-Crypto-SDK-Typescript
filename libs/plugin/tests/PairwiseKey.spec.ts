@@ -41,7 +41,7 @@ describe('PairwiseKey', () => {
   const supportedKeyGenerationAlgorithms = [
       { name: 'RSASSA-PKCS1-v1_5', modulusLength: 1024, publicExponent: new Uint8Array([0x01, 0x00, 0x01]), hash: { name: 'SHA-256' } },
       { name: 'ECDSA', namedCurve: 'secp256k1', hash: { name: 'SHA-256' } },
-      { name: 'EDDSA', namedCurve: 'ed25519', hash: { name: 'SHA-256' } }
+      { name: 'EdDSA', namedCurve: 'ed25519', hash: { name: 'SHA-256' } }
     ];
 
   const unsupportedKeyGenerationAlgorithms = [

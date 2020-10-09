@@ -70,8 +70,8 @@ export default class CryptoHelpers {
         return { name: W3cCryptoApiConstants.AesGcm, iv: iv, additionalData: aad, tagLength: 128, length: length };
       case JoseConstants.Es256K:
         return { name: 'ECDSA', namedCurve: 'secp256k1', crv: 'secp256k1', hash: { name: 'SHA-256' } };
-      case JoseConstants.EdDSA:
-        return { name: 'EDDSA', namedCurve: 'ed25519', crv: 'ed25519', hash: { name: 'SHA-256' } };
+      case 'EDDSA':
+        return { name: 'EdDSA', namedCurve: 'ed25519', crv: 'ed25519', hash: { name: 'SHA-256' } };
       case JoseConstants.Sha256:
       case 'SHA-384':
       case 'SHA-512':

@@ -1,6 +1,6 @@
 {
   "name": "verifiablecredentials-crypto-sdk-typescript-plugin",
-  "version": "1.1.11-preview.3",
+  "version": "1.1.11-preview.4",
   "description": "Package for plugeable crypto based on subtle crypto.",
   "repository": {
     "type": "git",
@@ -35,8 +35,8 @@
     "typescript": "3.9.2"
   },
   "dependencies": {
-    "verifiablecredentials-crypto-sdk-typescript-keys": "1.1.11-preview.3",
-    "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.11-preview.3",
+    "verifiablecredentials-crypto-sdk-typescript-keys": "1.1.11-preview.4",
+    "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.11-preview.4",
     "@peculiar/webcrypto": "1.1.1",
     "@types/node": "12.12.16",
     "base64url": "^3.0.1",
@@ -61,5 +61,12 @@
       "cobertura",
       "html"
     ]
-  }
+  },
+  "files": [
+    "dist/**",
+    "lib/**",
+    "README.md",
+    "LICENSE",
+    "package.json"
+  ]
 }

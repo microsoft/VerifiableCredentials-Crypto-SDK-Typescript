@@ -63,7 +63,7 @@ export default class SubtleCryptoExtension extends Subtle implements ISubtleCryp
       <ArrayBuffer>data);
 
     // only applicable for EC algorithms and when no encoding is applied
-    const isElliptic = algorithm.name === 'ECDSA' || algorithm.name === 'EDDSA';
+    const isElliptic = algorithm.name.toUpperCase() === 'ECDSA' || algorithm.name.toUpperCase() === 'EDDSA';
     // EDDSA/ECDSA returns two 32 bit values R & S. Some API's will encode these values in DER
     const format: string = (<any>algorithm).format;
     if (isElliptic && signature.byteLength <= 64 && format) {
@@ -151,7 +151,7 @@ export default class SubtleCryptoExtension extends Subtle implements ISubtleCryp
     let keyImportAlgorithm: any = CryptoHelpers.getKeyImportAlgorithm(algorithm, jwk);
     
     const key = await crypto.importKey('jwk', jwk, keyImportAlgorithm, true, ['verify']);
-    const isElliptic = algorithm.name === 'ECDSA' || algorithm.name === 'EDDSA';
+    const isElliptic = algorithm.name.toUpperCase() === 'ECDSA' || algorithm.name.toUpperCase() === 'EDDSA';
 
     // The underlying signature validation does not support DER encoding so needs to be removed
     if (isElliptic && signature.byteLength > 64) {

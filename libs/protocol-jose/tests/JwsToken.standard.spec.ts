@@ -89,7 +89,7 @@ describe('JwsToken standard ed25519', () => {
     const factory = new CryptoFactoryNode(keyStore, SubtleCryptoNode.getSubtleCrypto());
     const subtle = factory.getMessageSigner('ed25519', CryptoFactoryScope.Private, new KeyReference('', 'secret'));
     const options: IJwsSigningOptions = {
-        algorithm: <Algorithm>{name: 'EDDSA', hash: 'SHA-256'},
+        algorithm: <Algorithm>{name: 'EdDSA', hash: 'SHA-256'},
         cryptoFactory: factory
     };
 

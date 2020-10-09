@@ -568,8 +568,8 @@ export default class JwsToken implements IJwsGeneralJson {
     const encodedProtected = !protectedHeader ? '' : JoseHelpers.encodeHeader(protectedHeader);
     const encodedContent = base64url.encode(this.payload);
     const signatureInput = `${encodedProtected}.${encodedContent}`;
-
-    return validator.verifyByJwk(algorithm, validationKey, payloadSignature.signature, Buffer.from(signatureInput));
+    const payload = Buffer.from(signatureInput, 'utf-8');
+    return validator.verifyByJwk(algorithm, validationKey, payloadSignature.signature, payload);
   }
 
   /**

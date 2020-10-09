@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CryptoFactory, Crypto, Subtle, IKeyStore, KeyStoreFactory, CryptoFactoryManager, SubtleCryptoNode, KeyStoreInMemory, IPayloadProtectionSigning, TokenCredential, KeyStoreOptions } from './index';
+import { CryptoFactory, Crypto, Subtle, IKeyStore, KeyStoreFactory, CryptoFactoryManager, SubtleCryptoNode, KeyStoreInMemory, TokenCredential, KeyStoreOptions } from './index';
 import { KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
-import { KeyType } from 'verifiablecredentials-crypto-sdk-typescript-keys';
+import { CryptoFactoryNode } from 'verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites';
 
 export default class CryptoBuilder {
   // Set the default crypto state
   private _keyStore: IKeyStore = new KeyStoreInMemory();
   private _subtle: Subtle = new SubtleCryptoNode().getSubtleCrypto();
-  private _cryptoFactory: CryptoFactory = new CryptoFactory(this.keyStore, this.subtle);
+  private _cryptoFactory: CryptoFactory = new CryptoFactoryNode(this.keyStore, this.subtle);
 
   private _recoveryKeyOptions: KeyStoreOptions = {
     publicKeyOnly: false,  // get private key, key vault only returns public key
@@ -26,10 +26,10 @@ export default class CryptoBuilder {
   private _did: string | undefined;
 
   // key references
-  private _recoveryKeyName = `recovery-${this._recoveryAlgorithm}`;
-  private _recoveryKeyReference: KeyReference = new KeyReference(this._recoveryKeyName, 'secret');
-  private _signingKeyName = `signing-${this._signingAlgorithm}`;
-  private _signingKeyReference: KeyReference  = new KeyReference(this._signingKeyName, 'secret');
+  private _recoveryKeyName: string | undefined;
+  private _recoveryKeyReference: KeyReference | undefined;
+  private _signingKeyName: string | undefined;
+  private _signingKeyReference: KeyReference | undefined;
 
   /**
    * Create a crypto builder to provide crypto capabilities
@@ -37,6 +37,16 @@ export default class CryptoBuilder {
   constructor() {
   }
 
+  /**
+   * True is the signing key can be extracted from the key store
+   */
+  public get signingKeyIsExtractable(): boolean {
+    if (this._signingKeyReference) {
+      return this._signingKeyReference.type === 'secret';
+    } else {
+      return true;
+    }
+  }
 
   /**
    * Get the DID of the requestor
@@ -54,21 +64,14 @@ export default class CryptoBuilder {
   }
 
   /**
-   * True is the signing key can be extracted from the key store
-   */
-  public get signingKeyIsExtractable(): boolean {
-    if (this._signingKeyReference) {
-      return this._signingKeyReference.type === 'secret';
-    } else {
-      return true;
-    }
-  }
-
-  /**
    * Get the reference in the key store to the recovery key
    */
-  public get recoveryKeyReference(): KeyReference {
-    return this._recoveryKeyReference;
+  public get recoveryKeyReference(): KeyReference {    
+    if (this._recoveryKeyReference) {
+      return this._recoveryKeyReference;
+    }
+
+    return new KeyReference(`recovery-${this._recoveryAlgorithm}`, 'secret');
   }
 
   /**
@@ -89,14 +92,11 @@ export default class CryptoBuilder {
    * Get the reference in the key store to the signing key
    */
   public get signingKeyReference(): KeyReference {
-    return this._signingKeyReference;
-  }
+    if (this._signingKeyReference) {
+      return this._signingKeyReference;
+    }
 
-  /**
-   * Get the options for retrieving and storing signing keys in the key store
-   */
-  public get signingKeyOptions(): KeyStoreOptions {
-    return this._signingKeyOptions;
+    return new KeyReference(`signing-${this._signingAlgorithm}`, 'secret');
   }
 
   /**
@@ -114,24 +114,39 @@ export default class CryptoBuilder {
   }
 
   /**
-   * Get the algorithm used for signing
+   * Get the options for retrieving and storing signing keys in the key store
+   */
+  public get signingKeyOptions(): KeyStoreOptions {
+    return this._signingKeyOptions;
+  }
+
+  /**
+   * Get the algorithm/suite used for signing
    */
   public get signingAlgorithm(): string {
     return this._signingAlgorithm;
   }
 
   /**
-   * Get the algorithm used for recovery
+   * Get the algorithm/suite used for recovery
    */
   public get recoveryAlgorithm(): string {
     return this._recoveryAlgorithm;
   }
 
   /**
-   * Set the algortihm use for signing
+   * Set the algorithm/suite used for signing
    */
   public useSigningAlgorithm(signingAlgorithm: string): CryptoBuilder {
     this._signingAlgorithm = signingAlgorithm;
+    return this;
+  }
+
+  /**
+   * Set the algorithm/suite used for recovery
+   */
+  public useRecoveryAlgorithm(recoveryAlgorithm: string): CryptoBuilder {
+    this._recoveryAlgorithm = recoveryAlgorithm;
     return this;
   }
 

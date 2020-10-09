@@ -20,7 +20,6 @@ const clientSecret = encodeURI(Credentials.clientSecret);
 const vaultUri = Credentials.vaultUri;
 const keyVaultEnable = vaultUri.startsWith('https://');
 
-let originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
 const subtle: Subtle = new Subtle();
 
 const logging = require('adal-node').Logging;
@@ -33,6 +32,7 @@ logging.setLoggingOptions({
   loggingWithPII: true  // Determine if you want to log personal identification information. The default value is false.
 });
 
+let originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
 beforeEach(async () => {
   jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
 });
@@ -58,7 +58,7 @@ describe('KeyStoreKeyVault', () => {
       await provider.onGenerateKey(alg, false, ['sign'], { keyReference: new KeyReference(name) });
       let list = await keyStore.list('key', new KeyStoreOptions({ latestVersion: false }));
       expect(list[name]).toBeDefined();
-      const key = await keyStore.get(new KeyReference(name, 'key'), new KeyStoreOptions({latestVersion: false }));
+      const key = await keyStore.get(new KeyReference(name, 'key'), new KeyStoreOptions({ latestVersion: false }));
       expect(key).toBeDefined();
       expect((await cache.list())[name]).toBeDefined();
     } finally {
@@ -102,20 +102,44 @@ describe('KeyStoreKeyVault', () => {
     }
   });
 
-  it('should return a key container as a secret', async () => {
+  it('should return an RSA key container as a secret', async () => {
     const name = 'KvTest-KeyStoreKeyVault' + Math.random().toString(10).substr(2);
     const cache = new KeyStoreInMemory();
     const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
     const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
     try {
-      const alg = { name: 'ECDSA', namedCurve: 'K-256', hash: { name: 'SHA-256' } };
+      const alg = { name: 'RSA-OAEP', hash: 'SHA-256', modulusLength: 2048, publicExponent: new Uint8Array([0x01, 0x00, 0x01]) };
+
+      const cryptoKey: any = <CryptoKey>await subtle.generateKey(alg, true, ['encrypt']);
+      const jwk: any = await subtle.exportKey('jwk', cryptoKey.privateKey);
+      jwk.kid = name;
+      await keyStore.save(new KeyReference(name, 'secret'), <CryptographicKey>jwk, new KeyStoreOptions());
+      let container: IKeyContainer = await keyStore.get(new KeyReference(name, 'secret'), new KeyStoreOptions({ latestVersion: false }));
+      expect(container.keys.length).toEqual(1);
+      expect(container.keys[0].kty).toEqual('RSA');
+      expect((await cache.list())[name]).toBeDefined();
+
+    } finally {
+      await (<SecretClient>keyStore.getKeyStoreClient('secret')).beginDeleteSecret(name);
+    }
+  });
+
+  it('should return an OKP key container as a secret', async () => {
+    const name = 'KvTest-KeyStoreKeyVault' + Math.random().toString(10).substr(2);
+    const cache = new KeyStoreInMemory();
+    const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+    const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
+    try {
+      const alg = { name: 'EcDSA', namedCurve: 'K-256', hash: { name: 'SHA-256' } };
 
       const cryptoKey: any = <CryptoKey>await subtle.generateKey(alg, true, ['sign']);
       const jwk: any = await subtle.exportKey('jwk', cryptoKey.privateKey);
       jwk.kid = name;
+      jwk.kty = 'OKP';
       await keyStore.save(new KeyReference(name, 'secret'), <CryptographicKey>jwk, new KeyStoreOptions());
       let container = await keyStore.get(new KeyReference(name, 'secret'), new KeyStoreOptions({ latestVersion: false }));
       expect(container.keys.length).toEqual(1);
+      expect(container.keys[0].kty).toEqual('OKP');
       expect((await cache.list())[name]).toBeDefined();
 
     } finally {
@@ -140,7 +164,7 @@ describe('KeyStoreKeyVault', () => {
       const keyReference = new KeyReference(name, 'key');
       const plugin = new KeyVaultEcdsaProvider(subtle, keyStore);
 
-      const cryptoKey: any = <CryptoKey>await subtle.generateKey(alg, true, ['sign'], {keyReference: new KeyReference(name)});
+      const cryptoKey: any = <CryptoKey>await subtle.generateKey(alg, true, ['sign'], { keyReference: new KeyReference(name) });
       const jwk: any = await subtle.exportKey('jwk', cryptoKey.privateKey);
       jwk.kid = name;
 

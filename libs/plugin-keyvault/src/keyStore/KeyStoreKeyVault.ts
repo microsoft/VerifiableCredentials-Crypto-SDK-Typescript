@@ -7,9 +7,8 @@ import { ClientCertificateCredential, ClientSecretCredential, TokenCredential } 
 import { KeyClient, JsonWebKey, CryptographyClient } from '@azure/keyvault-keys';
 import { SecretClient } from '@azure/keyvault-secrets';
 import { KeyStoreOptions, IKeyStore, KeyStoreListItem, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
-import { RsaPublicKey, EcPublicKey, KeyType, OctKey, KeyContainer, CryptographicKey, EcPrivateKey, RsaPrivateKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
+import { OkpPrivateKey, OkpPublicKey, RsaPublicKey, EcPublicKey, KeyType, OctKey, KeyContainer, CryptographicKey, EcPrivateKey, RsaPrivateKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import base64url from 'base64url';
-import KeyVaultProvider from '../plugin/KeyVaultProvider';
 const clone = require('clone');
   
 /**
@@ -124,9 +123,14 @@ export default class KeyStoreKeyVault implements IKeyStore {
             if (kty === 'EC') {
               keyContainerItem = options.publicKeyOnly ?
                 new EcPublicKey(version.key ? version.key : version.value as any) : new EcPrivateKey(version.key ? version.key : version.value as any);
-            } else {
+            } else if (kty === 'OKP') {
+              keyContainerItem = options.publicKeyOnly ?
+              new OkpPublicKey(version.key ? version.key : version.value as any) : new OkpPrivateKey(version.key ? version.key : version.value as any);
+            } else if (kty === 'RSA'){
               keyContainerItem = options.publicKeyOnly ?
                 new RsaPublicKey(version.key ? version.key : version.value as any) : new RsaPrivateKey(version.key ? version.key : version.value as any);
+            } else {
+              throw new Error(`Non supported key type ${kty}`);
             }
           } else {
             if (kty === 'EC') {

@@ -51,7 +51,7 @@
   /**
    * Define JOSE algorithm constants
    */
-   public static EdDSA = 'EDDSA';
+   public static EdDSA = 'EdDSA';
 
   /**
    * Define JOSE algorithm constants
