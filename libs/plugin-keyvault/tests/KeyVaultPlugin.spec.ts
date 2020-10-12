@@ -10,7 +10,7 @@ import { KeyStoreOptions, KeyStoreInMemory, KeyReference } from 'verifiablecrede
 import { KeyClient } from '@azure/keyvault-keys';
 import { Subtle, CryptoFactoryScope, IKeyGenerationOptions } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import Credentials from './Credentials';
-import { KeyVaultProvider, CryptoFactoryKeyVault } from '../src';
+import { KeyVaultProvider, CryptoFactoryKeyVault, SubtleCryptoKeyVault } from '../src';
 const clone = require('clone');
 
 // Sample config
@@ -102,6 +102,30 @@ describe('KeyVaultPlugin', () => {
       expect(result.publicKey.algorithm.name).toEqual('ECDSA');
       expect((<any>result.publicKey.algorithm).kid.startsWith('https')).toBeTruthy();
       expect((<any>result.publicKey.algorithm).kid.includes(remoteName)).toBeTruthy();
+    } finally {
+      await (<KeyClient>keyStore.getKeyStoreClient('key')).beginDeleteKey(remoteName);
+    }
+  });
+
+  it('should sign with key vault EC key', async () => {
+    const name = 'ECDSA-sign-EC-' + random(16);
+    const remoteName = 'ECDSA-sign-EC-' + random(16) + '-remote';
+    const cache = new KeyStoreInMemory();
+    const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+    const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
+    const subtle = new SubtleCryptoKeyVault(new Subtle(), keyStore);
+    try {
+
+      const keyReference = new KeyReference(name, 'key', remoteName);
+      const curve = 'P-256K';
+      const alg = { name: 'ECDSA', namedCurve: 'secp256k1', hash: { name: 'SHA-256' } };
+      const keypair = await subtle.generateKey(alg, false, ['sign', 'verify'], { keyReference, curve});
+      const payload = Buffer.from('hello Houston');
+      const signature = await subtle.sign(alg, keypair.publicKey, payload);
+      expect(signature.byteLength).toEqual(64);
+
+      const jwk = await subtle.exportKey('jwk', keypair.publicKey);
+      expect(jwk.kty).toEqual('EC');
     } finally {
       await (<KeyClient>keyStore.getKeyStoreClient('key')).beginDeleteKey(remoteName);
     }

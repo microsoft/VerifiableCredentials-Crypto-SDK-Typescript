@@ -51,6 +51,7 @@ export default class KeyStoreKeyVault implements IKeyStore {
   public async get(keyReference: KeyReference, options: KeyStoreOptions = new KeyStoreOptions({ extractable: false })): Promise<any> {
     try {
       const client = this.getKeyStoreClient(keyReference.type);
+      const keyName = keyReference.remoteKeyReference || keyReference.keyReference;
       const versionList: any[] = [];
       if (keyReference.type === KeyStoreKeyVault.SECRETS) {
         // Get extractable secrets 
@@ -60,32 +61,32 @@ export default class KeyStoreKeyVault implements IKeyStore {
           //return cached;
         } catch {
           // the key was not in the cache
-          console.log(`${keyReference} not found in cache`)
+          console.log(`${keyName} not found in cache`)
         }
   
         const secretClient: SecretClient = <SecretClient>client;
-        if (options.latestVersion) {
-          const secret = await secretClient.getSecret(keyReference.keyReference);
+        if (options.latestVersion || keyName.includes('/')) {
+          const secret = await secretClient.getSecret(keyName);
           (<any>secret).keyType = 'Oct';
           try {
             secret.value = JSON.parse(<string>secret.value);
             (<any>secret).keyType = (<any>secret.value).kty;
           } catch (e) {
             // no key container in secret
-            console.log(`parsing of latest version of key from keyvault failed: ${keyReference.keyReference}`);
+            console.log(`parsing of latest version of key from keyvault failed: ${keyName}`);
           }
   
           versionList.push(secret);
         } else {
-          for await (const keyProperties of secretClient.listPropertiesOfSecretVersions(keyReference.keyReference)) {
-            let secret = await secretClient.getSecret(keyReference.keyReference, { version: keyProperties.version! });
+          for await (const keyProperties of secretClient.listPropertiesOfSecretVersions(keyName)) {
+            let secret = await secretClient.getSecret(keyName, { version: keyProperties.version! });
             (<any>secret).keyType = 'Oct';
             try {
               secret.value = JSON.parse(<string>secret.value);
               (<any>secret).keyType = (<any>secret.value).kty;
             } catch {
               // no key container in secret
-              console.log(`parsing of versions of key from keyvault failed: ${keyReference.keyReference}`);
+              console.log(`parsing of versions of key from keyvault failed: ${keyName}`);
             }
   
             versionList.push(secret);
@@ -94,12 +95,12 @@ export default class KeyStoreKeyVault implements IKeyStore {
       } else {
         // Get non extractable keys returning public keys
         const keyClient: KeyClient = <KeyClient>client;
-        if (options.latestVersion) {
-          const key = await keyClient.getKey(keyReference.keyReference);
+        if (options.latestVersion || keyName.includes('/')) {
+          const key = await keyClient.getKey(keyName);
           versionList.push(key);
         } else {
-          for await (const keyProperties of keyClient.listPropertiesOfKeyVersions(keyReference.keyReference)) {
-            const key = await keyClient.getKey(keyReference.keyReference, { version: keyProperties.version! });
+          for await (const keyProperties of keyClient.listPropertiesOfKeyVersions(keyName)) {
+            const key = await keyClient.getKey(keyName, { version: keyProperties.version! });
             versionList.push(key);
           }
         }
@@ -154,7 +155,7 @@ export default class KeyStoreKeyVault implements IKeyStore {
       }
   
       if (!container) {
-        throw new Error(`The secret with reference '${keyReference.keyReference}' has not usable secrets`);
+        throw new Error(`The secret with reference '${keyName}' has not usable secrets`);
       }
   
       return container;
@@ -176,9 +177,10 @@ export default class KeyStoreKeyVault implements IKeyStore {
     if (!keyReference || !keyReference.keyReference) {
       throw new Error(`Key reference needs to be specified`);
     }
+    const keyName = keyReference.remoteKeyReference || keyReference.keyReference;
 
     // add kid
-    const kid = `${this.vaultUri}${keyReference.type}s/${keyReference.keyReference}`;
+    const kid = `${this.vaultUri}${keyReference.type}s/${keyName}`;
 
     const client = this.getKeyStoreClient(keyReference.type);
     if (keyReference.type === KeyStoreKeyVault.SECRETS) {
@@ -186,25 +188,23 @@ export default class KeyStoreKeyVault implements IKeyStore {
       if (typeof key === 'object') {
         (<any>key).kid = kid;
         const serialKey = JSON.stringify(key);
-        const value = await secretClient.setSecret(keyReference.keyReference, serialKey);
+        const value = await secretClient.setSecret(keyName, serialKey);
         //(<any>key).kid = value.properties.id;
       } else {
         key = new OctKey(base64url.encode(<string>key));
         (<any>key).kid = kid;
         const serialKey = JSON.stringify(key);
-        const value = await secretClient.setSecret(keyReference.keyReference, serialKey);
-        //(<any>key).kid = value.properties.id;
+        const value = await secretClient.setSecret(keyName, serialKey);
       }
 
     } else {
       (<any>key).kid = kid;
       const keyClient: KeyClient = <KeyClient>client;
       const kvKey = KeyStoreKeyVault.toKeyVaultKey(<any>key);
-      const cryptoKey = await keyClient.importKey(keyReference.keyReference, <any>kvKey);
+      const cryptoKey = await keyClient.importKey(keyName, <any>kvKey);
 
       // Save public key in cach
       await this.cache.save(keyReference, key);
-      //keyReference.cryptoKey = KeyVaultProvider.toCryptoKey()
     }
   }
 
@@ -234,14 +234,14 @@ export default class KeyStoreKeyVault implements IKeyStore {
       for await (const keyProperties of keyClient.listPropertiesOfKeys()) {
         const key = await keyClient.getKey(keyProperties.name);
         list[keyProperties.name] = <KeyStoreListItem>{
-          kids: [keyProperties.id],
+          kids: [(<any>keyProperties).kid],
           kty: key.keyType
         };
 
         if (!options.latestVersion) {
           list[keyProperties.name].kids = [];
           for await (const versionProperties of keyClient.listPropertiesOfKeyVersions(keyProperties.name)) {
-            list[keyProperties.name].kids.push(<string>versionProperties.id);
+            list[keyProperties.name].kids.push(<string>(<any>versionProperties).kid);
           }
         }
       }

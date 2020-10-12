@@ -68,8 +68,8 @@ export default class Jose implements IPayloadProtectionSigning {
     if (this.builder.isLinkedDataProofsProtocol()) {
       // Support json ld proofs
       console.log('Support JSON LD proofs');
-      if (typeof payload !== 'object') {
-        payload = JSON.parse(payload);
+      if (typeof payload === 'string' || payload instanceof Buffer) {
+        return Promise.reject(`Input to sign JSON LD must be an object`);
       }
 
       let suite: IJsonLinkedDataProofSuite;
@@ -82,14 +82,12 @@ export default class Jose implements IPayloadProtectionSigning {
       this._jsonLdProof = await suite.sign(payload);
       console.log(`JSON LD Proof: ${this._jsonLdProof}`);
       return this;
-
-    } else if (typeof payload === 'string') {
-      payload = JSON.parse(payload);
-    } else if (payload instanceof Buffer) {
-      payload = JSON.parse(payload.toString())
-    }
+    } 
 
     if (this.isJwtProtocol()) {
+      if (typeof payload === 'string' || payload instanceof Buffer) {
+        return Promise.reject(`Input to sign JWT must be an object`);
+      }
 
       // Add standardized properties
       const current = Math.trunc(Date.now() / 1000);
@@ -104,7 +102,6 @@ export default class Jose implements IPayloadProtectionSigning {
         (<any>payload).jti = this.builder.jwtProtocol!.jti || uuidv4();
       }
 
-
       // Override properties
       for (let key in this.builder.jwtProtocol) {
         if (key in ['nbf', 'exp', 'jti']) {
@@ -112,7 +109,6 @@ export default class Jose implements IPayloadProtectionSigning {
         }
         (<any>payload)[key] = (<any>payload)[key] || this.builder.jwtProtocol[key];
       }
-
     }
 
     payload = Buffer.from(JSON.stringify(payload));

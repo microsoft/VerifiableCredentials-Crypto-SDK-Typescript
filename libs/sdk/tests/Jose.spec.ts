@@ -8,6 +8,7 @@ import { JoseBuilder, CryptoBuilder, IPayloadProtectionSigning, CryptographicKey
 import Credentials from './Credentials';
 
 describe('Jose', () => {
+    const random = (length: number) => Math.random().toString(36).substring(2, length + 2);
 
     let originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
     beforeEach(async () => {
@@ -28,10 +29,10 @@ describe('Jose', () => {
 
     if (Credentials.vaultUri.startsWith('https')) {
         const credentials = new ClientSecretCredential(Credentials.tenantGuid, Credentials.clientId, Credentials.clientSecret);
-
+        const remote = 'remote-neo';
         const cryptoKeyVault = new CryptoBuilder()
             .useKeyVault(credentials, Credentials.vaultUri)
-            .useSigningKeyReference(new KeyReference('neo', 'key'))
+            .useSigningKeyReference(new KeyReference('neo', 'key', remote))
             .useDid('did')
             .build();
         factories = [cryptoKeyVault, cryptoNode];
@@ -97,49 +98,41 @@ describe('Jose', () => {
                 .useSerializationFormat('whatever')
                 .build();
 
-            let throwed = false;
             try {
                 await jose.serialize();
+                fail('serializationFormat should fail');
             } catch (e) {
-                throwed = true;
                 expect(e.message).toEqual(`Format 'whatever' is not supported`)
             }
-            expect(throwed).toBeTruthy();
-            throwed = false;
             try {
                 await jose.deserialize(serialized);
+                fail('deserializationFormat should fail');
             } catch (e) {
-                throwed = true;
                 expect(e.message).toEqual(`Format 'whatever' is not supported`)
             }
-            expect(throwed).toBeTruthy();
 
             // verify has no token
             jose = new JoseBuilder(crypto).build();
-            throwed = false;
             try {
                 await jose.verify([jwkPublic]);
+                fail('no token should fail');
             } catch (ex) {
-                throwed = true;
                 expect(ex).toEqual('Import a token by deserialize');
             }
-            expect(throwed).toBeTruthy();
 
             // serialize has no token
             jose = new JoseBuilder(crypto).build();
-            throwed = false;
             try {
                 await jose.serialize();
+                fail('no token to serialize should fail');
             } catch (ex) {
-                throwed = true;
                 expect(ex).toEqual('No token to serialize');
             }
-            expect(throwed).toBeTruthy();
         }
     });
 
 
-    fit('should sign and verify with JWT protocol', async () => {
+    it('should sign and verify with JWT protocol', async () => {
         const payload = {
             firstName: 'Jules',
             lastName: 'Winnfield'
@@ -154,34 +147,27 @@ describe('Jose', () => {
             .useJwtProtocol({ someProp: 1 })
             .build();
 
-            jose = await jose.sign(payload);
+        jose = await jose.sign(payload);
 
-            // Check kid
-            let serialized = await jose.serialize();
-            jose = await jose.deserialize(serialized);
-            expect(jose.signatureProtectedHeader['typ']).toEqual('JWT');
-            expect(jose.signatureProtectedHeader.alg).toEqual('ES256K');
-            expect(jose.signatureProtectedHeader.kid).toEqual('did#neo');
-            let signedPayload: any = JSON.parse(jose.signaturePayload!.toString('utf-8'));
-            expect(signedPayload.someProp).toEqual(1); 
-            expect(signedPayload.jti).toBeDefined(); 
-            expect(signedPayload.exp).toBeDefined(); 
-            expect(signedPayload.nbf).toBeDefined(); 
+        // Check kid
+        let serialized = await jose.serialize();
+        jose = await jose.deserialize(serialized);
+        expect(jose.signatureProtectedHeader['typ']).toEqual('JWT');
+        expect(jose.signatureProtectedHeader.alg).toEqual('ES256K');
+        expect(jose.signatureProtectedHeader.kid).toEqual('did#neo');
+        let signedPayload: any = JSON.parse(jose.signaturePayload!.toString('utf-8'));
+        expect(signedPayload.someProp).toEqual(1);
+        expect(signedPayload.jti).toBeDefined();
+        expect(signedPayload.exp).toBeDefined();
+        expect(signedPayload.nbf).toBeDefined();
 
-            jose = await jose.sign(Buffer.from(JSON.stringify(payload)));
-
-            // Check kid
-            serialized = await jose.serialize();
-            jose = await jose.deserialize(serialized);
-            expect(jose.signatureProtectedHeader['typ']).toEqual('JWT');
-            expect(jose.signatureProtectedHeader.alg).toEqual('ES256K');
-            expect(jose.signatureProtectedHeader.kid).toEqual('did#neo');
-            signedPayload = JSON.parse(jose.signaturePayload!.toString('utf-8'));
-            expect(signedPayload.someProp).toEqual(1); 
-            expect(signedPayload.jti).toBeDefined(); 
-            expect(signedPayload.exp).toBeDefined(); 
-            expect(signedPayload.nbf).toBeDefined(); 
-            });
+        try {
+            await jose.sign(Buffer.from(JSON.stringify(payload)));
+            fail('Should have throwed exception');
+        } catch (exception) {
+            expect(exception).toEqual('Input to sign JWT must be an object');
+        }
+    });
 
     it('should check ProtectionFormat', () => {
         expect(Jose.getProtectionFormat('jwsflatjson')).toEqual(ProtectionFormat.JwsFlatJson);

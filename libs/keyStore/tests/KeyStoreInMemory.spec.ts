@@ -47,7 +47,7 @@ describe('KeyStoreInMemory', () => {
     let list = await keyStore.list();
 
     // tslint:disable-next-line: no-backbone-get-set-outside-model
-    expect(list['1'].kids.length).toEqual(3);
+    expect(list['1'].kids.length).toEqual(2);
     expect(list['1'].kty).toEqual(KeyType.RSA);
     expect(list['1'].kids[0]).toEqual('kid1');
     expect(list['1'].kids[1]).toEqual('kid2');
