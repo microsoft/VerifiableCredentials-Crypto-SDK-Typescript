@@ -34,7 +34,7 @@ export default abstract class KeyVaultProvider extends ProviderCrypto {
   async generate(kty: KeyType, algorithm: Algorithm, _extractable: boolean, keyUsages: KeyUsage[], options?: IKeyGenerationOptions): Promise<[string, any]> {
     let name: string = this.generateKeyName(algorithm, keyUsages, kty);
     if (options && options.keyReference) {
-      name = options.keyReference.keyReference;
+      name = options.keyReference.remoteKeyReference || options.keyReference.keyReference;
     }
 
     const client = <KeyClient>(<KeyStoreKeyVault>this.keyStore).getKeyStoreClient(KeyStoreKeyVault.KEYS);

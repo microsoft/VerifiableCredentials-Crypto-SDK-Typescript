@@ -65,6 +65,34 @@ describe('KeyStoreKeyVault', () => {
       await (<KeyClient>keyStore.getKeyStoreClient('key')).beginDeleteKey(name);
     }
   });
+
+  it('should list a specific version of the key', async () => {
+    const name = 'KvTest-KeyStoreKeyVault' + Math.random().toString(10).substr(2);
+    const cache = new KeyStoreInMemory();
+    const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+    const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
+    try {
+      const provider = new KeyVaultEcdsaProvider(subtle, keyStore);
+      // generate two keys 
+      const keyPair = await provider.onGenerateKey(alg, false, ['sign'], { keyReference: new KeyReference(name) });
+      await provider.onGenerateKey(alg, false, ['sign'], { keyReference: new KeyReference(name) });
+
+      let parts = (<any>keyPair.publicKey.algorithm).kid.split('/');
+      const keyName = `${parts[parts.length-2]}/${parts[parts.length-1]}`;
+
+      let list = await keyStore.list('key', new KeyStoreOptions({ latestVersion: false }));
+      expect(list[name].kids[0].includes(keyName) || list[name].kids[1].includes(keyName)).toBeTruthy();
+      const key = await keyStore.get(new KeyReference(name, 'key',keyName), new KeyStoreOptions({ latestVersion: false }));
+      expect(key.keys.length).toEqual(1);
+      console.log(`name: ${keyName}`);
+      console.log(`${JSON.stringify(key.keys[0])}`);
+      const kidParts = key.keys[0].kid.split('/');
+      expect(parts[parts.length - 1]).toEqual(kidParts[kidParts.length - 1]);
+      expect((await cache.list())[name]).toBeDefined();
+    } finally {
+      await (<KeyClient>keyStore.getKeyStoreClient('key')).beginDeleteKey(name);
+    }
+  });
   it('should list a default generated key', async () => {
     const name = 'ECDSA-sign-EC';
     const cache = new KeyStoreInMemory();

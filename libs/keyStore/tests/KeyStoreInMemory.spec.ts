@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { RsaPublicKey, KeyType, PublicKey, KeyContainer, OctKey, RsaPrivateKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
+import { RsaPublicKey, KeyType, PublicKey, KeyContainer, OctKey, RsaPrivateKey, OkpPublicKey, EcPublicKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import base64url from 'base64url';
 import { KeyStoreInMemory, KeyStoreOptions, KeyReference } from '../lib/index';
 
@@ -25,16 +25,25 @@ describe('KeyStoreInMemory', () => {
       n: 'xxxxxxxxx',
       alg: 'none'
     };
-    const key3: RsaPublicKey = {
-      kty: KeyType.RSA,
+    const key3: OkpPublicKey = {
+      kty: KeyType.OKP,
       kid: 'kid3',
-      e: 'AAEE',
-      n: 'xxxxxxxxx',
-      alg: 'none'
+      crv: 'ed25519',
+      x: 'AAEE',
+      alg: 'EdDSA'
+    };
+    const key4: EcPublicKey = {
+      kty: KeyType.EC,
+      kid: 'kid4',
+      crv: 'secp256k1',
+      x: 'AAEE',
+      y: 'AAEE',
+      alg: 'ECDSA'
     };
     await keyStore.save(new KeyReference('1'), key1);
     await keyStore.save(new KeyReference('1'), key2);
     await keyStore.save(new KeyReference('2'), <PublicKey>key3);
+    await keyStore.save(new KeyReference('3'), <PublicKey>key4);
     let list = await keyStore.list();
 
     // tslint:disable-next-line: no-backbone-get-set-outside-model
@@ -44,8 +53,14 @@ describe('KeyStoreInMemory', () => {
     expect(list['1'].kids[1]).toEqual('kid2');
     // tslint:disable-next-line: no-backbone-get-set-outside-model
     expect(list['2'].kids.length).toEqual(1);
-    expect(list['2'].kty).toEqual(KeyType.RSA);
+    expect(list['2'].kty).toEqual(KeyType.OKP);
     expect(list['2'].kids[0]).toEqual('kid3');
+    let key: any = await keyStore.get(new KeyReference('2'), { publicKeyOnly: true });
+    expect(key.keys[0].kty).toEqual(KeyType.OKP);
+    expect(key.keys[0].kid).toEqual('kid3');
+    key = await keyStore.get(new KeyReference('3'), { publicKeyOnly: true });
+    expect(key.keys[0].kty).toEqual(KeyType.EC);
+    expect(key.keys[0].kid).toEqual('kid4');
 
     const rsaKey: any = {
       kty: KeyType.RSA,
@@ -60,7 +75,7 @@ describe('KeyStoreInMemory', () => {
       alg: 'none'
     };
     await keyStore.save(new KeyReference('rsaKey'), rsaKey);
-    let key: any = await keyStore.get(new KeyReference('rsaKey'), { publicKeyOnly: true });
+    key = await keyStore.get(new KeyReference('rsaKey'), { publicKeyOnly: true });
     expect(key.d).toBeUndefined();
     expect(key.p).toBeUndefined();
     expect(key.q).toBeUndefined();

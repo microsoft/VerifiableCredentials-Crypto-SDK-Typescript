@@ -14,6 +14,9 @@ describe('LongFormDid', () => {
         crypto = await crypto.generateKey(KeyUse.Signature);
         crypto = await crypto.generateKey(KeyUse.Signature, 'recovery');
 
+        const jwk = await crypto.builder.keyStore.get(crypto.builder.signingKeyReference);
+        console.log(JSON.stringify(jwk));
+
         let did = await new LongFormDid(crypto).serialize();
         expect(did.startsWith('did:ion')).toBeTruthy();
         console.log(did);

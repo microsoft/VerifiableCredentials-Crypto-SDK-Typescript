@@ -8,9 +8,9 @@ import KeyVaultEcdsaProvider from '../src/plugin/KeyVaultEcdsaProvider';
 import KeyVaultRsaOaepProvider from '../src/plugin/KeyVaultRsaOaepProvider';
 import { KeyStoreOptions, KeyStoreInMemory, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { KeyClient } from '@azure/keyvault-keys';
-import { Subtle, CryptoFactoryScope } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
+import { Subtle, CryptoFactoryScope, IKeyGenerationOptions } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import Credentials from './Credentials';
-import { KeyVaultProvider, CryptoFactoryKeyVault } from '../src';
+import { KeyVaultProvider, CryptoFactoryKeyVault, SubtleCryptoKeyVault } from '../src';
 const clone = require('clone');
 
 // Sample config
@@ -21,7 +21,7 @@ const vaultUri = Credentials.vaultUri;
 const keyVaultEnable = vaultUri.startsWith('https://');
 
 const subtle = new Subtle();
-// const random = (length: number) => Math.random().toString(36).substring(length);
+const random = (length: number) => Math.random().toString(36).substring(2, length + 2);
 const logging = require('adal-node').Logging;
 logging.setLoggingOptions({
   log: (_level: any, _message: any, _error: any) => {
@@ -59,8 +59,75 @@ describe('KeyVaultPlugin', () => {
       expect((<any>result.publicKey).algorithm.namedCurve).toEqual('K-256');
       expect(result.publicKey.algorithm.name).toEqual('ECDSA');
       expect((<any>result.publicKey.algorithm).kid.startsWith('https')).toBeTruthy();
+      expect((<any>result.publicKey.algorithm).kid.includes(name)).toBeTruthy();
     } finally {
       await (<KeyClient>keyStore.getKeyStoreClient('key')).beginDeleteKey(name);
+    }
+  });
+
+  it('should generate a key with options - keyreference', async () => {
+    const name = 'ECDSA-sign-EC-' + random(16);
+    const cache = new KeyStoreInMemory();
+    const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+    const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
+    const plugin = new KeyVaultEcdsaProvider(subtle, keyStore);
+    try {
+      let keyReference = new KeyReference(name, 'key');
+      let curve = 'P-256K';
+      let options: IKeyGenerationOptions = { keyReference, curve }; 
+      const result: CryptoKeyPair = await plugin.onGenerateKey(alg, false, ['sign'], options);
+      expect((<any>result.publicKey).algorithm.namedCurve).toEqual('K-256');
+      expect(result.publicKey.algorithm.name).toEqual('ECDSA');
+      expect((<any>result.publicKey.algorithm).kid.startsWith('https')).toBeTruthy();
+      expect((<any>result.publicKey.algorithm).kid.includes(name)).toBeTruthy();
+    } finally {
+      await (<KeyClient>keyStore.getKeyStoreClient('key')).beginDeleteKey(name);
+    }
+  });
+
+  it('should generate a key with options - remoteKeyreference', async () => {
+    const name = 'ECDSA-sign-EC-' + random(16);
+    const remoteName = 'ECDSA-sign-EC-' + random(16) + '-remote';
+    const cache = new KeyStoreInMemory();
+    const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+    const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
+    const plugin = new KeyVaultEcdsaProvider(subtle, keyStore);
+    try {
+
+      let keyReference = new KeyReference(name, 'key', remoteName);
+      let curve = 'P-256K';
+      let options: IKeyGenerationOptions = { keyReference, curve }; 
+      const result: CryptoKeyPair = await plugin.onGenerateKey(alg, false, ['sign'], options);
+      expect((<any>result.publicKey).algorithm.namedCurve).toEqual('K-256');
+      expect(result.publicKey.algorithm.name).toEqual('ECDSA');
+      expect((<any>result.publicKey.algorithm).kid.startsWith('https')).toBeTruthy();
+      expect((<any>result.publicKey.algorithm).kid.includes(remoteName)).toBeTruthy();
+    } finally {
+      await (<KeyClient>keyStore.getKeyStoreClient('key')).beginDeleteKey(remoteName);
+    }
+  });
+
+  it('should sign with key vault EC key', async () => {
+    const name = 'ECDSA-sign-EC-' + random(16);
+    const remoteName = 'ECDSA-sign-EC-' + random(16) + '-remote';
+    const cache = new KeyStoreInMemory();
+    const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+    const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
+    const subtle = new SubtleCryptoKeyVault(new Subtle(), keyStore);
+    try {
+
+      const keyReference = new KeyReference(name, 'key', remoteName);
+      const curve = 'P-256K';
+      const alg = { name: 'ECDSA', namedCurve: 'secp256k1', hash: { name: 'SHA-256' } };
+      const keypair = await subtle.generateKey(alg, false, ['sign', 'verify'], { keyReference, curve});
+      const payload = Buffer.from('hello Houston');
+      const signature = await subtle.sign(alg, keypair.publicKey, payload);
+      expect(signature.byteLength).toEqual(64);
+
+      const jwk = await subtle.exportKey('jwk', keypair.publicKey);
+      expect(jwk.kty).toEqual('EC');
+    } finally {
+      await (<KeyClient>keyStore.getKeyStoreClient('key')).beginDeleteKey(remoteName);
     }
   });
 
