@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CryptoBuilder, KeyUse, KeyReference } from '../lib/index';
+import { CryptoBuilder, KeyUse, KeyReference, JoseBuilder } from '../lib/index';
 
 describe('Crypto', () => {
     it('should generate a signing key', async () => {
@@ -12,7 +12,7 @@ describe('Crypto', () => {
             .useRecoveryKeyReference(new KeyReference('recovery'))
             .build();
         expect(crypto.builder.recoveryKeyReference).toEqual(new KeyReference('recovery'));
-        expect(crypto.signingProtocol.constructor.name).toEqual('Jose');
+        expect(crypto.signingProtocol(JoseBuilder.JOSE).constructor.name).toEqual('Jose');
 
         crypto = await crypto.generateKey(KeyUse.Signature);
         expect(crypto.builder.signingKeyReference?.cryptoKey).toBeDefined();

@@ -10,11 +10,20 @@ import { CryptoKey } from 'webcrypto-core';
  */
 export default class Crypto {
 
+  // keep track of the signing key for the crypto object
   private signingKey: CryptoKeyPair | CryptoKey | undefined;
 
-
-  // Set the default protocol
-  private _signingProtocol: IPayloadProtectionSigning = new JoseBuilder(this).build();
+  // Set the protocols
+  private _signingProtocols: { [protocol: string]: IPayloadProtectionSigning } = {
+    JOSE: new JoseBuilder(this)
+      .build(),
+    JWT: new JoseBuilder(this)
+      .useJwtProtocol()
+      .build(),
+    JSONLDProofs: new JoseBuilder(this)
+      .uselinkedDataProofsProtocol('JcsEd25519Signature2020')
+      .build()
+  };
 
   constructor(
     private _builder: CryptoBuilder) {
@@ -84,19 +93,19 @@ export default class Crypto {
   /**
    * Get the protocol used for signing
    */
-  public get signingProtocol(): IPayloadProtectionSigning {
-    return this._signingProtocol;
+  public signingProtocol(type: string): IPayloadProtectionSigning {
+    return this.signingProtocols[type];
+  }
+
+  public get signingProtocols(): { [protocol: string]: IPayloadProtectionSigning } {
+    return this._signingProtocols;
   }
 
   /**
    * Set the  protocol used for signing
    */
-  public useSigningProtocol(signingProtocol: IPayloadProtectionSigning): Crypto {
-    if (!signingProtocol) {
-      this._signingProtocol = new JoseBuilder(this).build();
-    } else {
-      this._signingProtocol = signingProtocol;
-    }
+  public useSigningProtocol(type: string, signingProtocol: IPayloadProtectionSigning): Crypto {
+    this._signingProtocols[type] = signingProtocol;
     return this;
   }
 }

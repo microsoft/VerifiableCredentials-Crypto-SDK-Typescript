@@ -10,6 +10,14 @@ import SuiteJcsEd25519Signature2020 from './suites/SuiteJcsEd25519Signature2020'
  * Builder class for the JOSE protocol
  */
 export default class JoseBuilder {
+  public static JSONLDProofs = 'JSONLDProofs';
+  public static JWT = 'JWT';
+  public static JOSE = 'JOSE';
+
+  /**
+   * Create an instance of the JoseBuilder
+   * @param _crypto The crypto object
+   */
   constructor(private _crypto: Crypto) {
   }
 
@@ -40,12 +48,12 @@ export default class JoseBuilder {
    */
   public get protocol() {
     if (this.linkedDataProofsProtocol) {
-      return 'JSONLDProofs';
+      return JoseBuilder.JSONLDProofs;
     } else if (this.jwtProtocol) {
-      return 'JWT';
+      return JoseBuilder.JWT;
     }
 
-    return 'JOSE';
+    return JoseBuilder.JOSE;
   }
 
   /**
@@ -105,10 +113,7 @@ export default class JoseBuilder {
     this._jsonLdProofSuite = suite;
 
     // check for valid suite
-    const protocol = this.getLinkedDataProofSuite();
-
-    // Set signing algorithm to match the suite
-    this.crypto.builder.useSigningAlgorithm(protocol.alg);
+    this.getLinkedDataProofSuite();
     return this;
   }
 

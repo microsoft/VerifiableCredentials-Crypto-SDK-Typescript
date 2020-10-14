@@ -21,6 +21,7 @@ export default class CryptoBuilder {
     publicKeyOnly: false,  // get private key, key vault only returns public key
     latestVersion: true    // take last version of the key
   };
+  
   private _signingAlgorithm: string = 'ES256K';
   private _recoveryAlgorithm: string = 'ES256K';
   private _did: string | undefined;
