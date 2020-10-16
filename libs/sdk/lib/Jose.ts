@@ -65,7 +65,7 @@ export default class Jose implements IPayloadProtectionSigning {
     const token: JwsToken = new JwsToken(jwsOptions);
     const protectionFormat = Jose.getProtectionFormat(this.builder.serializationFormat);
 
-    if (this.builder.isLinkedDataProofsProtocol()) {
+    if (this.builder.isJsonLdProofsProtocol()) {
       // Support json ld proofs
       console.log('Support JSON LD proofs');
       if (typeof payload === 'string' || payload instanceof Buffer) {
@@ -74,7 +74,7 @@ export default class Jose implements IPayloadProtectionSigning {
 
       let suite: IJsonLinkedDataProofSuite;
       try {
-        suite = this.builder.getLinkedDataProofSuite();
+        suite = this.builder.getLinkedDataProofSuite(this);
       } catch (exception) {
         return Promise.reject(exception.message);
       }
@@ -129,7 +129,7 @@ export default class Jose implements IPayloadProtectionSigning {
       validationKeys = [validationKeyContainer.getKey<PublicKey>()]
     }
 
-    if (this.builder.isLinkedDataProofsProtocol()) {
+    if (this.builder.isJsonLdProofsProtocol()) {
       // Support json ld proofs
 
       if (!this._jsonLdProof) {
@@ -138,7 +138,7 @@ export default class Jose implements IPayloadProtectionSigning {
 
       let suite: IJsonLinkedDataProofSuite;
       try {
-        suite = this.builder.getLinkedDataProofSuite();
+        suite = this.builder.getLinkedDataProofSuite(this);
       } catch (exception) {
         return Promise.reject(exception.message);
       }
@@ -163,11 +163,11 @@ export default class Jose implements IPayloadProtectionSigning {
       return Promise.reject(`No token to serialize`);
     }
 
-    if (this.builder.isLinkedDataProofsProtocol()) {
+    if (this.builder.isJsonLdProofsProtocol()) {
       if (this._jsonLdProof) {
 
         let suite: IJsonLinkedDataProofSuite;
-        suite = this.builder.getLinkedDataProofSuite();
+        suite = this.builder.getLinkedDataProofSuite(this);
         return suite.serialize(this._jsonLdProof);
       }
 
@@ -190,10 +190,10 @@ export default class Jose implements IPayloadProtectionSigning {
    */
   public async deserialize(token: string): Promise<IPayloadProtectionSigning> {
 
-    if (this.builder.isLinkedDataProofsProtocol()) {
+    if (this.builder.isJsonLdProofsProtocol()) {
       let suite: IJsonLinkedDataProofSuite;
       try {
-        suite = this.builder.getLinkedDataProofSuite();
+        suite = this.builder.getLinkedDataProofSuite(this);
         this._jsonLdProof = await suite.deserialize(token);
         return Promise.resolve(this);
       } catch (exception) {

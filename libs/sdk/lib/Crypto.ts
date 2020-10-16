@@ -21,7 +21,6 @@ export default class Crypto {
       .useJwtProtocol()
       .build(),
     JSONLDProofs: new JoseBuilder(this)
-      .uselinkedDataProofsProtocol('JcsEd25519Signature2020')
       .build()
   };
 

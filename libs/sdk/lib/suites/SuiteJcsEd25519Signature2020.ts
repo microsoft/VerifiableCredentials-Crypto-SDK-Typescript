@@ -43,11 +43,11 @@ export default class SuiteJcsEd25519Signature2020 extends JsonLinkedDataProofsBa
   public async sign(payload: any): Promise<any> {
 
     if (!payload) {
-      throw new Error('JSON LD proof input is undefined');
+      return Promise.reject('JSON LD proof input is undefined');
     }
 
     if (typeof payload !== 'object') {
-      throw new Error('JSON LD proof input should be an object');
+      return Promise.reject('JSON LD proof input should be an object');
     }
 
     const crypto = this._signer.builder.crypto;
@@ -145,16 +145,6 @@ export default class SuiteJcsEd25519Signature2020 extends JsonLinkedDataProofsBa
     }
     payload.proof = embeddedProof;
     const payloadCanonized = json.stringify(payload);
-    console.log(`canonz: ${JSON.stringify(payloadCanonized)}`)
-/*
-    let payloadHash = await crypto.builder.subtle.digest(
-      {
-        name: "SHA-256",
-      },
-      new Uint8Array(Buffer.from(payloadCanonized)));
-
-    console.log(`Hash: ${Buffer.from(payloadHash).toString('hex')}`);
-  */
     return Buffer.from(payloadCanonized);
   }
 

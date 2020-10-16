@@ -25,7 +25,6 @@ describe('JSONLD proofs', () => {
         crypto = await crypto.generateKey(KeyUse.Signature, 'recovery');
         crypto.builder.useDid(await new LongFormDid(crypto).serialize());
         let jsonLdProof: IPayloadProtectionSigning = new JoseBuilder(crypto)
-            .uselinkedDataProofsProtocol('JcsEd25519Signature2020')
             .build();
 
         const doc = {
@@ -49,7 +48,7 @@ describe('JSONLD proofs', () => {
         expect(result).toBeTruthy();
     });
 
-    it('should validate reference vector for ed25519 signature 2020', async () => {
+    fit('should validate reference vector for ed25519 signature 2020', async () => {
         // reference https://identity.foundation/JcsEd25519Signature2020/
         const doc = {
             "id": "did:test:36FC2p3yXoxcoVBn73qxPx",
@@ -88,7 +87,6 @@ describe('JSONLD proofs', () => {
             .useSigningAlgorithm('EdDSA')
             .build();
         let jsonLdProof: IPayloadProtectionSigning = new JoseBuilder(crypto)
-            .uselinkedDataProofsProtocol('JcsEd25519Signature2020')
             .build();
         jsonLdProof = await jsonLdProof.deserialize(JSON.stringify(doc));
         const result = await (<any>jsonLdProof).verify([publicKey]);

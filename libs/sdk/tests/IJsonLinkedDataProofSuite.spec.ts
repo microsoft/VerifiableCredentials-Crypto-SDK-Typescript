@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import base64url from 'base64url';
 import { KeyType, OkpPublicKey, PublicKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
-import { LongFormDid, CryptoBuilder, IJsonLinkedDataProofSuite, JoseBuilder, KeyUse, KeyStoreOptions } from '../lib';
+import { LongFormDid, CryptoBuilder, IJsonLinkedDataProofSuite, JoseBuilder, KeyUse, KeyStoreOptions, IPayloadProtectionSigning } from '../lib';
 import SuiteJcsEd25519Signature2020 from '../lib/suites/SuiteJcsEd25519Signature2020';
 
 describe('SuiteJcsEd25519Signature2020', () => {
@@ -17,16 +17,25 @@ describe('SuiteJcsEd25519Signature2020', () => {
         const did = await new LongFormDid(crypto).serialize();
         crypto = crypto.builder.useDid(did).build();
 
-        const jsonLdProofs = new JoseBuilder(crypto)
-            .uselinkedDataProofsProtocol('JcsEd25519Signature2020')
+        let jsonLdProofs = new JoseBuilder(crypto)
             .build();
         expect(crypto.builder.signingAlgorithm).toEqual('EdDSA');
+        expect(jsonLdProofs.builder.getLinkedDataProofSuite(jsonLdProofs)).toEqual(jsonLdProofs.builder.linkedDataProofSuites['JcsEd25519Signature2020'](jsonLdProofs));
 
         let suite: IJsonLinkedDataProofSuite = new SuiteJcsEd25519Signature2020(jsonLdProofs);
-        let payload = {
+        let payload: any = {
             prop1: 'prop1',
             prop2: 'prop2'
         };
+
+        expect(suite.type).toEqual(['JcsEd25519Signature2020']);
+        expect(suite.alg).toEqual('EdDSA');
+        try {
+            await suite.verify();
+            fail('Should throw ' + 'Import a credential by deserialize');
+        } catch (exception) {
+            expect(exception).toEqual('Import a credential by deserialize');
+        }
 
         let signedPayload = await suite.sign(payload);
         const serialized = await suite.serialize(signedPayload);
@@ -42,6 +51,52 @@ describe('SuiteJcsEd25519Signature2020', () => {
         expect(result).toBeTruthy();
         result = await suite.verify([key], signedPayload);
         expect(result).toBeTruthy();
+
+        // Add custom suite
+        jsonLdProofs = new JoseBuilder(crypto)
+            .useJsonLdProofsProtocol('mySuite', (signingProtocol: IPayloadProtectionSigning) => new SuiteJcsEd25519Signature2020(signingProtocol))
+            .build();
+        suite = jsonLdProofs.builder.getLinkedDataProofSuite(jsonLdProofs)
+        signedPayload = await suite.sign(payload);
+        expect(signedPayload).toBeDefined();
+
+        // Negative cases
+        try {
+            await suite.sign(<any>undefined);
+            fail('Should throw ' + 'JSON LD proof input is undefined');
+        } catch (exception) {
+            expect(exception).toEqual('JSON LD proof input is undefined');
+        }
+
+        try {
+            await suite.sign(suite.sign(<any>' '));
+            fail('Should throw ' + 'JSON LD proof input should be an object');
+        } catch (exception) {
+            expect(exception).toEqual('JSON LD proof input should be an object');
+        }
+
+        try {
+            delete payload.proof;
+            await suite.deserialize(JSON.stringify(payload));
+            await suite.verify([key]);
+            fail('Should throw ' + 'No proof to validate in signedPayload');
+        } catch (exception) {
+            expect(exception).toEqual('No proof to validate in signedPayload');
+        }
+
+        try {
+            payload['proof'] = {};
+            await suite.deserialize(JSON.stringify(payload));
+            await suite.verify([key]);
+            fail('Should throw ' + 'Proof does not contain the signatureValue');
+        } catch (exception) {
+            expect(exception).toEqual('Proof does not contain the signatureValue');
+        }
+
+        jsonLdProofs = new JoseBuilder(crypto)
+            .build();
+        expect(() => jsonLdProofs.builder.getLinkedDataProofSuite(jsonLdProofs)).toThrowError(`No suite defined. Use jsonBuilder.useJsonLdProofsProtocol() to specify the suite to use.`);
+        //expect(() => new JoseBuilder(crypto).useJsonLdProofsProtocol('xxx')).toThrowError(`Suite 'xxx' does not exist. Use jsonBuilder.useJsonLdProofsProtocol() to specify the suite to use.`);
     });
 
     it('should verify a reference payload', async () => {
