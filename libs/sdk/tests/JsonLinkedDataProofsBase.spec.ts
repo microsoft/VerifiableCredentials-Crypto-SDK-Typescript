@@ -13,7 +13,7 @@ describe('JsonLinkedDataProofsBase', () => {
             .build();
 
         const jsonLdBase = new JsonLinkedDataProofsBase(jsonLdProofs);
-        expect(jsonLdBase.type).toEqual(['']);
+        expect(jsonLdBase.type).toEqual('');
         expect(jsonLdBase.alg).toEqual('');
         try {
             await jsonLdBase.sign({});
@@ -34,6 +34,13 @@ describe('JsonLinkedDataProofsBase', () => {
             fail('should throw ' + 'No credential to serialize')
         } catch (error) {
             expect(error).toEqual('No credential to serialize')
+        }
+
+        try {
+            await jsonLdBase.deserialize('xxx');
+            fail('should throw ' + 'Could not parse JSON LD token')
+        } catch (error) {
+            expect(error).toEqual('Could not parse JSON LD token')
         }
     });
 });

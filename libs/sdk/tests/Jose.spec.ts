@@ -144,7 +144,8 @@ describe('Jose', () => {
         crypto = await crypto.generateKey(KeyUse.Signature);
 
         let jose: IPayloadProtectionSigning = new JoseBuilder(crypto)
-            .useJwtProtocol({ someProp: 1 })
+            .useJwtProtocol({ someProp: 1, jti: 'abc', exp: 1 })
+            .useUnprotectedHeader({ my: 'header'})
             .build();
 
         jose = await jose.sign(payload);
@@ -157,9 +158,10 @@ describe('Jose', () => {
         expect(jose.signatureProtectedHeader.kid).toEqual('did#neo');
         let signedPayload: any = JSON.parse(jose.signaturePayload!.toString('utf-8'));
         expect(signedPayload.someProp).toEqual(1);
-        expect(signedPayload.jti).toBeDefined();
-        expect(signedPayload.exp).toBeDefined();
+        expect(signedPayload.jti).toEqual('abc');
+        expect(signedPayload.exp).toEqual(1);
         expect(signedPayload.nbf).toBeDefined();
+        expect(jose.signatureHeader).toBeDefined();
 
         try {
             await jose.sign(Buffer.from(JSON.stringify(payload)));
@@ -167,6 +169,16 @@ describe('Jose', () => {
         } catch (exception) {
             expect(exception).toEqual('Input to sign JWT must be an object');
         }
+
+        // Negative cases
+        try {
+            spyOn(Jose, 'getProtectionFormat').and.returnValue(undefined);
+            await jose.deserialize(serialized);
+            fail(`Serialization format 'JwsCompactJson' is not supported should fail`);
+        } catch (ex) {
+            expect(ex).toEqual(`Serialization format 'JwsCompactJson' is not supported`);
+        }
+
     });
 
     it('should check ProtectionFormat', () => {

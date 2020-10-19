@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CryptoBuilder, KeyUse, JoseBuilder, IPayloadProtectionSigning, CryptoFactoryNode, KeyStoreInMemory, Subtle, LongFormDid, KeyStoreOptions } from '../lib/index';
+import { CryptoBuilder, KeyUse, JoseBuilder, IPayloadProtectionSigning, CryptoFactoryNode, KeyStoreInMemory, Subtle, LongFormDid, KeyStoreOptions, Jose } from '../lib/index';
 import { PublicKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import base64url from 'base64url';
 const bs58 = require('bs58');
@@ -24,8 +24,9 @@ describe('JSONLD proofs', () => {
         crypto = await crypto.generateKey(KeyUse.Signature);
         crypto = await crypto.generateKey(KeyUse.Signature, 'recovery');
         crypto.builder.useDid(await new LongFormDid(crypto).serialize());
-        let jsonLdProof: IPayloadProtectionSigning = new JoseBuilder(crypto)
-            .build();
+        let jsonLdProofBuilder = new JoseBuilder(crypto)
+        .useJsonLdProofsProtocol('JcsEd25519Signature2020')
+        let jsonLdProof: IPayloadProtectionSigning = jsonLdProofBuilder.build();
 
         const doc = {
             '@context': [
@@ -43,12 +44,39 @@ describe('JSONLD proofs', () => {
         };
 
         jsonLdProof = await jsonLdProof.sign(doc);
+        const serialized = await jsonLdProof.serialize();
+        const payload = JSON.parse(serialized);
+        expect(payload.proof.type).toEqual('JcsEd25519Signature2020');
         const publicKey = (await crypto.builder.keyStore.get(crypto.builder.signingKeyReference, new KeyStoreOptions({ publicKeyOnly: true }))).getKey<PublicKey>();
         const result = await jsonLdProof.verify([publicKey]);
         expect(result).toBeTruthy();
+
+        // Negative cases
+        try {
+            spyOn(Jose, 'payloadIsJsonLdProof').and.returnValue(['xxx', 'JcsEd25519Signature2020']);
+            await jsonLdProof.deserialize(serialized + 'kkk');
+        } catch (exception) {
+            expect(exception).toEqual('Could not parse JSON LD token');
+        }
+        try {
+            await jsonLdProof.serialize();
+        } catch (exception) {
+            expect(exception).toEqual('No token to serialize');
+        }        
+        try {
+            await jsonLdProof.sign(Buffer.from('{}'));
+        } catch (exception) {
+            expect(exception).toEqual('Input to sign JSON LD must be an object');
+        }        
+        try {
+            spyOn(jsonLdProofBuilder, 'getLinkedDataProofSuite').and.throwError('some error');
+            await jsonLdProof.sign(doc);
+        } catch (exception) {
+            expect(exception).toEqual('some error');
+        }
     });
 
-    fit('should validate reference vector for ed25519 signature 2020', async () => {
+    it('should validate reference vector for ed25519 signature 2020', async () => {
         // reference https://identity.foundation/JcsEd25519Signature2020/
         const doc = {
             "id": "did:test:36FC2p3yXoxcoVBn73qxPx",

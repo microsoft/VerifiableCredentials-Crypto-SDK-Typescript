@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { KeyReference, CryptoBuilder, KeyUse, CryptoHelpers, CryptoFactoryScope, JsonWebKey, KeyContainer, IPayloadProtectionSigning, JoseBuilder } from './index';
+import { KeyReference, CryptoBuilder, KeyUse, CryptoHelpers, CryptoFactoryScope, JsonWebKey, KeyContainer, IPayloadProtectionSigning, JoseBuilder, Subtle } from './index';
 import { CryptoKey } from 'webcrypto-core';
 
 /**
@@ -35,26 +35,26 @@ export default class Crypto {
     return this._builder;
   }
 
-  public async generateKey(keyUse: KeyUse, type: string = 'signing') {
+  public async generateKey(keyUse: KeyUse, type: string = 'signing'): Promise<Crypto> {
     let keyReference: KeyReference;
-    let jwaAlalgorithm: string;
+    let jwaAlgorithm: string;
     switch (type) {
       case 'signing':
         keyReference = this.builder.signingKeyReference;
-        jwaAlalgorithm = this.builder.signingAlgorithm
+        jwaAlgorithm = this.builder.signingAlgorithm
         break;
       case 'recovery':
         keyReference = this.builder.recoveryKeyReference;
-        jwaAlalgorithm = this.builder.recoveryAlgorithm;
+        jwaAlgorithm = this.builder.recoveryAlgorithm;
         break;
       default:
-        throw new Error(`Key generation type '${type}' not supported`);
+        return Promise.reject(`Key generation type '${type}' not supported`);
     }
 
     if (keyUse === KeyUse.Signature) {
-      const w3cAlgorithm = CryptoHelpers.jwaToWebCrypto(jwaAlalgorithm);
+      const w3cAlgorithm = CryptoHelpers.jwaToWebCrypto(jwaAlgorithm);
       const importKey = keyReference?.type === 'secret';
-      const subtle = this.builder.cryptoFactory.getMessageSigner(jwaAlalgorithm, CryptoFactoryScope.Private, keyReference);
+      const subtle = this.builder.cryptoFactory.getMessageSigner(jwaAlgorithm, CryptoFactoryScope.Private, keyReference);
 
       this.signingKey = await subtle.generateKey(
         w3cAlgorithm,
@@ -80,12 +80,12 @@ export default class Crypto {
       }
 
       jwk.use = keyUse;
-      jwk.alg = jwaAlalgorithm;
+      jwk.alg = jwaAlgorithm;
       await this.builder.keyStore.save(keyReference, jwk);
       return this;
 
     } else {
-      throw new Error('not implemented');
+      return Promise.reject('not implemented');
     }
   }
 
@@ -98,14 +98,6 @@ export default class Crypto {
 
   public get signingProtocols(): { [protocol: string]: IPayloadProtectionSigning } {
     return this._signingProtocols;
-  }
-
-  /**
-   * Set the  protocol used for signing
-   */
-  public useSigningProtocol(type: string, signingProtocol: IPayloadProtectionSigning): Crypto {
-    this._signingProtocols[type] = signingProtocol;
-    return this;
   }
 }
 

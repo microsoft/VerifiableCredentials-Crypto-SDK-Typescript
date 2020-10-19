@@ -9,7 +9,7 @@ export default interface IJsonLinkedDataProofSuite {
     /**
      * The type of the suite
      */
-    type: string[];
+    type: string;
 
     /**
      * Gets the algorithm for the suite

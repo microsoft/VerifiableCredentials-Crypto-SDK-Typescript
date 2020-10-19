@@ -28,7 +28,7 @@ describe('SuiteJcsEd25519Signature2020', () => {
             prop2: 'prop2'
         };
 
-        expect(suite.type).toEqual(['JcsEd25519Signature2020']);
+        expect(suite.type).toEqual('JcsEd25519Signature2020');
         expect(suite.alg).toEqual('EdDSA');
         try {
             await suite.verify();
@@ -92,11 +92,17 @@ describe('SuiteJcsEd25519Signature2020', () => {
         } catch (exception) {
             expect(exception).toEqual('Proof does not contain the signatureValue');
         }
+    });
 
-        jsonLdProofs = new JoseBuilder(crypto)
+    it('should return default suite', () =>{
+        const jsonLdProofs = new JoseBuilder(new CryptoBuilder().build())
             .build();
-        expect(() => jsonLdProofs.builder.getLinkedDataProofSuite(jsonLdProofs)).toThrowError(`No suite defined. Use jsonBuilder.useJsonLdProofsProtocol() to specify the suite to use.`);
-        //expect(() => new JoseBuilder(crypto).useJsonLdProofsProtocol('xxx')).toThrowError(`Suite 'xxx' does not exist. Use jsonBuilder.useJsonLdProofsProtocol() to specify the suite to use.`);
+        
+        const suite = jsonLdProofs.builder.getLinkedDataProofSuite(jsonLdProofs);
+        expect(suite.type).toEqual('JcsEd25519Signature2020'); 
+
+        // Negative cases
+        expect(() => jsonLdProofs.builder.getLinkedDataProofSuite(jsonLdProofs, 'xxx')).toThrowError(`Suite 'xxx' does not exist. Use jsonBuilder.useJsonLdProofsProtocol() to specify the suite to use.`);
     });
 
     it('should verify a reference payload', async () => {

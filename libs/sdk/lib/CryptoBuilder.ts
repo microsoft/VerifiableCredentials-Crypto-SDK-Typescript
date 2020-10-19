@@ -208,14 +208,6 @@ export default class CryptoBuilder {
       this.keyStore!,
       this.subtle!);
 
-    // Check if default key references are used and switch to key as default for key vault
-    if (this.signingKeyReference.keyReference === this._signingKeyName) {
-      this.useSigningKeyReference(new KeyReference(this._signingKeyName, 'key'));
-    }
-    if (this.recoveryKeyReference.keyReference === this._recoveryKeyName) {
-      this.useRecoveryKeyReference(new KeyReference(this._recoveryKeyName, 'key'));
-    }
-
     return this;
   }
 }

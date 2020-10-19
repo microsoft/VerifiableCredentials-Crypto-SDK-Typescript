@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CryptoBuilder, KeyUse, KeyReference, JoseBuilder } from '../lib/index';
+import { CryptoBuilder, Crypto, KeyUse, KeyReference, JoseBuilder, Subtle } from '../lib/index';
 
 describe('Crypto', () => {
     it('should generate a signing key', async () => {
@@ -16,6 +16,8 @@ describe('Crypto', () => {
 
         crypto = await crypto.generateKey(KeyUse.Signature);
         expect(crypto.builder.signingKeyReference?.cryptoKey).toBeDefined();
+
+        // Negative cases
     });
 
     it('should generate a recovery key', async () => {
@@ -31,10 +33,16 @@ describe('Crypto', () => {
         // negative cases
         let throwed = false;
         await crypto.generateKey(KeyUse.Signature, 'test')
-            .catch((e) => {
-                expect(e.message).toEqual(`Key generation type 'test' not supported`);
+            .catch((exception) => {
+                expect(exception).toEqual(`Key generation type 'test' not supported`);
                 throwed = true;
             })
         expect(throwed).toBeTruthy();
+
+        try {
+            await crypto.generateKey(KeyUse.Encryption);
+        } catch (exception) {
+            expect(exception).toEqual('not implemented');
+        }
     });
 });

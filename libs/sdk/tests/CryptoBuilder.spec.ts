@@ -16,9 +16,12 @@ describe('CryptoBuilder', () => {
         expect(builder.signingAlgorithm).toEqual('ES256K');
         expect(builder.recoveryKeyReference.keyReference).toEqual('recovery-ES256K');
         expect(builder.recoveryAlgorithm).toEqual('ES256K');
+        expect(builder.signingKeyIsExtractable).toBeTruthy();
 
-        builder.useSigningAlgorithm('RSA-OAEP');
-        expect(builder.signingAlgorithm).toEqual('RSA-OAEP');
+        builder.useSigningAlgorithm('EdDSA');
+        expect(builder.signingAlgorithm).toEqual('EdDSA');
+        builder.useRecoveryAlgorithm('EdDSA');
+        expect(builder.recoveryAlgorithm).toEqual('EdDSA');
 
         builder.useDid('did');
         expect(builder.did).toEqual('did');

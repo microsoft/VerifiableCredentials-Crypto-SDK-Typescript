@@ -25,8 +25,8 @@ export default class SuiteJcsEd25519Signature2020 extends JsonLinkedDataProofsBa
   /**
    * Gets the type of the suite
    */
-  public get type(): string[] {
-    return ['JcsEd25519Signature2020']
+  public get type(): string {
+    return 'JcsEd25519Signature2020';
   }
 
   /**

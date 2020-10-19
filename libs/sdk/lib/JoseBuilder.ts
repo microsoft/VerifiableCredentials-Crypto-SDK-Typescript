@@ -88,11 +88,13 @@ export default class JoseBuilder {
     * @param jsonLdProofsProtocol API implementing the suite
     * @returns The jose builder
     */
-  public useJsonLdProofsProtocol(suite: string, jsonLdProofsProtocol: (signatureProtocol: IPayloadProtectionSigning) => IJsonLinkedDataProofSuite): JoseBuilder {
+  public useJsonLdProofsProtocol(suite: string, jsonLdProofsProtocol?: (signatureProtocol: IPayloadProtectionSigning) => IJsonLinkedDataProofSuite): JoseBuilder {
     if (!this._jsonLdProofsProtocol) {
       this._jsonLdProofsProtocol = {};
     }
-    this._jsonLdProofsProtocol[suite] = jsonLdProofsProtocol
+    if (jsonLdProofsProtocol) {
+      this._jsonLdProofsProtocol[suite] = jsonLdProofsProtocol
+    }
 
     this._jsonLdProofSuite = suite;
 
@@ -105,21 +107,23 @@ export default class JoseBuilder {
    * Gets the default suite based on _jsonLdProofSuite
    * @params signatureProtocol The underlying protocol API
    */
-  public getLinkedDataProofSuite(signatureProtocol: IPayloadProtectionSigning): IJsonLinkedDataProofSuite {
-    if (!this._jsonLdProofSuite) {
-      throw new Error(`No suite defined. Use jsonBuilder..useJsonLdProofsProtocol() to specify the suite to use.`);
+  public getLinkedDataProofSuite(signatureProtocol: IPayloadProtectionSigning, jsonLdProofSuite?: string): IJsonLinkedDataProofSuite {
+
+    let suiteType = jsonLdProofSuite || this._jsonLdProofSuite;
+    if (!suiteType) {
+      suiteType = 'JcsEd25519Signature2020';
     }
 
-    let suite: (signatureProtocol: IPayloadProtectionSigning) => IJsonLinkedDataProofSuite = this.linkedDataProofSuites[this._jsonLdProofSuite];
+    let suite: (signatureProtocol: IPayloadProtectionSigning) => IJsonLinkedDataProofSuite = this.linkedDataProofSuites[suiteType];
     if (!suite) {
       // Check if new suites are passed in
       if (this._jsonLdProofsProtocol) {
-        suite = this._jsonLdProofsProtocol[this._jsonLdProofSuite];
+        suite = this._jsonLdProofsProtocol[suiteType];
       }
     }
 
     if (!suite) {
-      throw new Error(`Suite '${this._jsonLdProofSuite}' does not exist. Use jsonBuilder..useJsonLdProofsProtocol() to specify the suite to use.`);
+      throw new Error(`Suite '${suiteType}' does not exist. Use jsonBuilder.useJsonLdProofsProtocol() to specify the suite to use.`);
     }
 
     return suite(signatureProtocol);

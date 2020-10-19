@@ -24,9 +24,9 @@
   },
   "devDependencies": {
     "@types/jasmine": "^2.8.9",
-    "jasmine": "^3.5.0",
+    "jasmine": "^3.6.2",
     "jasmine-reporters": "^2.3.2",
-    "jasmine-spec-reporter": "^4.2.1",
+    "jasmine-spec-reporter": "^6.0.0",
     "jasmine-ts": "^0.3.0",
     "nyc": "14.1.1",
     "prettier": "^1.18.2",
