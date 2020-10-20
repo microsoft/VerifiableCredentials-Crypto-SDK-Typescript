@@ -22,14 +22,14 @@ export default class JsonLinkedDataProofsBase implements IJsonLinkedDataProofSui
   /**
    * Gets the type of the suite
    */
-  public get type(): string[] {
-    return ['']
+  public get type(): string {
+    return '';
   }
 
   /**
    * Gets the algorithm for the suite
    */
-  public get alg(): string{
+  public get alg(): string {
     return '';
   }
 
@@ -38,9 +38,7 @@ export default class JsonLinkedDataProofsBase implements IJsonLinkedDataProofSui
    * @param payload to embed signature
    */
   public async sign(_payload: object): Promise<any> {
-    return new Promise((_, reject) => {
-      reject('sign not implemented')
-    });
+    return Promise.reject('sign not implemented');
   }
 
   /**
@@ -50,9 +48,7 @@ export default class JsonLinkedDataProofsBase implements IJsonLinkedDataProofSui
    * @returns True if signature validated.
    */
   public async verify(_validationKeys?: PublicKey[]): Promise<boolean> {
-    return new Promise((_, reject) => {
-      reject('verify not implemented')
-    });
+    return Promise.reject('verify not implemented');
   }
 
   /**
@@ -63,7 +59,7 @@ export default class JsonLinkedDataProofsBase implements IJsonLinkedDataProofSui
     return new Promise((resolve, reject) => {
       this._credential = signedPayload ? signedPayload : this._credential;
       if (!this._credential) {
-        reject('No credential to serialize');
+        return reject('No credential to serialize');
       }
 
       resolve(JSON.stringify(this._credential));
@@ -75,9 +71,11 @@ export default class JsonLinkedDataProofsBase implements IJsonLinkedDataProofSui
    * @param credential The credential to deserialize.
    */
   public deserialize(credential: string): Promise<any> {
-    return new Promise((resolve) => {
+    try {
       this._credential = JSON.parse(credential);
-      resolve(this._credential);
-    });
+      return Promise.resolve(this._credential);
+    } catch (exeption) {
+      return Promise.reject('Could not parse JSON LD token');
+    }
   }
 }

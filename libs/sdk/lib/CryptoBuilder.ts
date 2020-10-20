@@ -21,6 +21,7 @@ export default class CryptoBuilder {
     publicKeyOnly: false,  // get private key, key vault only returns public key
     latestVersion: true    // take last version of the key
   };
+  
   private _signingAlgorithm: string = 'ES256K';
   private _recoveryAlgorithm: string = 'ES256K';
   private _did: string | undefined;
@@ -206,14 +207,6 @@ export default class CryptoBuilder {
       'CryptoFactoryKeyVault',
       this.keyStore!,
       this.subtle!);
-
-    // Check if default key references are used and switch to key as default for key vault
-    if (this.signingKeyReference.keyReference === this._signingKeyName) {
-      this.useSigningKeyReference(new KeyReference(this._signingKeyName, 'key'));
-    }
-    if (this.recoveryKeyReference.keyReference === this._recoveryKeyName) {
-      this.useRecoveryKeyReference(new KeyReference(this._recoveryKeyName, 'key'));
-    }
 
     return this;
   }

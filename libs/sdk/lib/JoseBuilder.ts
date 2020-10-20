@@ -1,4 +1,4 @@
-import { IPayloadProtectionSigning } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
+import { IPayloadProtection, IPayloadProtectionSigning } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
@@ -10,6 +10,14 @@ import SuiteJcsEd25519Signature2020 from './suites/SuiteJcsEd25519Signature2020'
  * Builder class for the JOSE protocol
  */
 export default class JoseBuilder {
+  public static JSONLDProofs = 'JSONLDProofs';
+  public static JWT = 'JWT';
+  public static JOSE = 'JOSE';
+
+  /**
+   * Create an instance of the JoseBuilder
+   * @param _crypto The crypto object
+   */
   constructor(private _crypto: Crypto) {
   }
 
@@ -17,15 +25,15 @@ export default class JoseBuilder {
   private _unprotectedHeader: object = {};
   private _serializationFormat: string = ProtectionFormat.JwsCompactJson;
   private _jwtProtocol: { [key: string]: any } | undefined;
-  private _linkedDataProofsProtocol: ({ [suite: string]: () => IJsonLinkedDataProofSuite }) | undefined;
+  private _jsonLdProofsProtocol: ({ [suite: string]: (signatureProtocol: IPayloadProtectionSigning) => IJsonLinkedDataProofSuite }) | undefined;
   private _jsonLdProofSuite: string | undefined;
   private _kid: string | undefined;
 
   /**
    * Set the default linked data proof suites
    */
-  public linkedDataProofSuites: { [suite: string]: () => IJsonLinkedDataProofSuite } = {
-    JcsEd25519Signature2020: () => new SuiteJcsEd25519Signature2020(this.build())
+  public linkedDataProofSuites: { [suite: string]: (signatureProtocol: IPayloadProtectionSigning) => IJsonLinkedDataProofSuite } = {
+    JcsEd25519Signature2020: (signatureProtocol: IPayloadProtectionSigning): IJsonLinkedDataProofSuite => new SuiteJcsEd25519Signature2020(signatureProtocol)
   }
 
   /**
@@ -39,34 +47,13 @@ export default class JoseBuilder {
    * Gets the protocol name
    */
   public get protocol() {
-    if (this.linkedDataProofsProtocol) {
-      return 'JSONLDProofs';
+    if (this.jsonLdProofsProtocol) {
+      return JoseBuilder.JSONLDProofs;
     } else if (this.jwtProtocol) {
-      return 'JWT';
+      return JoseBuilder.JWT;
     }
 
-    return 'JOSE';
-  }
-
-  /**
-   * Gets the default suite based on _jsonLdProofSuite
-   */
-  public getLinkedDataProofSuite(): IJsonLinkedDataProofSuite {
-    if (!this._jsonLdProofSuite) {
-      throw new Error(`No suite defined. Use jsonBuilder.uselinkedDataProofsProtocol() to specify the suite to use.`);
-    }
-
-    let suite: (() => IJsonLinkedDataProofSuite) | undefined = this.linkedDataProofSuites[this._jsonLdProofSuite];
-    if (!suite) {
-      // Check if new suites are passed in
-      suite = this._linkedDataProofsProtocol ? this._linkedDataProofsProtocol[this._jsonLdProofSuite] : undefined;
-    }
-
-    if (!suite) {
-      throw new Error(`Suite ${this._jsonLdProofSuite} does not exist. Use jsonBuilder.uselinkedDataProofsProtocol() to specify the suite to use.`);
-    }
-
-    return suite();
+    return JoseBuilder.JOSE;
   }
 
   /**
@@ -97,34 +84,64 @@ export default class JoseBuilder {
 
   /**
     * Sets JSON linked data proofs protocol. 
-    * @param linkedDataProofsProtocol Define properties that need to be added to the body for the JSON-LD format
+    * @suite Name of the suite
+    * @param jsonLdProofsProtocol API implementing the suite
     * @returns The jose builder
     */
-  public uselinkedDataProofsProtocol(suite: string, linkedDataProofsProtocol: { [suite: string]: any } = {}): JoseBuilder {
-    this._linkedDataProofsProtocol = linkedDataProofsProtocol;
+  public useJsonLdProofsProtocol(suite: string, jsonLdProofsProtocol?: (signatureProtocol: IPayloadProtectionSigning) => IJsonLinkedDataProofSuite): JoseBuilder {
+    if (!this._jsonLdProofsProtocol) {
+      this._jsonLdProofsProtocol = {};
+    }
+    if (jsonLdProofsProtocol) {
+      this._jsonLdProofsProtocol[suite] = jsonLdProofsProtocol
+    }
+
     this._jsonLdProofSuite = suite;
 
     // check for valid suite
-    const protocol = this.getLinkedDataProofSuite();
-
-    // Set signing algorithm to match the suite
-    this.crypto.builder.useSigningAlgorithm(protocol.alg);
+    this.getLinkedDataProofSuite(this.build());
     return this;
+  }
+
+  /**
+   * Gets the default suite based on _jsonLdProofSuite
+   * @params signatureProtocol The underlying protocol API
+   */
+  public getLinkedDataProofSuite(signatureProtocol: IPayloadProtectionSigning, jsonLdProofSuite?: string): IJsonLinkedDataProofSuite {
+
+    let suiteType = jsonLdProofSuite || this._jsonLdProofSuite;
+    if (!suiteType) {
+      suiteType = 'JcsEd25519Signature2020';
+    }
+
+    let suite: (signatureProtocol: IPayloadProtectionSigning) => IJsonLinkedDataProofSuite = this.linkedDataProofSuites[suiteType];
+    if (!suite) {
+      // Check if new suites are passed in
+      if (this._jsonLdProofsProtocol) {
+        suite = this._jsonLdProofsProtocol[suiteType];
+      }
+    }
+
+    if (!suite) {
+      throw new Error(`Suite '${suiteType}' does not exist. Use jsonBuilder.useJsonLdProofsProtocol() to specify the suite to use.`);
+    }
+
+    return suite(signatureProtocol);
   }
 
   /**
     * Gets the JSON linked data proofs protocol. 
     * @returns The JWT protocol. 
     */
-   public get linkedDataProofsProtocol(): { [key: string]: any } | undefined {
-    return this._linkedDataProofsProtocol;
+   public get jsonLdProofsProtocol(): { [key: string]: any } | undefined {
+    return this._jsonLdProofsProtocol;
   }
 
   /**
     * True if the the JSON linked data proofs protocol is enabled. 
     */
-  public isLinkedDataProofsProtocol(): boolean {
-    return this._linkedDataProofsProtocol !== undefined;
+  public isJsonLdProofsProtocol(): boolean {
+    return this._jsonLdProofsProtocol !== undefined;
   }
 
   /**

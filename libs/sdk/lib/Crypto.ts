@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { KeyReference, CryptoBuilder, KeyUse, CryptoHelpers, CryptoFactoryScope, JsonWebKey, KeyContainer, IPayloadProtectionSigning, JoseBuilder } from './index';
+import { KeyReference, CryptoBuilder, KeyUse, CryptoHelpers, CryptoFactoryScope, JsonWebKey, KeyContainer, IPayloadProtectionSigning, JoseBuilder, Subtle } from './index';
 import { CryptoKey } from 'webcrypto-core';
 
 /**
@@ -10,11 +10,19 @@ import { CryptoKey } from 'webcrypto-core';
  */
 export default class Crypto {
 
+  // keep track of the signing key for the crypto object
   private signingKey: CryptoKeyPair | CryptoKey | undefined;
 
-
-  // Set the default protocol
-  private _signingProtocol: IPayloadProtectionSigning = new JoseBuilder(this).build();
+  // Set the protocols
+  private _signingProtocols: { [protocol: string]: IPayloadProtectionSigning } = {
+    JOSE: new JoseBuilder(this)
+      .build(),
+    JWT: new JoseBuilder(this)
+      .useJwtProtocol()
+      .build(),
+    JSONLDProofs: new JoseBuilder(this)
+      .build()
+  };
 
   constructor(
     private _builder: CryptoBuilder) {
@@ -27,26 +35,26 @@ export default class Crypto {
     return this._builder;
   }
 
-  public async generateKey(keyUse: KeyUse, type: string = 'signing') {
+  public async generateKey(keyUse: KeyUse, type: string = 'signing'): Promise<Crypto> {
     let keyReference: KeyReference;
-    let jwaAlalgorithm: string;
+    let jwaAlgorithm: string;
     switch (type) {
       case 'signing':
         keyReference = this.builder.signingKeyReference;
-        jwaAlalgorithm = this.builder.signingAlgorithm
+        jwaAlgorithm = this.builder.signingAlgorithm
         break;
       case 'recovery':
         keyReference = this.builder.recoveryKeyReference;
-        jwaAlalgorithm = this.builder.recoveryAlgorithm;
+        jwaAlgorithm = this.builder.recoveryAlgorithm;
         break;
       default:
-        throw new Error(`Key generation type '${type}' not supported`);
+        return Promise.reject(`Key generation type '${type}' not supported`);
     }
 
     if (keyUse === KeyUse.Signature) {
-      const w3cAlgorithm = CryptoHelpers.jwaToWebCrypto(jwaAlalgorithm);
+      const w3cAlgorithm = CryptoHelpers.jwaToWebCrypto(jwaAlgorithm);
       const importKey = keyReference?.type === 'secret';
-      const subtle = this.builder.cryptoFactory.getMessageSigner(jwaAlalgorithm, CryptoFactoryScope.Private, keyReference);
+      const subtle = this.builder.cryptoFactory.getMessageSigner(jwaAlgorithm, CryptoFactoryScope.Private, keyReference);
 
       this.signingKey = await subtle.generateKey(
         w3cAlgorithm,
@@ -72,32 +80,24 @@ export default class Crypto {
       }
 
       jwk.use = keyUse;
-      jwk.alg = jwaAlalgorithm;
+      jwk.alg = jwaAlgorithm;
       await this.builder.keyStore.save(keyReference, jwk);
       return this;
 
     } else {
-      throw new Error('not implemented');
+      return Promise.reject('not implemented');
     }
   }
 
   /**
    * Get the protocol used for signing
    */
-  public get signingProtocol(): IPayloadProtectionSigning {
-    return this._signingProtocol;
+  public signingProtocol(type: string): IPayloadProtectionSigning {
+    return this.signingProtocols[type];
   }
 
-  /**
-   * Set the  protocol used for signing
-   */
-  public useSigningProtocol(signingProtocol: IPayloadProtectionSigning): Crypto {
-    if (!signingProtocol) {
-      this._signingProtocol = new JoseBuilder(this).build();
-    } else {
-      this._signingProtocol = signingProtocol;
-    }
-    return this;
+  public get signingProtocols(): { [protocol: string]: IPayloadProtectionSigning } {
+    return this._signingProtocols;
   }
 }
 
