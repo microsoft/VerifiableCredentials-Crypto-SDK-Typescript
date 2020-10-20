@@ -24,16 +24,15 @@ export default class KeyStoreInMemory implements IKeyStore {
    * @param [options] Options for retrieving.
    */
   get(keyReference: KeyReference, options?: KeyStoreOptions): Promise<IKeyContainer> {
-    return new Promise((resolve, reject) => {
+   
       if (this.store.has(keyReference.keyReference)) {
         const key = (<IKeyContainer>this.store.get(keyReference.keyReference));
         if (key.kty === KeyType.Oct) {
           if (options && options.publicKeyOnly) {
             const error = 'A secret does not has a public key';
-            reject(error);
-            throw new Error(error);
+            return Promise.reject(new Error(error));
           }
-          return resolve(key);
+          return Promise.resolve(key);
         }
 
         if (options && options.publicKeyOnly) {
@@ -41,20 +40,19 @@ export default class KeyStoreInMemory implements IKeyStore {
             case 'ec':
             case 'okp':
             case 'rsa':
-              return resolve(this.publicKeysOnly(key));
+              return Promise.resolve(this.publicKeysOnly(key));
             default:
               const error = `A secret does not has a public key`;
-              return reject(error);
+              return Promise.reject(new Error(error));
           }
         } else {
-          resolve(key);
+          return Promise.resolve(key);
         }
       } else {
         const error = `${keyReference.keyReference} not found`;
-        return reject(error);
+        return Promise.reject(new Error(error));
       }
-    });
-  }
+   }
 
   private publicKeysOnly(container: IKeyContainer) {
     const publicKeyContainer = clone(container);

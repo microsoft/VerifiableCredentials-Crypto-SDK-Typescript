@@ -108,7 +108,7 @@ describe('KeyStoreInMemory', () => {
     const error = await keyStore.get(new KeyReference('key'), new KeyStoreOptions({ publicKeyOnly: true }))
       .catch((err) => {
         throwCaught = true;
-        expect(err).toBe('A secret does not has a public key');
+        expect(err.message).toBe('A secret does not has a public key');
       });
     expect(error).toBeUndefined();
     expect(throwCaught).toBe(true);
@@ -128,7 +128,7 @@ describe('KeyStoreInMemory', () => {
     const error = await keyStore.get(new KeyReference('key'), new KeyStoreOptions({ publicKeyOnly: true }))
       .catch((err) => {
         throwCaught = true;
-        expect(err).toBe('A secret does not has a public key');
+        expect(err.message).toBe('A secret does not has a public key');
       });
     expect(error).toBeUndefined();
     expect(throwCaught).toBe(true);
@@ -149,7 +149,7 @@ describe('KeyStoreInMemory', () => {
     const signature = await keyStore.get(new KeyReference('key1'))
       .catch((err) => {
         throwCaught = true;
-        expect(err).toBe('key1 not found');
+        expect(err.message).toBe('key1 not found');
       });
     expect(signature).toBeUndefined();
     expect(throwCaught).toBe(true);

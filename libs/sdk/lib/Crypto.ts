@@ -21,6 +21,7 @@ export default class Crypto {
       .useJwtProtocol()
       .build(),
     JSONLDProofs: new JoseBuilder(this)
+      .useJsonLdProofsProtocol('JcsEd25519Signature2020')
       .build()
   };
 
@@ -48,7 +49,7 @@ export default class Crypto {
         jwaAlgorithm = this.builder.recoveryAlgorithm;
         break;
       default:
-        return Promise.reject(`Key generation type '${type}' not supported`);
+        return Promise.reject(new Error(`Key generation type '${type}' not supported`));
     }
 
     if (keyUse === KeyUse.Signature) {
@@ -85,7 +86,7 @@ export default class Crypto {
       return this;
 
     } else {
-      return Promise.reject('not implemented');
+      return Promise.reject(new Error('not implemented'));
     }
   }
 

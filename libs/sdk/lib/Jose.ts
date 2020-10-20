@@ -61,14 +61,14 @@ export default class Jose implements IPayloadProtectionSigning {
       // Support json ld proofs
       console.log('Support JSON LD proofs');
       if (typeof payload === 'string' || payload instanceof Buffer) {
-        return Promise.reject(`Input to sign JSON LD must be an object`);
+        return Promise.reject(new Error(`Input to sign JSON LD must be an object`));
       }
 
       let suite: IJsonLinkedDataProofSuite;
       try {
         suite = this.builder.getLinkedDataProofSuite(this);
       } catch (exception) {
-        return Promise.reject(exception.message);
+        return Promise.reject(new Error(exception.message));
       }
 
       this._jsonLdProofObject = await suite.sign(payload);
@@ -89,7 +89,7 @@ export default class Jose implements IPayloadProtectionSigning {
 
     if (this.isJwtProtocol()) {
       if (typeof payload === 'string' || payload instanceof Buffer) {
-        return Promise.reject(`Input to sign JWT must be an object`);
+        return Promise.reject(new Error(`Input to sign JWT must be an object`));
       }
 
       // Add standardized properties
@@ -140,7 +140,7 @@ export default class Jose implements IPayloadProtectionSigning {
 
     const jwsOptions: IJwsSigningOptions = Jose.optionsFromBuilder(this.builder);
     if (!this._token) {
-      return Promise.reject('Import a token by deserialize');
+      return Promise.reject(new Error('Import a token by deserialize'));
     }
 
     const result = await this._token.verify(validationKeys!, jwsOptions);
@@ -156,12 +156,12 @@ export default class Jose implements IPayloadProtectionSigning {
         return this._jsonLdProofSuite.serialize(this._jsonLdProofObject);
       }
 
-      return Promise.reject(`No token to serialize`);
+      return Promise.reject(new Error(`No token to serialize`));
     }
 
     const protocolFormat: ProtectionFormat = Jose.getProtectionFormat(this.builder.serializationFormat);
     if (!this._token) {
-      return Promise.reject(`No token to serialize`);
+      return Promise.reject(new Error(`No token to serialize`));
     }
 
     switch (protocolFormat) {
@@ -170,7 +170,7 @@ export default class Jose implements IPayloadProtectionSigning {
       case ProtectionFormat.JwsGeneralJson:
         return Promise.resolve(this._token.serialize(protocolFormat)); ``
       default:
-        return Promise.reject(`The serialization format '${this.builder.serializationFormat}' is not supported`);
+        return Promise.reject(new Error(`The serialization format '${this.builder.serializationFormat}' is not supported`));
     }
   }
 
@@ -220,7 +220,7 @@ export default class Jose implements IPayloadProtectionSigning {
         this._signaturePayload = this._token.payload;
         return Promise.resolve(this);
       default:
-        return Promise.reject(`Serialization format '${this.builder.serializationFormat}' is not supported`);
+        return Promise.reject(new Error(`Serialization format '${this.builder.serializationFormat}' is not supported`));
     }
   }
 

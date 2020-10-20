@@ -41,12 +41,12 @@ export default class JwtToken {
   ): Promise<JwsToken> {
 
     if (typeof payload !== 'object') {
-      return Promise.reject(`JWT payload needs to be an object with a set of claims`);
+      return Promise.reject(new Error(`JWT payload needs to be an object with a set of claims`));
     }
 
     options = options || this.options;
     if (!options) {
-      return Promise.reject(`JWT need to be defined`);
+      return Promise.reject(new Error(`JWT need to be defined`));
     }
 
      // Set the protected header

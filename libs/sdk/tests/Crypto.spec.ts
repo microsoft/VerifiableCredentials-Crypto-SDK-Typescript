@@ -34,7 +34,7 @@ describe('Crypto', () => {
         let throwed = false;
         await crypto.generateKey(KeyUse.Signature, 'test')
             .catch((exception) => {
-                expect(exception).toEqual(`Key generation type 'test' not supported`);
+                expect(exception.message).toEqual(`Key generation type 'test' not supported`);
                 throwed = true;
             })
         expect(throwed).toBeTruthy();
@@ -42,7 +42,7 @@ describe('Crypto', () => {
         try {
             await crypto.generateKey(KeyUse.Encryption);
         } catch (exception) {
-            expect(exception).toEqual('not implemented');
+            expect(exception.message).toEqual('not implemented');
         }
     });
 });

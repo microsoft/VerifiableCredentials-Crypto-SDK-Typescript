@@ -34,7 +34,7 @@ describe('SuiteJcsEd25519Signature2020', () => {
             await suite.verify();
             fail('Should throw ' + 'Import a credential by deserialize');
         } catch (exception) {
-            expect(exception).toEqual('Import a credential by deserialize');
+            expect(exception.message).toEqual('Import a credential by deserialize');
         }
 
         let signedPayload = await suite.sign(payload);
@@ -65,14 +65,14 @@ describe('SuiteJcsEd25519Signature2020', () => {
             await suite.sign(<any>undefined);
             fail('Should throw ' + 'JSON LD proof input is undefined');
         } catch (exception) {
-            expect(exception).toEqual('JSON LD proof input is undefined');
+            expect(exception.message).toEqual('JSON LD proof input is undefined');
         }
 
         try {
             await suite.sign(suite.sign(<any>' '));
             fail('Should throw ' + 'JSON LD proof input should be an object');
         } catch (exception) {
-            expect(exception).toEqual('JSON LD proof input should be an object');
+            expect(exception.message).toEqual('JSON LD proof input should be an object');
         }
 
         try {
@@ -81,7 +81,7 @@ describe('SuiteJcsEd25519Signature2020', () => {
             await suite.verify([key]);
             fail('Should throw ' + 'No proof to validate in signedPayload');
         } catch (exception) {
-            expect(exception).toEqual('No proof to validate in signedPayload');
+            expect(exception.message).toEqual('No proof to validate in signedPayload');
         }
 
         try {
@@ -90,7 +90,7 @@ describe('SuiteJcsEd25519Signature2020', () => {
             await suite.verify([key]);
             fail('Should throw ' + 'Proof does not contain the signatureValue');
         } catch (exception) {
-            expect(exception).toEqual('Proof does not contain the signatureValue');
+            expect(exception.message).toEqual('Proof does not contain the signatureValue');
         }
     });
 

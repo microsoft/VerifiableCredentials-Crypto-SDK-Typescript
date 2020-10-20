@@ -19,28 +19,28 @@ describe('JsonLinkedDataProofsBase', () => {
             await jsonLdBase.sign({});
             fail('should throw ' + 'sign not implemented')
         } catch (error) {
-            expect(error).toEqual('sign not implemented')
+            expect(error.message).toEqual('sign not implemented')
         }
 
         try {
             await jsonLdBase.verify([]);
             fail('should throw ' + 'verify not implemented')
         } catch (error) {
-            expect(error).toEqual('verify not implemented')
+            expect(error.message).toEqual('verify not implemented')
         }
 
         try {
             await jsonLdBase.serialize();
             fail('should throw ' + 'No credential to serialize')
         } catch (error) {
-            expect(error).toEqual('No credential to serialize')
+            expect(error.message).toEqual('No credential to serialize')
         }
 
         try {
             await jsonLdBase.deserialize('xxx');
             fail('should throw ' + 'Could not parse JSON LD token')
         } catch (error) {
-            expect(error).toEqual('Could not parse JSON LD token')
+            expect(error.message).toEqual('Could not parse JSON LD token')
         }
     });
 });

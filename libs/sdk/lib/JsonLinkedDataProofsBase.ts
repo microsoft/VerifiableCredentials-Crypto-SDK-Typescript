@@ -38,7 +38,7 @@ export default class JsonLinkedDataProofsBase implements IJsonLinkedDataProofSui
    * @param payload to embed signature
    */
   public async sign(_payload: object): Promise<any> {
-    return Promise.reject('sign not implemented');
+    return Promise.reject(new Error('sign not implemented'));
   }
 
   /**
@@ -48,7 +48,7 @@ export default class JsonLinkedDataProofsBase implements IJsonLinkedDataProofSui
    * @returns True if signature validated.
    */
   public async verify(_validationKeys?: PublicKey[]): Promise<boolean> {
-    return Promise.reject('verify not implemented');
+    return Promise.reject(new Error('verify not implemented'));
   }
 
   /**
@@ -56,14 +56,12 @@ export default class JsonLinkedDataProofsBase implements IJsonLinkedDataProofSui
   * @param signedPayload The payload to serialize
   */
   public serialize(signedPayload?: any): Promise<string> {
-    return new Promise((resolve, reject) => {
       this._credential = signedPayload ? signedPayload : this._credential;
       if (!this._credential) {
-        return reject('No credential to serialize');
+        return Promise.reject(new Error('No credential to serialize'));
       }
 
-      resolve(JSON.stringify(this._credential));
-    });
+      return Promise.resolve(JSON.stringify(this._credential));
   }
 
   /**
@@ -75,7 +73,7 @@ export default class JsonLinkedDataProofsBase implements IJsonLinkedDataProofSui
       this._credential = JSON.parse(credential);
       return Promise.resolve(this._credential);
     } catch (exeption) {
-      return Promise.reject('Could not parse JSON LD token');
+      return Promise.reject(new Error('Could not parse JSON LD token'));
     }
   }
 }
