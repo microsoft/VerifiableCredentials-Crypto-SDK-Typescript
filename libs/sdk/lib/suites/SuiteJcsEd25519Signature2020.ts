@@ -43,11 +43,11 @@ export default class SuiteJcsEd25519Signature2020 extends JsonLinkedDataProofsBa
   public async sign(payload: any): Promise<any> {
 
     if (!payload) {
-      return Promise.reject('JSON LD proof input is undefined');
+      return Promise.reject(new Error('JSON LD proof input is undefined'));
     }
 
     if (typeof payload !== 'object') {
-      return Promise.reject('JSON LD proof input should be an object');
+      return Promise.reject(new Error('JSON LD proof input should be an object'));
     }
 
     const crypto = this._signer.builder.crypto;
@@ -75,7 +75,7 @@ export default class SuiteJcsEd25519Signature2020 extends JsonLinkedDataProofsBa
   public async verify(validationKeys?: PublicKey[], signedPayload?: any): Promise<boolean> {
     this._credential = signedPayload ? signedPayload : this._credential;
     if (!this._credential) {
-      return Promise.reject('Import a credential by deserialize');
+      return Promise.reject(new Error('Import a credential by deserialize'));
     }
 
 
@@ -83,7 +83,7 @@ export default class SuiteJcsEd25519Signature2020 extends JsonLinkedDataProofsBa
     const proof = this._credential.proof;
 
     if (!proof) {
-      return Promise.reject('No proof to validate in signedPayload');
+      return Promise.reject(new Error('No proof to validate in signedPayload'));
     }
 
     const payload = clone(this._credential);
@@ -98,7 +98,7 @@ export default class SuiteJcsEd25519Signature2020 extends JsonLinkedDataProofsBa
 
     const signatureValue = proof.signatureValue;
     if (!signatureValue) {
-      return Promise.reject('Proof does not contain the signatureValue');
+      return Promise.reject(new Error('Proof does not contain the signatureValue'));
     }
 
     const signature = bs58.decode(signatureValue);

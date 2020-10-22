@@ -1,6 +1,6 @@
 {
   "name": "verifiablecredentials-crypto-sdk-typescript-protocols-common",
-  "version": "1.1.11-preview.6",
+  "version": "1.1.11-preview.7",
   "repository": {
     "type": "git",
     "url": "https://github.com/microsoft/VerifiableCredentials-Crypto-SDK-Typescript.git"
@@ -32,19 +32,19 @@
     "jasmine-reporters": "^2.3.2",
     "jasmine-spec-reporter": "^6.0.0",
     "jasmine-ts": "^0.3.0",
-    "nyc": "14.1.1",
+    "nyc": "^15.1.0",
     "prettier": "^1.18.2",  
     "ts-node": "8.5.4",
     "tslint": "^5.20.0",
     "typescript": "3.9.2"
   },
   "dependencies": {
-    "verifiablecredentials-crypto-sdk-typescript-keys": "1.1.11-preview.6",
-    "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.11-preview.6",
-    "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.11-preview.6",
+    "verifiablecredentials-crypto-sdk-typescript-keys": "1.1.11-preview.7",
+    "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.11-preview.7",
+    "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.11-preview.7",
     "base64url": "3.0.1",
     "typescript-map": "0.0.7",
-    "webcrypto-core": "1.1.1"
+    "webcrypto-core": "1.1.8"
   },
   "nyc": {
     "extension": [

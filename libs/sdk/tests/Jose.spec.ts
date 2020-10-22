@@ -117,7 +117,7 @@ describe('Jose', () => {
                 await jose.verify([jwkPublic]);
                 fail('no token should fail');
             } catch (ex) {
-                expect(ex).toEqual('Import a token by deserialize');
+                expect(ex.message).toEqual('Import a token by deserialize');
             }
 
             // serialize has no token
@@ -126,7 +126,7 @@ describe('Jose', () => {
                 await jose.serialize();
                 fail('no token to serialize should fail');
             } catch (ex) {
-                expect(ex).toEqual('No token to serialize');
+                expect(ex.message).toEqual('No token to serialize');
             }
         }
     });
@@ -167,7 +167,7 @@ describe('Jose', () => {
             await jose.sign(Buffer.from(JSON.stringify(payload)));
             fail('Should have throwed exception');
         } catch (exception) {
-            expect(exception).toEqual('Input to sign JWT must be an object');
+            expect(exception.message).toEqual('Input to sign JWT must be an object');
         }
 
         // Negative cases
@@ -176,7 +176,7 @@ describe('Jose', () => {
             await jose.deserialize(serialized);
             fail(`Serialization format 'JwsCompactJson' is not supported should fail`);
         } catch (ex) {
-            expect(ex).toEqual(`Serialization format 'JwsCompactJson' is not supported`);
+            expect(ex.message).toEqual(`Serialization format 'JwsCompactJson' is not supported`);
         }
 
     });

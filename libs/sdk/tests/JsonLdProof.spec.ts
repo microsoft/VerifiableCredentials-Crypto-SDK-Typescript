@@ -25,9 +25,11 @@ describe('JSONLD proofs', () => {
         crypto = await crypto.generateKey(KeyUse.Signature, 'recovery');
         crypto.builder.useDid(await new LongFormDid(crypto).serialize());
         let jsonLdProofBuilder = new JoseBuilder(crypto)
-        .useJsonLdProofsProtocol('JcsEd25519Signature2020')
+            .useJsonLdProofsProtocol('JcsEd25519Signature2020')
         let jsonLdProof: IPayloadProtectionSigning = jsonLdProofBuilder.build();
 
+        expect(jsonLdProofBuilder.isJsonLdProofsProtocol()).toBeTruthy();
+        
         const doc = {
             '@context': [
                 'https://www.w3.org/2018/credentials/v1',
@@ -56,23 +58,23 @@ describe('JSONLD proofs', () => {
             spyOn(Jose, 'payloadIsJsonLdProof').and.returnValue(['xxx', 'JcsEd25519Signature2020']);
             await jsonLdProof.deserialize(serialized + 'kkk');
         } catch (exception) {
-            expect(exception).toEqual('Could not parse JSON LD token');
+            expect(exception.message).toEqual('Could not parse JSON LD token');
         }
         try {
             await jsonLdProof.serialize();
         } catch (exception) {
-            expect(exception).toEqual('No token to serialize');
+            expect(exception.message).toEqual('No token to serialize');
         }        
         try {
             await jsonLdProof.sign(Buffer.from('{}'));
         } catch (exception) {
-            expect(exception).toEqual('Input to sign JSON LD must be an object');
+            expect(exception.message).toEqual('Input to sign JSON LD must be an object');
         }        
         try {
             spyOn(jsonLdProofBuilder, 'getLinkedDataProofSuite').and.throwError('some error');
             await jsonLdProof.sign(doc);
         } catch (exception) {
-            expect(exception).toEqual('some error');
+            expect(exception.message).toEqual('some error');
         }
     });
 

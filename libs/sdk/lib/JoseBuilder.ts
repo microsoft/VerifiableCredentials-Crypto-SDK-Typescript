@@ -1,3 +1,4 @@
+import uuid from 'uuid';
 import { IPayloadProtection, IPayloadProtectionSigning } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.

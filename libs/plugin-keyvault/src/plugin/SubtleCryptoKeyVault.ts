@@ -28,7 +28,7 @@ export default class SubtleCryptoKeyVault extends SubtleCrypto implements ISubtl
    * @param options Options used to define optional name
    */
   public async generateKey(algorithm: Algorithm, extractable: boolean, keyUsages: KeyUsage[], options?: IKeyGenerationOptions) {
-    this.checkRequiredArguments(arguments, options ? 4 : 3, "generateKey");
+    //this.checkRequiredArguments(arguments, options ? 4 : 3, "generateKey");
     const preparedAlgorithm = this.prepareAlgorithm(algorithm);
     const provider: any = this.getProvider(preparedAlgorithm.name);
     const result = await provider.generateKey({ ...preparedAlgorithm, name: provider.name }, extractable, keyUsages, options);
