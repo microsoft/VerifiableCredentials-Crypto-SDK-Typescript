@@ -25,9 +25,11 @@ describe('JSONLD proofs', () => {
         crypto = await crypto.generateKey(KeyUse.Signature, 'recovery');
         crypto.builder.useDid(await new LongFormDid(crypto).serialize());
         let jsonLdProofBuilder = new JoseBuilder(crypto)
-        .useJsonLdProofsProtocol('JcsEd25519Signature2020')
+            .useJsonLdProofsProtocol('JcsEd25519Signature2020')
         let jsonLdProof: IPayloadProtectionSigning = jsonLdProofBuilder.build();
 
+        expect(jsonLdProofBuilder.isJsonLdProofsProtocol()).toBeTruthy();
+        
         const doc = {
             '@context': [
                 'https://www.w3.org/2018/credentials/v1',

@@ -36,6 +36,17 @@ export default class Crypto {
     return this._builder;
   }
 
+  /**
+   * Get the protocol used for signing
+   */
+  public signingProtocol(type: string): IPayloadProtectionSigning {
+    return this.signingProtocols[type];
+  }
+
+  public get signingProtocols(): { [protocol: string]: IPayloadProtectionSigning } {
+    return this._signingProtocols;
+  }
+
   public async generateKey(keyUse: KeyUse, type: string = 'signing'): Promise<Crypto> {
     let keyReference: KeyReference;
     let jwaAlgorithm: string;
@@ -88,17 +99,6 @@ export default class Crypto {
     } else {
       return Promise.reject(new Error('not implemented'));
     }
-  }
-
-  /**
-   * Get the protocol used for signing
-   */
-  public signingProtocol(type: string): IPayloadProtectionSigning {
-    return this.signingProtocols[type];
-  }
-
-  public get signingProtocols(): { [protocol: string]: IPayloadProtectionSigning } {
-    return this._signingProtocols;
   }
 }
 

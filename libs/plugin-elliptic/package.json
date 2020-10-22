@@ -30,7 +30,7 @@
     "minimalistic-crypto-utils": "1.0.1",
     "sha.js": "^2.4.11",
     "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.11-preview.7",
-    "webcrypto-core": "1.1.1"
+    "webcrypto-core": "1.1.8"
   },
   "devDependencies": {
     "@types/jasmine": "2.8.16",
@@ -42,7 +42,7 @@
     "jasmine-ts": "0.3.0",
     "ts-loader": "2.3.7",
     "node-fetch": "2.4.1",
-    "nyc": "14.1.1",
+    "nyc": "^15.1.0",
     "source-map-support": "0.5.12",
     "ts-node": "8.5.4",
     "tslint": "^5.20.0",

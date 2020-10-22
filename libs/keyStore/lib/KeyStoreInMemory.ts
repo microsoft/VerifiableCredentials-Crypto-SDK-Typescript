@@ -86,9 +86,7 @@ export default class KeyStoreInMemory implements IKeyStore {
         }
       }
     }
-    return new Promise((resolve) => {
-      resolve(dictionary);
-    });
+    return Promise.resolve(dictionary);
   }
 
   /**
@@ -113,8 +111,6 @@ export default class KeyStoreInMemory implements IKeyStore {
       this.store.set(keyIdentifier.keyReference, container);
     }
 
-    return new Promise((resolve) => {
-      resolve();
-    });
+    return Promise.resolve();
   }
 }

@@ -32,7 +32,7 @@
     "jasmine-reporters": "^2.3.2",
     "jasmine-spec-reporter": "^6.0.0",
     "jasmine-ts": "^0.3.0",
-    "nyc": "14.1.1",
+    "nyc": "^15.1.0",
     "prettier": "^1.18.2",  
     "ts-node": "8.5.4",
     "tslint": "^5.20.0",
@@ -46,7 +46,7 @@
     "verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites": "1.1.11-preview.7",
     "base64url": "^3.0.1",
     "typescript-map": "0.0.7",
-    "webcrypto-core": "1.1.1"
+    "webcrypto-core": "1.1.8"
   },
   "nyc": {
     "extension": [

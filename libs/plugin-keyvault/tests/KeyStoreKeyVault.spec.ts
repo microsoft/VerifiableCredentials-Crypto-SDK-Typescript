@@ -123,7 +123,7 @@ describe('KeyStoreKeyVault', () => {
       expect(throwed).toBeTruthy();
     } catch (err) {
       throwed = true;
-      expect(err).toEqual(`${name} not found`)
+      expect(err.message).toEqual(`${name} not found`)
 
     } finally {
       await (<SecretClient>keyStore.getKeyStoreClient('secret')).beginDeleteSecret(name);
