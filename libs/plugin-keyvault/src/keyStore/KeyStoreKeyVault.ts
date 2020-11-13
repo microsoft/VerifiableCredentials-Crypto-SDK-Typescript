@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ClientCertificateCredential, ClientSecretCredential, TokenCredential } from '@azure/identity';
+import { TokenCredential } from '@azure/identity';
 import { KeyClient, JsonWebKey, CryptographyClient } from '@azure/keyvault-keys';
 import { SecretClient } from '@azure/keyvault-secrets';
 import { KeyStoreOptions, IKeyStore, KeyStoreListItem, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
@@ -41,6 +41,11 @@ export default class KeyStoreKeyVault implements IKeyStore {
     }
   }
 
+  private chacheId(keyReference: KeyReference): string {
+    const reference = keyReference.remoteKeyReference || keyReference.keyReference;
+    const id = `${keyReference.type}-${reference}-${this.vaultUri}`;
+    return id;
+  }
 
   /**
    * Returns the key container associated with the specified
@@ -48,10 +53,11 @@ export default class KeyStoreKeyVault implements IKeyStore {
    * @param keyIdentifier for which to return the key.
      * @param [options] Options for retrieving.
    */
-  public async get(keyReference: KeyReference, options: KeyStoreOptions = new KeyStoreOptions({ extractable: false })): Promise<any> {
+  public async get(keyReference: KeyReference, options: KeyStoreOptions = new KeyStoreOptions({ extractable: false })): Promise<KeyContainer> {
     try {
       const client = this.getKeyStoreClient(keyReference.type);
       const keyName = keyReference.remoteKeyReference || keyReference.keyReference;
+
       const versionList: any[] = [];
       if (keyReference.type === KeyStoreKeyVault.SECRETS) {
         // Get extractable secrets 

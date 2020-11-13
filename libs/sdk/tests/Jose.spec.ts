@@ -203,7 +203,6 @@ describe('Jose', () => {
             return;
         }
         const keyReference = new KeyReference(name, 'key');
-        cryptoKeyVault.builder.useSigningKeyReference(keyReference);
 
         try {
             for (let inx = 0; inx < 10; inx++) {
