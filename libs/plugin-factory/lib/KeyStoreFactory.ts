@@ -5,11 +5,14 @@
 import { TokenCredential } from '@azure/identity';
 import { CryptoError, IKeyStore, KeyStoreInMemory } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { KeyStoreKeyVault } from 'verifiablecredentials-crypto-sdk-typescript-plugin-keyvault';
+import LRUCache from 'lru-cache';
 
 /**
  * Key store factory
  */
 export default class KeyStoreFactory {
+
+  private static sessionCache: LRUCache<string, KeyStoreKeyVault> = new LRUCache<string, KeyStoreKeyVault>({ maxAge: 1000 * 24 * 3600, max: 10000, stale: true });
 
   /**
    * Create the key store instance
@@ -25,7 +28,15 @@ export default class KeyStoreFactory {
         if (!cache) {
           cache = new KeyStoreInMemory();
         }
-        return new KeyStoreKeyVault(credential!, vaultUri!, cache);
+        // Check for cached version
+        let keyStoreVault = KeyStoreFactory.sessionCache.get(vaultUri!);
+        if (keyStoreVault) {
+          return keyStoreVault;
+        }
+
+        keyStoreVault = new KeyStoreKeyVault(credential!, vaultUri!, cache);
+        KeyStoreFactory.sessionCache.set(vaultUri!, keyStoreVault);
+        return keyStoreVault;
       default:
         throw new CryptoError(<any>undefined, `Key store '${keyStoreName}' not found`);
     }

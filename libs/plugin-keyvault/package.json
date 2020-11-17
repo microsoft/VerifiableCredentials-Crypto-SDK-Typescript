@@ -1,6 +1,6 @@
 {
   "name": "verifiablecredentials-crypto-sdk-typescript-plugin-keyvault",
-  "version": "1.1.11-preview.7",
+  "version": "1.1.11-preview.8",
   "repository": {
     "type": "git",
     "url": "https://github.com/microsoft/VerifiableCredentials-Crypto-SDK-Typescript.git"
@@ -11,7 +11,8 @@
     "Verifiable Credentials",
     "DID",
     "crypto",
-    "keys"
+    "keys",
+    "Key Vault"
   ],
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -25,6 +26,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/jasmine": "^2.8.9",
+    "@types/lru-cache": "^5.1.0",
     "@types/node": "12.12.16",
     "adal-node": "^0.1.28",
     "eslint": "^6.2.1",
@@ -46,11 +48,12 @@
   "dependencies": {
     "@azure/identity": "1.0.0",
     "@azure/keyvault-keys": "4.0.2",
-    "@azure/keyvault-secrets": "4.0.2",
-    "verifiablecredentials-crypto-sdk-typescript-keys": "1.1.11-preview.7",
-    "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.11-preview.7",
-    "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.11-preview.7",
-    "verifiablecredentials-crypto-sdk-typescript-plugin-elliptic": "1.1.11-preview.7",
+    "@azure/keyvault-secrets": "4.0.2",    
+    "lru-cache": "6.0.0",
+    "verifiablecredentials-crypto-sdk-typescript-keys": "1.1.11-preview.8",
+    "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.11-preview.8",
+    "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.11-preview.8",
+    "verifiablecredentials-crypto-sdk-typescript-plugin-elliptic": "1.1.11-preview.8",
     "base64url": "3.0.1",
     "clone": "2.1.2",
     "webcrypto-core": "1.1.8"

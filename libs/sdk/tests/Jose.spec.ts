@@ -4,7 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ClientSecretCredential } from '@azure/identity';
-import { JoseBuilder, CryptoBuilder, IPayloadProtectionSigning, CryptographicKey, ProtectionFormat, Jose, KeyUse, KeyStoreOptions, JsonWebKey, KeyReference } from '../lib/index';
+import { JoseBuilder, Crypto, CryptoBuilder, IPayloadProtectionSigning, CryptographicKey, ProtectionFormat, Jose, KeyUse, KeyStoreOptions, JsonWebKey, KeyReference, KeyStoreKeyVault } from '../lib/index';
+import { KeyClient } from '@azure/keyvault-keys';
 import Credentials from './Credentials';
 
 describe('Jose', () => {
@@ -12,7 +13,7 @@ describe('Jose', () => {
 
     let originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
     beforeEach(async () => {
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000000;
     });
 
     afterEach(() => {
@@ -25,12 +26,14 @@ describe('Jose', () => {
 
     // Loop through these crypto factories. If no credentials for Key Vault are present, we skip key vault
     let factories = [cryptoNode];
+    let cryptoKeyVault: Crypto | undefined;
+
     //const alg = { name: 'ECDSA', namedCurve: 'secp256k1', hash: { name: 'SHA-256' } };
 
     if (Credentials.vaultUri.startsWith('https')) {
         const credentials = new ClientSecretCredential(Credentials.tenantGuid, Credentials.clientId, Credentials.clientSecret);
         const remote = 'remote-neo';
-        const cryptoKeyVault = new CryptoBuilder()
+        cryptoKeyVault = new CryptoBuilder()
             .useKeyVault(credentials, Credentials.vaultUri)
             .useSigningKeyReference(new KeyReference('neo', 'key', remote))
             .useDid('did')
@@ -145,7 +148,7 @@ describe('Jose', () => {
 
         let jose: IPayloadProtectionSigning = new JoseBuilder(crypto)
             .useJwtProtocol({ someProp: 1, jti: 'abc', exp: 1 })
-            .useUnprotectedHeader({ my: 'header'})
+            .useUnprotectedHeader({ my: 'header' })
             .build();
 
         jose = await jose.sign(payload);
@@ -190,4 +193,49 @@ describe('Jose', () => {
         expect(Jose.getProtectionFormat('JweGeneralJson')).toEqual(ProtectionFormat.JweGeneralJson);
         expect(() => Jose.getProtectionFormat('xxx')).toThrowError(`Format 'xxx' is not supported`);
     });
+
+
+    it('should check key vault performance', async () => {
+
+        const name = 'KvTest-Jose-performanceTest';
+        if (!cryptoKeyVault) {
+            console.log('Key vault is enabled. Add your credentials to Credentials.ts')
+            return;
+        }
+        const keyReference = new KeyReference(name, 'key');
+
+        try {
+            for (let inx = 0; inx < 10; inx++) {
+                const credentials = new ClientSecretCredential(Credentials.tenantGuid, Credentials.clientId, Credentials.clientSecret);
+                cryptoKeyVault = new CryptoBuilder()
+                    .useKeyVault(credentials, Credentials.vaultUri)
+                    .useSigningKeyReference(keyReference)
+                    .build();
+
+                let jose: IPayloadProtectionSigning = new JoseBuilder(cryptoKeyVault!).build();
+                //await cryptoKeyVault.generateKey(KeyUse.Signature);
+                let timer = Math.trunc(Date.now());
+                /*
+                console.log(`Iteration -----------> ${inx}. Start get timer: ${timer}`);
+                const key = await (await cryptoKeyVault!.builder.keyStore.get(new KeyReference(name, 'key)'), new KeyStoreOptions({ publicKeyOnly: true }))).getKey<JsonWebKey>();
+                const algorithm = <any>{
+                    name: 'ECDSA',
+                    namedCurve: 'secp256k1',
+                    kid: key.kid
+                };
+                //keyReference.cryptoKey = await cryptoKeyVault.builder.subtle.importKey('jwk', key, algorithm, true, ['sign', 'verify']);
+                
+                console.log(`Timer after get: ${Math.trunc(Date.now()) - timer} milliseconds`);
+                console.log(`Key: ${JSON.stringify(key)}`);
+                */
+                console.log(`Iteration -----------> ${inx}. Start sign timer: ${timer}`);
+                jose = await cryptoKeyVault!.signingProtocol('JWT').sign({ data: 'Go quick' });
+                console.log(`Timer after sign: ${Math.trunc(Date.now()) - timer} milliseconds`);
+            }
+
+        } finally {
+            //await (<KeyClient>(<KeyStoreKeyVault>cryptoKeyVault.builder.keyStore).getKeyStoreClient('key')).beginDeleteKey(name);
+        }
+    });
+
 });

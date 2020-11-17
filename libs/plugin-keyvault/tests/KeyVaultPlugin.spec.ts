@@ -74,7 +74,7 @@ describe('KeyVaultPlugin', () => {
     try {
       let keyReference = new KeyReference(name, 'key');
       let curve = 'P-256K';
-      let options: IKeyGenerationOptions = { keyReference, curve }; 
+      let options: IKeyGenerationOptions = { keyReference, curve };
       const result: CryptoKeyPair = await plugin.onGenerateKey(alg, false, ['sign'], options);
       expect((<any>result.publicKey).algorithm.namedCurve).toEqual('K-256');
       expect(result.publicKey.algorithm.name).toEqual('ECDSA');
@@ -96,7 +96,7 @@ describe('KeyVaultPlugin', () => {
 
       let keyReference = new KeyReference(name, 'key', remoteName);
       let curve = 'P-256K';
-      let options: IKeyGenerationOptions = { keyReference, curve }; 
+      let options: IKeyGenerationOptions = { keyReference, curve };
       const result: CryptoKeyPair = await plugin.onGenerateKey(alg, false, ['sign'], options);
       expect((<any>result.publicKey).algorithm.namedCurve).toEqual('K-256');
       expect(result.publicKey.algorithm.name).toEqual('ECDSA');
@@ -119,7 +119,7 @@ describe('KeyVaultPlugin', () => {
       const keyReference = new KeyReference(name, 'key', remoteName);
       const curve = 'P-256K';
       const alg = { name: 'ECDSA', namedCurve: 'secp256k1', hash: { name: 'SHA-256' } };
-      const keypair = await subtle.generateKey(alg, false, ['sign', 'verify'], { keyReference, curve});
+      const keypair = await subtle.generateKey(alg, false, ['sign', 'verify'], { keyReference, curve });
       const payload = Buffer.from('hello Houston');
       const signature = await subtle.sign(alg, keypair.publicKey, payload);
       expect(signature.byteLength).toEqual(64);
@@ -209,7 +209,7 @@ describe('KeyVaultPlugin', () => {
 
 
   it('should sign a message with imported key', async () => {
-   
+
     const name = 'KvTest-KeyStorePlugin-' + Math.random().toString(10).substr(2);
     const cache = new KeyStoreInMemory();
     const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
@@ -222,7 +222,7 @@ describe('KeyVaultPlugin', () => {
 
       // import reference key
       const keyReference = new KeyReference(name, 'key');
-      let cryptoKey: any = <CryptoKey>await subtle.generateKey(alg, true, ['sign'], {keyReference});
+      let cryptoKey: any = <CryptoKey>await subtle.generateKey(alg, true, ['sign'], { keyReference });
       let jwk: any = await subtle.exportKey('jwk', cryptoKey.privateKey);
       jwk.kid = name;
 
@@ -237,7 +237,7 @@ describe('KeyVaultPlugin', () => {
       // Set verify key
       const webCryptoAlg = clone(alg);
       webCryptoAlg.namedCurve = 'K-256';
-      jwk = (await cache.get(new KeyReference(name, 'key'), new KeyStoreOptions({publicKeyOnly: true}))).getKey<JsonWebKey>();
+      jwk = (await cache.get(new KeyReference(name, 'key'), new KeyStoreOptions({ publicKeyOnly: true }))).getKey<JsonWebKey>();
       cryptoKey = await subtle.importKey('jwk', jwk, webCryptoAlg, true, ['verify']);
       const result = await subtle.verify(webCryptoAlg, cryptoKey, signature, payload);
       expect(result).toBeTruthy();
@@ -247,7 +247,7 @@ describe('KeyVaultPlugin', () => {
     }
   });
 
-  it('should create a key pair', async() => {
+  it('should create a key pair', async () => {
     const key = {};
     const cache = new KeyStoreInMemory();
     const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
@@ -257,6 +257,36 @@ describe('KeyVaultPlugin', () => {
     expect(pair.publicKey.extractable).toBeTruthy;
     expect(pair.publicKey.type).toEqual('public');
     expect(pair.publicKey.usages).toEqual(['verify']);
+  });
+
+  it('should check performance', async () => {
+
+    const name = 'KvTest-KeyStorePlugin-performanceTest';
+    const cache = new KeyStoreInMemory();
+    const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+    const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
+    try {
+      const plugin = new KeyVaultEcdsaProvider(subtle, keyStore);
+
+      // Generate EC
+      let keyReference = new KeyReference(name, 'key');
+      let curve = 'P-256K';
+      let options: IKeyGenerationOptions = { keyReference, curve };
+      for (let inx = 0; inx < 1; inx++) {        
+        let result: any = await plugin.onGenerateKey(alg, false, ['sign'], options);
+        let timer = Math.trunc(Date.now());
+        console.log(`Iteration --> ${inx}. Start get timer: ${timer}`);
+        let keyContainer = await keyStore.get(keyReference);
+        console.log(`Timer after keyStore get - no version: ${Math.trunc(Date.now()) - timer} milliseconds`);
+        timer = Math.trunc(Date.now());
+        console.log(`Start sign timer: ${timer}`);
+        result = await plugin.onSign(alg, result.publicKey, Buffer.from('abcdef'));
+        console.log(`Timer after sign: ${Math.trunc(Date.now()) - timer} milliseconds`);
+      }
+
+    } finally {
+      await (<KeyClient>keyStore.getKeyStoreClient('key')).beginDeleteKey(name);
+    }
   });
 });
 

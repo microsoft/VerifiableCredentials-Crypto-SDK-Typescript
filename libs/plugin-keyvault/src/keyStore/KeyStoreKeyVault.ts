@@ -3,12 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ClientCertificateCredential, ClientSecretCredential, TokenCredential } from '@azure/identity';
+import { TokenCredential } from '@azure/identity';
 import { KeyClient, JsonWebKey, CryptographyClient } from '@azure/keyvault-keys';
 import { SecretClient } from '@azure/keyvault-secrets';
 import { KeyStoreOptions, IKeyStore, KeyStoreListItem, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { OkpPrivateKey, OkpPublicKey, RsaPublicKey, EcPublicKey, KeyType, OctKey, KeyContainer, CryptographicKey, EcPrivateKey, RsaPrivateKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import base64url from 'base64url';
+import LRUCache from 'lru-cache';
 const clone = require('clone');
   
 /**
@@ -22,6 +23,7 @@ export default class KeyStoreKeyVault implements IKeyStore {
   private keyClient: KeyClient;
   private secretClient: SecretClient;
 
+  private static keyCache: LRUCache<string, KeyContainer> = new LRUCache<string, KeyContainer>({ maxAge: 1000 * 24 * 3600, max: 10000, stale: true });
 
   /**
    * Create a new instance of @class KeyStoreKeyVault
@@ -41,6 +43,11 @@ export default class KeyStoreKeyVault implements IKeyStore {
     }
   }
 
+  private chacheId(keyReference: KeyReference, options: KeyStoreOptions, force?: string): string {
+    const reference = keyReference.remoteKeyReference || keyReference.keyReference;
+    const id = `${keyReference.type}-${reference}-${this.vaultUri}-${force || options.latestVersion}`;
+    return id;
+  }
 
   /**
    * Returns the key container associated with the specified
@@ -48,21 +55,20 @@ export default class KeyStoreKeyVault implements IKeyStore {
    * @param keyIdentifier for which to return the key.
      * @param [options] Options for retrieving.
    */
-  public async get(keyReference: KeyReference, options: KeyStoreOptions = new KeyStoreOptions({ extractable: false })): Promise<any> {
+  public async get(keyReference: KeyReference, options: KeyStoreOptions = new KeyStoreOptions()): Promise<KeyContainer> {
     try {
       const client = this.getKeyStoreClient(keyReference.type);
       const keyName = keyReference.remoteKeyReference || keyReference.keyReference;
+      
+      // Get cached key container
+      const id = this.chacheId(keyReference, options);
+      let keyContainer = KeyStoreKeyVault.keyCache.get(id);
+      if (keyContainer) {
+        return keyContainer;
+      }
+
       const versionList: any[] = [];
       if (keyReference.type === KeyStoreKeyVault.SECRETS) {
-        // Get extractable secrets 
-        // Check the cache first
-        try {
-          //const cached = await this.cache.get(keyReference, options);
-          //return cached;
-        } catch {
-          // the key was not in the cache
-          console.log(`${keyName} not found in cache`)
-        }
   
         const secretClient: SecretClient = <SecretClient>client;
         if (options.latestVersion || keyName.includes('/')) {
@@ -148,12 +154,12 @@ export default class KeyStoreKeyVault implements IKeyStore {
           }
         }
   
-        // cache the private key
+        // store the secret in the key store
         if (keyContainerItem && keyReference.type === KeyStoreKeyVault.SECRETS) {
           await this.cache.save(keyReference, keyContainerItem);
         }
       }
-  
+      
       if (!container) {
         throw new Error(`The secret with reference '${keyName}' has not usable secrets`);
       }
@@ -173,7 +179,7 @@ export default class KeyStoreKeyVault implements IKeyStore {
    * @param key being saved to the key store.
    * @param [options] Options for saving.
    */
-  async save(keyReference: KeyReference, key: CryptographicKey | string, _options: KeyStoreOptions = new KeyStoreOptions()): Promise<void> {
+  async save(keyReference: KeyReference, key: CryptographicKey | string, options: KeyStoreOptions = new KeyStoreOptions()): Promise<void> {
     if (!keyReference || !keyReference.keyReference) {
       throw new Error(`Key reference needs to be specified`);
     }
@@ -206,6 +212,12 @@ export default class KeyStoreKeyVault implements IKeyStore {
       // Save public key in cach
       await this.cache.save(keyReference, key);
     }
+    
+    // Remove from key cache
+    let id = this.chacheId(keyReference, options, 'true');
+    KeyStoreKeyVault.keyCache.del(id);
+    id = this.chacheId(keyReference, options, 'false');
+    KeyStoreKeyVault.keyCache.del(id);
   }
 
   /**

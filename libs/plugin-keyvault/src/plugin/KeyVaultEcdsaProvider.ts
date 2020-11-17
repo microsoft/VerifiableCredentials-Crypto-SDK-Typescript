@@ -165,13 +165,13 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
     });
 
     // convert key to crypto key
-    const cryptoKey: CryptoKey = await this.subtle.importKey(
+    const cryptoKey: any = await this.subtle.importKey(
       'jwk',
       jwk,
       alg,
       true,
       keyUsages);
-
+    
     // need to keep track of kid. cryptoKey is not extensible
     (<any>cryptoKey.algorithm).kid = jwk.kid;
 
