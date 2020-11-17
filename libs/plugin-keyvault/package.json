@@ -11,7 +11,8 @@
     "Verifiable Credentials",
     "DID",
     "crypto",
-    "keys"
+    "keys",
+    "Key Vault"
   ],
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -25,6 +26,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/jasmine": "^2.8.9",
+    "@types/lru-cache": "^5.1.0",
     "@types/node": "12.12.16",
     "adal-node": "^0.1.28",
     "eslint": "^6.2.1",
@@ -47,6 +49,7 @@
     "@azure/identity": "1.0.0",
     "@azure/keyvault-keys": "4.0.2",
     "@azure/keyvault-secrets": "4.0.2",    
+    "lru-cache": "6.0.0",
     "verifiablecredentials-crypto-sdk-typescript-keys": "1.1.11-preview.8",
     "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.11-preview.8",
     "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.11-preview.8",

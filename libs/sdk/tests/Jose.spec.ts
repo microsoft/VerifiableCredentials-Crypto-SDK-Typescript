@@ -195,7 +195,7 @@ describe('Jose', () => {
     });
 
 
-    fit('should check key vault performance', async () => {
+    it('should check key vault performance', async () => {
 
         const name = 'KvTest-Jose-performanceTest';
         if (!cryptoKeyVault) {
@@ -206,18 +206,16 @@ describe('Jose', () => {
 
         try {
             for (let inx = 0; inx < 10; inx++) {
-                /**/ 
                 const credentials = new ClientSecretCredential(Credentials.tenantGuid, Credentials.clientId, Credentials.clientSecret);
                 cryptoKeyVault = new CryptoBuilder()
                     .useKeyVault(credentials, Credentials.vaultUri)
                     .useSigningKeyReference(keyReference)
                     .build();
-                /**/
 
                 let jose: IPayloadProtectionSigning = new JoseBuilder(cryptoKeyVault!).build();
                 //await cryptoKeyVault.generateKey(KeyUse.Signature);
                 let timer = Math.trunc(Date.now());
-                /***
+                /*
                 console.log(`Iteration -----------> ${inx}. Start get timer: ${timer}`);
                 const key = await (await cryptoKeyVault!.builder.keyStore.get(new KeyReference(name, 'key)'), new KeyStoreOptions({ publicKeyOnly: true }))).getKey<JsonWebKey>();
                 const algorithm = <any>{
@@ -228,7 +226,8 @@ describe('Jose', () => {
                 //keyReference.cryptoKey = await cryptoKeyVault.builder.subtle.importKey('jwk', key, algorithm, true, ['sign', 'verify']);
                 
                 console.log(`Timer after get: ${Math.trunc(Date.now()) - timer} milliseconds`);
-                ***/
+                console.log(`Key: ${JSON.stringify(key)}`);
+                */
                 console.log(`Iteration -----------> ${inx}. Start sign timer: ${timer}`);
                 jose = await cryptoKeyVault!.signingProtocol('JWT').sign({ data: 'Go quick' });
                 console.log(`Timer after sign: ${Math.trunc(Date.now()) - timer} milliseconds`);

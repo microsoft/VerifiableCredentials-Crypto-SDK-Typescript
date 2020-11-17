@@ -171,7 +171,6 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
       alg,
       true,
       keyUsages);
-    cryptoKey.jwk = jwk;
     
     // need to keep track of kid. cryptoKey is not extensible
     (<any>cryptoKey.algorithm).kid = jwk.kid;

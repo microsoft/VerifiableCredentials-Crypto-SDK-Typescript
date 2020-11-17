@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@azure/identity": "1.0.0",
-    "lru-cache": "^5.1.1",
+    "lru-cache": "6.0.0",
     "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.11-preview.8",
     "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.11-preview.8",
     "verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites": "1.1.11-preview.8",

@@ -86,7 +86,7 @@ describe('KeyStoreKeyVault', () => {
       expect(key.keys.length).toEqual(1);
       console.log(`name: ${keyName}`);
       console.log(`${JSON.stringify(key.keys[0])}`);
-      const kidParts = key.keys[0].kid.split('/');
+      const kidParts = key.keys[0].kid!.split('/');
       expect(parts[parts.length - 1]).toEqual(kidParts[kidParts.length - 1]);
       expect((await cache.list())[name]).toBeDefined();
     } finally {

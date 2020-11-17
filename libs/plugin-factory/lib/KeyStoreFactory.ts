@@ -29,10 +29,6 @@ export default class KeyStoreFactory {
           cache = new KeyStoreInMemory();
         }
         // Check for cached version
-        if (!KeyStoreFactory.sessionCache) {
-          KeyStoreFactory.sessionCache = new LRUCache<string, KeyStoreKeyVault>({ maxAge: 1000 * 24 * 3600, max: 10000, stale: true })
-        }
-
         let keyStoreVault = KeyStoreFactory.sessionCache.get(vaultUri!);
         if (keyStoreVault) {
           return keyStoreVault;
