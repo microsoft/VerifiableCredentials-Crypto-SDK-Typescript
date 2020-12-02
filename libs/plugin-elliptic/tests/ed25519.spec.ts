@@ -6,7 +6,6 @@
 import { SubtleCryptoElliptic, EllipticCurveKey } from '../src/index';
 import base64url from 'base64url';
 import { Subtle } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
-import { isJWK } from 'webcrypto-core';
 
 
 const algGenerate = {
@@ -138,7 +137,7 @@ describe('ed25519 - EdDSA', () => {
     const signature = await crypto.sign(alg, key, referenceMessage);
     expect(base64url.encode(Buffer.from(signature))).toEqual('_9N24HjHV96A0vCJlkunCctJ44B-KN_BcBy3M2eX8LnFjFUPzb9w4Ek744HBj7H0arEK3uOgEzBCNzp-N8oJDA');
 
-    delete jwk.d;
+    delete (<any>jwk).d;
     key = await crypto.importKey('jwk', jwk, alg, true, ['sign', 'verify']);
     const result = await crypto.verify(alg, key, signature, referenceMessage);
     expect(result).toBeTruthy();

@@ -68,7 +68,7 @@ describe('SubtleCryptoExtension', () => {
     expect(result).toBeTruthy();
 
     // without DER
-    delete alg.format;
+    delete (<any>alg).format;
     signature = await subtle.signByKeyStore(alg, new KeyReference('key'), payload);
     expect(signature.byteLength).toBeLessThanOrEqual(64);
     result = await subtle.verifyByJwk(alg, publicKey, signature, payload);
