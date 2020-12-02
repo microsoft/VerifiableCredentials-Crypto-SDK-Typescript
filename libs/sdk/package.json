@@ -1,6 +1,6 @@
 {
   "name": "verifiablecredentials-crypto-sdk-typescript",
-  "version": "1.1.11-preview.8",
+  "version": "1.1.11",
   "repository": {
     "type": "git",
     "url": "https://github.com/microsoft/VerifiableCredentials-Crypto-SDK-Typescript.git"
@@ -14,7 +14,8 @@
     "JOSE",
     "JWE",
     "JWS",
-    "JWT"
+    "JWT",
+    "JSON-LD"
   ],
   "author": "Microsoft Corporation",
   "license": "MIT",
@@ -29,7 +30,7 @@
     "@types/jasmine": "^2.8.9",
     "@types/node": "14.6.2",
     "@types/uuid": "3.4.4",
-    "jasmine": "^3.6.2",
+    "jasmine": "3.6.3",
     "jasmine-reporters": "^2.3.2",
     "jasmine-spec-reporter": "^6.0.0",
     "jasmine-ts": "^0.3.0",
@@ -52,15 +53,15 @@
     "jsonld": "2.0.2",
     "typescript-map": "0.0.7",
     "uuid": "^8.3.1",
-    "verifiablecredentials-crypto-sdk-typescript-keys": "1.1.11-preview.8",
-    "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.11-preview.8",
-    "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.11-preview.8",
-    "verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites": "1.1.11-preview.8",
-    "verifiablecredentials-crypto-sdk-typescript-plugin-elliptic": "1.1.11-preview.8",
-    "verifiablecredentials-crypto-sdk-typescript-plugin-factory": "1.1.11-preview.8",
-    "verifiablecredentials-crypto-sdk-typescript-plugin-keyvault": "1.1.11-preview.8",
-    "verifiablecredentials-crypto-sdk-typescript-protocol-jose": "1.1.11-preview.8",
-    "verifiablecredentials-crypto-sdk-typescript-protocols-common": "1.1.11-preview.8",
+    "verifiablecredentials-crypto-sdk-typescript-keys": "1.1.11",
+    "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.11",
+    "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.11",
+    "verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites": "1.1.11",
+    "verifiablecredentials-crypto-sdk-typescript-plugin-elliptic": "1.1.11",
+    "verifiablecredentials-crypto-sdk-typescript-plugin-factory": "1.1.11",
+    "verifiablecredentials-crypto-sdk-typescript-plugin-keyvault": "1.1.11",
+    "verifiablecredentials-crypto-sdk-typescript-protocol-jose": "1.1.11",
+    "verifiablecredentials-crypto-sdk-typescript-protocols-common": "1.1.11",
     "webcrypto-core": "1.1.8"
   },
   "nyc": {
