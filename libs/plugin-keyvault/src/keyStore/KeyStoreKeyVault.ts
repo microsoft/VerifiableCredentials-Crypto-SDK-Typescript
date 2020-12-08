@@ -91,7 +91,6 @@ export default class KeyStoreKeyVault implements IKeyStore {
               (<any>secret).keyType = (<any>secret.value).kty;
             } catch {
               // no key container in secret
-              Logger.log(`parsing of versions of key from keyvault failed: ${keyName}`);
             }
   
             versionList.push(secret);
