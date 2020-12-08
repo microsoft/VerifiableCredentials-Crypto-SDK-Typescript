@@ -1,3 +1,8 @@
+# version 1.1.12-preview.0
+## Remove all console.log calls from the SDK
+**Type of change:** engineering    
+**Customer impact:** low
+
 # version 1.1.11
 ## Support for json-ld proofs
 **Type of change:** new feature    
