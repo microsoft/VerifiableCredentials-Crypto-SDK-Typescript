@@ -1,6 +1,6 @@
 {
   "name": "verifiablecredentials-crypto-sdk-typescript",
-  "version": "1.1.11",
+  "version": "1.1.12-preview.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/microsoft/VerifiableCredentials-Crypto-SDK-Typescript.git"
@@ -53,15 +53,15 @@
     "jsonld": "2.0.2",
     "typescript-map": "0.0.7",
     "uuid": "^8.3.1",
-    "verifiablecredentials-crypto-sdk-typescript-keys": "1.1.11",
-    "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.11",
-    "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.11",
-    "verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites": "1.1.11",
-    "verifiablecredentials-crypto-sdk-typescript-plugin-elliptic": "1.1.11",
-    "verifiablecredentials-crypto-sdk-typescript-plugin-factory": "1.1.11",
-    "verifiablecredentials-crypto-sdk-typescript-plugin-keyvault": "1.1.11",
-    "verifiablecredentials-crypto-sdk-typescript-protocol-jose": "1.1.11",
-    "verifiablecredentials-crypto-sdk-typescript-protocols-common": "1.1.11",
+    "verifiablecredentials-crypto-sdk-typescript-keys": "1.1.12-preview.0",
+    "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.12-preview.0",
+    "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.12-preview.0",
+    "verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites": "1.1.12-preview.0",
+    "verifiablecredentials-crypto-sdk-typescript-plugin-elliptic": "1.1.12-preview.0",
+    "verifiablecredentials-crypto-sdk-typescript-plugin-factory": "1.1.12-preview.0",
+    "verifiablecredentials-crypto-sdk-typescript-plugin-keyvault": "1.1.12-preview.0",
+    "verifiablecredentials-crypto-sdk-typescript-protocol-jose": "1.1.12-preview.0",
+    "verifiablecredentials-crypto-sdk-typescript-protocols-common": "1.1.12-preview.0",
     "webcrypto-core": "1.1.8"
   },
   "nyc": {

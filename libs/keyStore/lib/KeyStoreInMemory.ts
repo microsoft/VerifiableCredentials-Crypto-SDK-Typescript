@@ -97,7 +97,6 @@ export default class KeyStoreInMemory implements IKeyStore {
    */
   save(keyIdentifier: KeyReference, key: CryptographicKey | string, _options: KeyStoreOptions = new KeyStoreOptions()): Promise<void> {
     //todo serialization of the key needs to happen in here if key is string than create a oct key of it
-    console.log(`Store ${keyIdentifier.keyReference}`);
     if (typeof key === 'string') {
       key = new OctKey(base64url.encode(<string>key));
     }

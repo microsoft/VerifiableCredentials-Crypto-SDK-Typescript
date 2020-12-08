@@ -59,7 +59,6 @@ export default class Jose implements IPayloadProtectionSigning {
   public async sign(payload: Buffer | object): Promise<IPayloadProtectionSigning> {
     if (this.builder.isJsonLdProofsProtocol()) {
       // Support json ld proofs
-      console.log('Support JSON LD proofs');
       if (typeof payload === 'string' || payload instanceof Buffer) {
         return Promise.reject(new Error(`Input to sign JSON LD must be an object`));
       }
@@ -73,7 +72,6 @@ export default class Jose implements IPayloadProtectionSigning {
 
       this._jsonLdProofObject = await suite.sign(payload);
       this._jsonLdProofSuite = suite;
-      console.log(`JSON LD Proof: ${this._jsonLdProofObject}`);
       return this;
     } 
 
