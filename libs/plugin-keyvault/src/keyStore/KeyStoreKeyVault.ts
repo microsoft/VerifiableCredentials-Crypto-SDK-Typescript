@@ -79,7 +79,6 @@ export default class KeyStoreKeyVault implements IKeyStore {
             (<any>secret).keyType = (<any>secret.value).kty;
           } catch (e) {
             // no key container in secret
-            console.log(`parsing of latest version of key from keyvault failed: ${keyName}`);
           }
   
           versionList.push(secret);
@@ -92,7 +91,7 @@ export default class KeyStoreKeyVault implements IKeyStore {
               (<any>secret).keyType = (<any>secret.value).kty;
             } catch {
               // no key container in secret
-              console.log(`parsing of versions of key from keyvault failed: ${keyName}`);
+              Logger.log(`parsing of versions of key from keyvault failed: ${keyName}`);
             }
   
             versionList.push(secret);
