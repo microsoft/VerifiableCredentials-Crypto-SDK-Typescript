@@ -36,9 +36,9 @@ export default class CryptoHelpers {
       case 'SHA-384':
       case 'SHA-512':
         return cryptoFactory.getMessageDigest(jwa, scope, keyReference);
-    }
-
-    throw new Error(`Algorithm '${JSON.stringify(algorithm)}' is not supported`);
+      default:
+        throw new Error(`Algorithm '${JSON.stringify(algorithm)}' is not supported. Should be unreachable`);
+      }
   }
 
   /**
@@ -82,7 +82,7 @@ export default class CryptoHelpers {
         return { name: 'HMAC', hash: { name: `SHA-${jwa.toUpperCase().replace('HS', '')}` } };
     }
 
-    throw new Error(`Algorithm ${JSON.stringify(jwa)} is not supported`);
+    throw new Error(`Algorithm '${jwa}' is not supported`);
   }
 
   /**
@@ -105,7 +105,7 @@ export default class CryptoHelpers {
         return `RSA-OAEP-256`;
       case 'AES-GCM':
         const length = algorithm.length || 128;
-        return `A${length}GCMKW`;
+        return `A${length}GCM`;
 
       case 'HMAC':
         return `HS256`;

@@ -40,11 +40,15 @@ describe('KeyStoreInMemory', () => {
       y: 'AAEE',
       alg: 'ECDSA'
     };
+
+    let list = await keyStore.list();
+    expect(list).toEqual({});
+
     await keyStore.save(new KeyReference('1'), key1);
     await keyStore.save(new KeyReference('1'), key2);
     await keyStore.save(new KeyReference('2'), <PublicKey>key3);
     await keyStore.save(new KeyReference('3'), <PublicKey>key4);
-    let list = await keyStore.list();
+    list = await keyStore.list();
 
     // tslint:disable-next-line: no-backbone-get-set-outside-model
     expect(list['1'].kids.length).toEqual(2);
