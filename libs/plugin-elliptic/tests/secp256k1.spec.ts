@@ -6,6 +6,7 @@
 import SubtleCryptoElliptic from '../src/SubtleCryptoElliptic';
 import EllipticCurveKey from '../src/EllipticCurveKey';
 import { Subtle } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
+import EllipticEcDsaProvider from '../src/EllipticEcDsaProvider';
   // tslint:disable:mocha-no-side-effect-code
 const EC = require('elliptic').ec;
 
@@ -124,4 +125,45 @@ describe('secp256k1 - ECDSA', () => {
       });
     expect(throws).toEqual(true);
   });
+
+  it('should instantiate EllipticEcDsaProvider', () => {
+    const ellipticEcDsaProvider = new EllipticEcDsaProvider(crypto);
+    expect(ellipticEcDsaProvider.getCurve('SECP256K1')).toBeDefined();
+    expect(() => ellipticEcDsaProvider.getCurve('EdDSA')).toThrowError(`The requested curve 'EdDSA' is not supported in EllipticEcDsaProvider`);
+  });
+
+  it('should generate key in EllipticEcDsaProvider', async () => {
+    const ellipticEcDsaProvider = new EllipticEcDsaProvider(crypto);
+    const ec = ellipticEcDsaProvider.getCurve('SECP256K1');
+    const keyPair = ec.genKeyPair();
+    const genKeyPairSpy: jasmine.Spy = spyOn(ec, 'genKeyPair').and.callFake(() => {
+      delete keyPair.pub;
+      return keyPair;
+    });
+    const algGenerate = {
+      name: 'ECDSA',
+      namedCurve: 'secp256k1'
+    };
+    expect((<CryptoKeyPair>await ellipticEcDsaProvider.generateKey(algGenerate, true, ['sign'])).privateKey).toBeDefined();
+    
+    genKeyPairSpy.and.callFake(() => {
+      keyPair.pub = keyPair.getPublic();
+      return keyPair;
+    });
+    expect((<CryptoKeyPair>await ellipticEcDsaProvider.generateKey(algGenerate, true, ['sign'])).privateKey).toBeDefined();
+  });
+
+  it('should sign/verify in EllipticEcDsaProvider', async () => {
+    const ellipticEcDsaProvider = new EllipticEcDsaProvider(crypto);
+    let algGenerate: any = {
+      name: 'ECDSA',
+      namedCurve: 'secp256k1',
+      hash: undefined
+    };
+    const keyPair = (<CryptoKeyPair>await ellipticEcDsaProvider.generateKey(algGenerate, true, ['sign', 'verify']));
+    let signature = await ellipticEcDsaProvider.sign(algGenerate, keyPair.privateKey, new Uint8Array([1, 2, 3]));
+    expect(signature).toBeDefined();
+    expect(await ellipticEcDsaProvider.verify(algGenerate, keyPair.publicKey, signature, new Uint8Array([1, 2, 3])));
+  });
+  
 });

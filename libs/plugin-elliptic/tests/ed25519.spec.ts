@@ -6,6 +6,7 @@
 import { SubtleCryptoElliptic, EllipticCurveKey } from '../src/index';
 import base64url from 'base64url';
 import { Subtle } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
+import EllipticEdDsaProvider from '../src/EllipticEdDsaProvider';
 
 
 const algGenerate = {
@@ -289,4 +290,11 @@ describe('ed25519 - EdDSA', () => {
       });
     expect(throws).toEqual(true);
   });
+
+  it('should instantiate EllipticEdDsaProvider', () => {
+    const ellipticEdDsaProvider = new EllipticEdDsaProvider(crypto);
+    expect(ellipticEdDsaProvider.getCurve('ed25519')).toBeDefined();
+    expect(() => ellipticEdDsaProvider.getCurve('SECP256K1')).toThrowError(`The requested curve 'SECP256K1' is not supported in EllipticEcDsaProvider`);
+  });
+
 });

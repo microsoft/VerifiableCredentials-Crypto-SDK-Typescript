@@ -21,12 +21,6 @@ export default class SubtleCryptoElliptic extends SubtleCrypto implements ISubtl
     this.providers.set(<ProviderCrypto>new EllipticEcDsaProvider(crypto));
     this.providers.set(new EllipticEdDsaProvider(crypto));
   }
-
-  checkRequiredArguments(args: any[], size: number, methodName: string) {
-    if (methodName !== 'generateKey' && args.length !== size) {
-      throw new TypeError(`Failed to execute '${methodName}' on 'SubtleCrypto': ${size} arguments required, but only ${args.length} present`);
-    }
-  }
   
   /**
    * Returns the @class SubtleCrypto implementation for the nodes environment
