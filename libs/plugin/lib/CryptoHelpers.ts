@@ -91,7 +91,7 @@ export default class CryptoHelpers {
    * @param hash Optional hash for the algorithm
    */
   public static webCryptoToJwa(algorithm: any): string {
-    const hash: string = algorithm.hash || algorithm.name || 'SHA-256';
+    const hash: string = algorithm.hash || algorithm.name;
     switch (algorithm.name.toUpperCase()) {
       case 'RSASSA-PKCS1-V1_5':
         return `RS${CryptoHelpers.getHash(hash)}`;
@@ -124,7 +124,7 @@ export default class CryptoHelpers {
    * @param algorithm used for signature
    */
   public static getKeyImportAlgorithm(algorithm: CryptoAlgorithm, jwk: PublicKey | JsonWebKey): string | RsaHashedImportParams | EcKeyImportParams | HmacImportParams | DhImportKeyParams {
-    const hash = (<any>algorithm).hash || (<any>algorithm).name || 'SHA-256';
+    const hash = (<any>algorithm).hash || (<any>algorithm).name;
     const name = algorithm.name;
     switch (algorithm.name.toUpperCase()) {
       case 'RSASSA-PKCS1-V1_5':

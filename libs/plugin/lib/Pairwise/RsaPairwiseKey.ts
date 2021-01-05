@@ -35,7 +35,7 @@ type PrimeDelegate = Array<(cryptoFactory: CryptoFactory, inx: number, key: Buff
     // This method is currently breaking the subtle crypto pattern and needs to be fixed to be platform independent
  
     // Set the key size
-    const keySize = algorithm.modulusLength || 1024;
+    const keySize = algorithm.modulusLength || 2048;
 
     // Get deterministic base number for p
     const peerIdBuffer = Buffer.from(peerId);

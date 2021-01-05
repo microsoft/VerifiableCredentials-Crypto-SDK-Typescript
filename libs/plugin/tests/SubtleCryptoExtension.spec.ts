@@ -5,7 +5,7 @@
 import { SubtleCryptoNode, CryptoFactory, CryptoFactoryScope, CryptoHelpers, SubtleCryptoExtension } from '../lib';
 import { KeyStoreInMemory, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import EcPrivateKey from 'verifiablecredentials-crypto-sdk-typescript-keys/dist/lib/ec/EcPrivateKey';
-import { PublicKey, JsonWebKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
+import { PublicKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import base64url from 'base64url';
 const clone = require('clone');
 
@@ -335,7 +335,7 @@ describe('SubtleCryptoExtension', () => {
       // roundtrip back to R||S
       const derArray = new Uint8Array(der);
       const roundtripRS = SubtleCryptoExtension.fromDer(derArray);
-      const r = SubtleCryptoExtension.toPaddedNumber(roundtripRS[0]);
+      const r = SubtleCryptoExtension.toPaddedNumber(roundtripRS[0], 32);
       const s = SubtleCryptoExtension.toPaddedNumber(roundtripRS[1]);
       const rsHex = Buffer.from(r).toString('hex').toUpperCase() + Buffer.from(s).toString('hex').toUpperCase();
       expect(rsHex).toEqual(scenario.rs, scenario.scenario + " back to R||S");
