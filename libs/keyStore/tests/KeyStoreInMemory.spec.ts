@@ -44,6 +44,10 @@ describe('KeyStoreInMemory', () => {
     let list = await keyStore.list();
     expect(list).toEqual({});
 
+    (<any>keyStore).store = new Map<string, any>();
+    (<any>keyStore).store.set('1', undefined);
+    expect(await keyStore.list()).toEqual({});
+
     await keyStore.save(new KeyReference('1'), key1);
     await keyStore.save(new KeyReference('1'), key2);
     await keyStore.save(new KeyReference('2'), <PublicKey>key3);
