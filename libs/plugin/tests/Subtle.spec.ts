@@ -21,6 +21,8 @@ describe('Subtle', () => {
         expect(subtle.algorithmTransform(alg)).toEqual({ crv: 'K-256' });
         alg = { crv: 'SECP256K1' };
         expect(subtle.algorithmTransform(alg)).toEqual({ crv: 'K-256' });
+        alg = { crv: 'XXX' };
+        expect(subtle.algorithmTransform(alg)).toEqual({ crv: 'XXX' });
     });
     it('should test keyImportTransform', () => {
         let subtle: any = new Subtle();

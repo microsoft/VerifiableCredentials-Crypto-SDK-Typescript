@@ -95,4 +95,7 @@ describe('CryptoHelpers', () => {
         // Negative cases
         expect(() => CryptoHelpers.getKeyImportAlgorithm(<any>{ name: 'SHA-1'}, jwk)).toThrowError(`Algorithm '{"name":"SHA-1"}' is not supported`);
     });
+    it('should test getHash', () => {
+        expect((<any>CryptoHelpers).getHash({'test': ''})).toEqual('256');
+    })
 });

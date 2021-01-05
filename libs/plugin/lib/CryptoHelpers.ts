@@ -151,7 +151,7 @@ export default class CryptoHelpers {
     if (hash.name) {
       return (hash.name).toUpperCase().replace('SHA-', '');
     }
-    return (hash || 'SHA-256').toUpperCase().replace('SHA-', '');
+    return '256';
   }
 
   private static getRegexMatch(matches: RegExpExecArray, index: number): string {
