@@ -52,7 +52,7 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
 
     const kid = (<any>key.algorithm).kid;
     if (!kid) {
-      throw new CryptoError(algorithm, 'Missing kid in algortihm');
+      return Promise.reject(new CryptoError(algorithm, 'Missing kid in algortihm'));
     }
 
     const client = (<KeyStoreKeyVault>this.keyStore).getCryptoClient(kid);
@@ -65,7 +65,7 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
         // Added for legacy. Used by keys generated with crv: SECP256K1
         signature = await client.sign(<any>'ECDSA256', new Uint8Array(hash));
       } else {
-        throw exception;
+        return Promise.reject(exception);
       }
     }
 
@@ -85,28 +85,28 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
     jwk: JsonWebKey, _algorithm: EcKeyImportParams, _extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKey> {
 
     if (format !== 'jwk') {
-      throw new Error(`Import key only supports jwk`);
+      return Promise.reject(new Error(`Import key only supports jwk`));
     }
 
     if (jwk.kty?.toUpperCase() !== 'EC') {
-      throw new Error(`Import key only supports kty EC`);
+      return Promise.reject(new Error(`Import key only supports kty EC`));
     }
 
     if (jwk.crv?.toUpperCase() === 'SECP256K1') {
       jwk.crv = 'P-256K';
     } else if (jwk.crv?.toUpperCase() !== 'P-256K') {
-      throw new Error(`Import key only supports crv P-256K`);
+      return Promise.reject(new Error(`Import key only supports crv P-256K`));
     }
 
-    if (!jwk.kid && jwk.kid!.startsWith('https://')) {
-      throw new Error(`Imported key must have a kid in the format https://<vault>/keys/<name>/<version>`);
+    if (!(jwk.kid && jwk.kid.startsWith('https://'))) {
+      return Promise.reject(new Error(`Imported key must have a kid in the format https://<vault>/keys/<name>/<version>`));
     }
 
     const kidParts = jwk.kid!.split('/');
     let secretType: boolean = kidParts[3] === 'secrets';
 
-    if (!['keys', 'secrets'].includes(kidParts[3])) {
-      throw new Error(`Imported key must be of type keys or secrets`);
+    if (!(kidParts.length >= 5 && ['keys', 'secrets'].includes(kidParts[3]))) {
+      return Promise.reject(new Error(`Imported key must be of type keys or secrets`));
     }
 
     if (kidParts.length <= 5) {
@@ -189,8 +189,13 @@ export default class KeyVaultEcdsaProvider extends KeyVaultProvider {
    */
   async onExportKey(format: KeyFormat, key: CryptoKey): Promise<JsonWebKey> {
     if (format !== 'jwk') {
-      throw new Error(`Export key only supports jwk`);
+      return Promise.reject(new Error(`Export key only supports jwk`));
     }
-    return <Promise<JsonWebKey>>this.subtle.exportKey(format, key);
+
+    const jwk: any = await this.subtle.exportKey(format, key);
+    if (!jwk.kid) {
+      jwk.kid = (<any>key.algorithm).kid;
+    }
+    return <Promise<JsonWebKey>>jwk;
   }
 }

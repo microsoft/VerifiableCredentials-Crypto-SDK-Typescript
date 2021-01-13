@@ -135,7 +135,7 @@ export default class KeyStoreKeyVault implements IKeyStore {
               keyContainerItem = options.publicKeyOnly ?
                 new RsaPublicKey(version.key ? version.key : version.value as any) : new RsaPrivateKey(version.key ? version.key : version.value as any);
             } else {
-              throw new Error(`Non supported key type ${kty}`);
+              return Promise.reject(new Error(`Non supported key type ${kty}`));
             }
           } else {
             if (kty === 'EC') {
@@ -159,15 +159,14 @@ export default class KeyStoreKeyVault implements IKeyStore {
       }
       
       if (!container) {
-        throw new Error(`The secret with reference '${keyName}' has not usable secrets`);
+        return Promise.reject(new Error(`The secret with reference '${keyName}' has not usable secrets`));
       }
   
       return container;
       } catch (e) {
         console.error(`Could not retrieve ${JSON.stringify(keyReference)}. Error: ${e}`);
-        throw e;
+        return Promise.reject(e);
     }
-
   }
 
   /**
@@ -179,7 +178,7 @@ export default class KeyStoreKeyVault implements IKeyStore {
    */
   async save(keyReference: KeyReference, key: CryptographicKey | string, options: KeyStoreOptions = new KeyStoreOptions()): Promise<void> {
     if (!keyReference || !keyReference.keyReference) {
-      throw new Error(`Key reference needs to be specified`);
+      return Promise.reject(new Error(`Key reference needs to be specified`));
     }
     const keyName = keyReference.remoteKeyReference || keyReference.keyReference;
 
