@@ -35,8 +35,6 @@ describe('JwsToken', () => {
 
     expect(jwsToken.serialize()).toBeDefined();
     expect(jwsToken.serialize(ProtectionFormat.JwsGeneralJson)).toBeDefined();
-    expect(jwsToken.serialize(ProtectionFormat.JwsFlatJson)).toBeDefined();
-    expect(jwsToken.serialize(ProtectionFormat.JwsCompactJson)).toBeDefined();
     
     // negative cases
     expect(() => jwsToken.serialize(<any>'aaa')).toThrow(new CryptoProtocolError(JoseConstants.Jws,`The format 'JwsGeneralJson' is not supported`));
