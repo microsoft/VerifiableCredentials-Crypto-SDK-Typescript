@@ -443,7 +443,7 @@ export default class JweToken implements IJweGeneralJson {
       let keyEncryptionAlgorithm: string  | undefined = publicKey.alg;
       if (!keyEncryptionAlgorithm) {
         if (publicKey.kty == KeyType.EC) {
-          throw new Error('EC encryption not implemented');
+          return Promise.reject(new Error('EC encryption not implemented'));
         } else {
           // Default RSA algorithm
           keyEncryptionAlgorithm = JoseConstants.RsaOaep256;
@@ -553,7 +553,7 @@ export default class JweToken implements IJweGeneralJson {
   }
 
   if (!contentEncryptionKey) {
-    throw new CryptoProtocolError(JoseConstants.Jwe, 'Cannot decrypt the content encryption key because of missing key');
+    return Promise.reject(new CryptoProtocolError(JoseConstants.Jwe, 'Cannot decrypt the content encryption key because of missing key'));
   }
 
   // Decrypt content
