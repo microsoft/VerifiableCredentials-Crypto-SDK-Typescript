@@ -50,7 +50,7 @@ import EcPairwiseKey from "./EcPairwiseKey";
         return RsaPairwiseKey.generate(this.cryptoFactory, personaMasterKey, <RsaHashedKeyGenParams>algorithm, peerId);
     
       default:
-        throw new CryptoError(algorithm, `Pairwise key for type '${keyType}' is not supported.`);
+        return Promise.reject(new CryptoError(algorithm, `Pairwise key for type '${keyType}' is not supported.`));
     }
   } 
 
