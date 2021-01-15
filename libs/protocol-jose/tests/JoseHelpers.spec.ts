@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { JoseHelpers } from "../lib/index";
 import { CryptoProtocolError } from 'verifiablecredentials-crypto-sdk-typescript-protocols-common';
-import { KeyType } from 'verifiablecredentials-crypto-sdk-typescript-keys';
+import { JoseConstants, KeyType, KeyUse } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import { TSMap } from 'typescript-map';
 
 describe('JoseHelpers', () => {
@@ -46,9 +46,21 @@ describe('JoseHelpers', () => {
   it(`should return the key type for 'EC' via JWA`, () => {
     expect(JoseHelpers.createTypeViaJwa('ES256K')).toEqual(KeyType.EC);
   });
-  
+
   it(`should return the key type for 'RSA' via JWA`, () => {
     expect(JoseHelpers.createTypeViaJwa('RS256')).toEqual(KeyType.RSA);
   });
-  
+
+  it('should create use via jwa', () => {
+    expect(JoseHelpers.createUseViaJwa(JoseConstants.Rs256)).toEqual(KeyUse.Signature);
+    expect(JoseHelpers.createUseViaJwa(JoseConstants.Rs384)).toEqual(KeyUse.Signature);
+    expect(JoseHelpers.createUseViaJwa(JoseConstants.Rs512)).toEqual(KeyUse.Signature);
+    expect(JoseHelpers.createUseViaJwa(JoseConstants.RsaOaep)).toEqual(KeyUse.Encryption);
+    expect(JoseHelpers.createUseViaJwa(JoseConstants.Es256K)).toEqual(KeyUse.Signature);
+    expect(JoseHelpers.createUseViaJwa('EdDSA')).toEqual(KeyUse.Signature);
+
+    expect(() => JoseHelpers.createUseViaJwa(JoseConstants.AesGcm128)).toThrowError(`The algorithm 'AES-GCM' is not supported`);
+    expect(() => JoseHelpers.createUseViaJwa(JoseConstants.AesGcm192)).toThrowError(`The algorithm 'AES-GCM' is not supported`);
+    expect(() => JoseHelpers.createUseViaJwa(JoseConstants.AesGcm256)).toThrowError(`The algorithm 'AES-GCM' is not supported`);
+  })
 });

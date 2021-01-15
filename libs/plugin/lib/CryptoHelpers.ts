@@ -36,9 +36,9 @@ export default class CryptoHelpers {
       case 'SHA-384':
       case 'SHA-512':
         return cryptoFactory.getMessageDigest(jwa, scope, keyReference);
-    }
-
-    throw new Error(`Algorithm '${JSON.stringify(algorithm)}' is not supported`);
+      default:
+        throw new Error(`Algorithm '${JSON.stringify(algorithm)}' is not supported. Should be unreachable`);
+      }
   }
 
   /**
@@ -82,7 +82,7 @@ export default class CryptoHelpers {
         return { name: 'HMAC', hash: { name: `SHA-${jwa.toUpperCase().replace('HS', '')}` } };
     }
 
-    throw new Error(`Algorithm ${JSON.stringify(jwa)} is not supported`);
+    throw new Error(`Algorithm '${jwa}' is not supported`);
   }
 
   /**
@@ -91,7 +91,7 @@ export default class CryptoHelpers {
    * @param hash Optional hash for the algorithm
    */
   public static webCryptoToJwa(algorithm: any): string {
-    const hash: string = algorithm.hash || algorithm.name || 'SHA-256';
+    const hash: string = algorithm.hash || algorithm.name;
     switch (algorithm.name.toUpperCase()) {
       case 'RSASSA-PKCS1-V1_5':
         return `RS${CryptoHelpers.getHash(hash)}`;
@@ -105,7 +105,7 @@ export default class CryptoHelpers {
         return `RSA-OAEP-256`;
       case 'AES-GCM':
         const length = algorithm.length || 128;
-        return `A${length}GCMKW`;
+        return `A${length}GCM`;
 
       case 'HMAC':
         return `HS256`;
@@ -124,7 +124,7 @@ export default class CryptoHelpers {
    * @param algorithm used for signature
    */
   public static getKeyImportAlgorithm(algorithm: CryptoAlgorithm, jwk: PublicKey | JsonWebKey): string | RsaHashedImportParams | EcKeyImportParams | HmacImportParams | DhImportKeyParams {
-    const hash = (<any>algorithm).hash || (<any>algorithm).name || 'SHA-256';
+    const hash = (<any>algorithm).hash || (<any>algorithm).name;
     const name = algorithm.name;
     switch (algorithm.name.toUpperCase()) {
       case 'RSASSA-PKCS1-V1_5':
@@ -151,7 +151,7 @@ export default class CryptoHelpers {
     if (hash.name) {
       return (hash.name).toUpperCase().replace('SHA-', '');
     }
-    return (hash || 'SHA-256').toUpperCase().replace('SHA-', '');
+    return '256';
   }
 
   private static getRegexMatch(matches: RegExpExecArray, index: number): string {

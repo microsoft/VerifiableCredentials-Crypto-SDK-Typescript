@@ -20,11 +20,11 @@ export default class LongFormDid {
     // See https://github.com/diafygi/webcrypto-examples for examples how to use the W3C web Crypto stamdard
 
     if (!this.crypto.builder.signingKeyReference) {
-      throw new Error(`No signing key reference. Use CryptoBuilder.useSigningKeyReference.`)
+      return Promise.reject(new Error(`No signing key reference. Use CryptoBuilder.useSigningKeyReference.`));
     }
 
     if (!this.crypto.builder.recoveryKeyReference) {
-      throw new Error(`No recovery key reference. Use CryptoBuilder.useRecoveryKeyReference.`)
+      return Promise.reject(new Error(`No recovery key reference. Use CryptoBuilder.useRecoveryKeyReference.`));
     }
 
     let signingPublic = await (await this.crypto.builder.keyStore.get(this.crypto.builder.signingKeyReference, new KeyStoreOptions({publicKeyOnly: true}))).getKey<JsonWebKey>(); 

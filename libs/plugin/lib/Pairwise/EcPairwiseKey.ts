@@ -46,7 +46,7 @@ const SUPPORTED_CURVES = ['K-256', 'P-256K', 'secp256k1', 'ed25519'];
     const pairwiseKeySeed = await crypto.sign(alg, key, Buffer.from(peerId));
  
     if (SUPPORTED_CURVES.indexOf(algorithm.namedCurve) === -1) {
-      throw new CryptoError(algorithm, `Curve ${algorithm.namedCurve} is not supported`);
+      return Promise.reject(new CryptoError(algorithm, `Curve ${algorithm.namedCurve} is not supported`));
     }
     
     let privateKey = new BN(Buffer.from(pairwiseKeySeed));

@@ -24,7 +24,7 @@ import { ISubtleCrypto } from './index';
     // tslint:disable-next-line:no-typeof-undefined
     if (typeof window !== 'undefined') {
      // return browser api
-     return <SubtleCrypto>window.crypto.subtle;
+     return <SubtleCrypto>(window.crypto?.subtle);
     }
     
     throw new CryptoError(<any>{}, 'window is not defined. Must be defined in browser.')  

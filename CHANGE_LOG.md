@@ -1,3 +1,16 @@
+# version 1.1.12-preview.1
+## Keyvault exportKey did not add the kid in the jwk.
+**Type of change:** engineering    
+**Customer impact:** low
+
+## async functions no longer throw but reject an Error
+**Type of change:** engineering    
+**Customer impact:** low
+
+## Round one to come to 100% line coverage.
+**Type of change:** engineering    
+**Customer impact:** low
+
 # version 1.1.12-preview.0
 ## Remove all console.log calls from the SDK
 **Type of change:** engineering    
