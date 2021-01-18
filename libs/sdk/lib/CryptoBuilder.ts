@@ -17,6 +17,10 @@ export default class CryptoBuilder {
     publicKeyOnly: false,  // get private key, key vault only returns public key
     latestVersion: true    // take last version of the key
   };
+  private _updateKeyOptions: KeyStoreOptions = {
+    publicKeyOnly: false,  // get private key, key vault only returns public key
+    latestVersion: true    // take last version of the key
+  };
   private _signingKeyOptions: KeyStoreOptions = {
     publicKeyOnly: false,  // get private key, key vault only returns public key
     latestVersion: true    // take last version of the key
@@ -24,11 +28,14 @@ export default class CryptoBuilder {
   
   private _signingAlgorithm: string = 'ES256K';
   private _recoveryAlgorithm: string = 'ES256K';
+  private _updateAlgorithm: string = 'ES256K';
   private _did: string | undefined;
 
   // key references
   private _recoveryKeyName: string | undefined;
   private _recoveryKeyReference: KeyReference | undefined;
+  private _updateKeyName: string | undefined;
+  private _updateKeyReference: KeyReference | undefined;
   private _signingKeyName: string | undefined;
   private _signingKeyReference: KeyReference | undefined;
 
@@ -44,6 +51,28 @@ export default class CryptoBuilder {
   public get signingKeyIsExtractable(): boolean {
     if (this._signingKeyReference) {
       return this._signingKeyReference.type === 'secret';
+    } else {
+      return true;
+    }
+  }
+
+  /**
+   * True is the recovery key can be extracted from the key store
+   */
+  public get recoveryKeyIsExtractable(): boolean {
+    if (this._recoveryKeyReference) {
+      return this._recoveryKeyReference.type === 'secret';
+    } else {
+      return true;
+    }
+  }
+
+  /**
+   * True is the update key can be extracted from the key store
+   */
+  public get updateKeyIsExtractable(): boolean {
+    if (this._updateKeyReference) {
+      return this._updateKeyReference.type === 'secret';
     } else {
       return true;
     }
@@ -76,6 +105,12 @@ export default class CryptoBuilder {
   }
 
   /**
+   * Get the options for retrieving and storing recovery keys in the key store
+   */
+  public get recoveryKeyOptions(): KeyStoreOptions {
+    return this._recoveryKeyOptions;
+  }
+  /**
    * Set the reference in the key store to the recovery key
    */
   public useRecoveryKeyReference(
@@ -87,6 +122,38 @@ export default class CryptoBuilder {
     this._recoveryKeyReference = recoveryKeyReference;
     this._recoveryKeyOptions = options;
     return this;
+  }
+
+  /**
+   * Get the update in the key store to the update key
+   */
+  public get updateKeyReference(): KeyReference {    
+    if (this._updateKeyReference) {
+      return this._updateKeyReference;
+    }
+
+    return new KeyReference(`update-${this._updateAlgorithm}`, 'secret');
+  }
+
+  /**
+   * Set the update in the key store to the recovery key
+   */
+  public useUpdateKeyReference(
+    updateKeyReference: KeyReference,
+    options: KeyStoreOptions = {
+      publicKeyOnly: false,  // get private key, key vault only returns public key
+      latestVersion: true    // take last version of the key
+    }): CryptoBuilder {
+    this._updateKeyReference = updateKeyReference;
+    this._updateKeyOptions = options;
+    return this;
+  }
+
+  /**
+   * Get the options for retrieving and storing update keys in the key store
+   */
+  public get updateKeyOptions(): KeyStoreOptions {
+    return this._updateKeyOptions;
   }
 
   /**
@@ -136,6 +203,13 @@ export default class CryptoBuilder {
   }
 
   /**
+   * Get the algorithm/suite used for update
+   */
+  public get updateAlgorithm(): string {
+    return this._updateAlgorithm;
+  }
+
+  /**
    * Set the algorithm/suite used for signing
    */
   public useSigningAlgorithm(signingAlgorithm: string): CryptoBuilder {
@@ -148,6 +222,14 @@ export default class CryptoBuilder {
    */
   public useRecoveryAlgorithm(recoveryAlgorithm: string): CryptoBuilder {
     this._recoveryAlgorithm = recoveryAlgorithm;
+    return this;
+  }
+
+  /**
+   * Set the algorithm/suite used for update
+   */
+  public useUpdateAlgorithm(updateAlgorithm: string): CryptoBuilder {
+    this._updateAlgorithm = updateAlgorithm;
     return this;
   }
 

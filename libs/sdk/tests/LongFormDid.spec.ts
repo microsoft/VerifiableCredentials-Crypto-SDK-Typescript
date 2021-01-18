@@ -13,6 +13,7 @@ describe('LongFormDid', () => {
             .build();
         crypto = await crypto.generateKey(KeyUse.Signature);
         crypto = await crypto.generateKey(KeyUse.Signature, 'recovery');
+        crypto = await crypto.generateKey(KeyUse.Signature, 'update');
 
         const jwk = await crypto.builder.keyStore.get(crypto.builder.signingKeyReference);
         console.log(JSON.stringify(jwk));

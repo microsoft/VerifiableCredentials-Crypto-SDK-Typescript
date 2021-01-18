@@ -22,7 +22,7 @@ describe('Crypto', () => {
 
     it('should generate a recovery key', async () => {
         let crypto = new CryptoBuilder()
-            .useSigningKeyReference(new KeyReference('mars'))
+            .useSigningKeyReference(new KeyReference('mars', 'secret'))
             .useRecoveryKeyReference(new KeyReference('recovery'))
             .build();
         expect(crypto.builder.recoveryKeyReference).toEqual(new KeyReference('recovery'));
@@ -44,5 +44,17 @@ describe('Crypto', () => {
         } catch (exception) {
             expect(exception.message).toEqual('not implemented');
         }
+    });
+
+    it('should generate an update key', async () => {
+        let crypto = new CryptoBuilder()
+            .useSigningKeyReference(new KeyReference('mars'))
+            .useRecoveryKeyReference(new KeyReference('recovery'))
+            .useUpdateKeyReference(new KeyReference('update'))
+            .build();
+        expect(crypto.builder.updateKeyReference).toEqual(new KeyReference('update'));
+
+        crypto = await crypto.generateKey(KeyUse.Signature, 'update');
+        expect(crypto.builder.updateKeyReference?.cryptoKey).toBeDefined();
     });
 });
