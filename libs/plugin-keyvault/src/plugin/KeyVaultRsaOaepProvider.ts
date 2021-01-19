@@ -46,7 +46,7 @@ export default class KeyVaultRsaOaepProvider extends KeyVaultProvider {
   async onDecrypt (algorithm: Algorithm, key: CryptoKey, data: ArrayBuffer): Promise<ArrayBuffer> {
     const kid = (<any>key.algorithm).kid;
     if (!kid) {
-      throw new CryptoError(algorithm, 'Missing kid in algortihm');
+      return Promise.reject(new CryptoError(algorithm, 'Missing kid in algortihm'));
     }
 
     const client = (<KeyStoreKeyVault>this.keyStore).getCryptoClient(kid);

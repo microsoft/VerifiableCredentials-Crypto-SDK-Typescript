@@ -12,6 +12,8 @@ import { KeyClient } from '@azure/keyvault-keys';
 import { SecretClient } from '@azure/keyvault-secrets';
 import { CryptoKey } from 'webcrypto-core';
 import Credentials from './Credentials';
+import base64url from 'base64url';
+const clone = require('clone');
 
 // Sample config
 const tenantId = Credentials.tenantGuid;
@@ -44,9 +46,21 @@ afterEach(() => {
 describe('KeyStoreKeyVault', () => {
   const alg = { name: 'ECDSA', namedCurve: 'SECP256K1', hash: { name: 'SHA-256' } };
   if (!keyVaultEnable) {
-    console.log('Key vault is enabled. Add your credentials to Credentials.ts')
+    console.log('Key vault is not enabled. Add your credentials to Credentials.ts')
     return;
   }
+
+  it('should create an instance', () => {
+    const cache = new KeyStoreInMemory();
+    const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+    let vault = 'https://example.keyvault.com';
+    let keyStore = new KeyStoreKeyVault(credential, vault, cache);
+    expect(keyStore.cache).toEqual(cache);
+    expect((<any>keyStore).vaultUri).toEqual(vault + '/');
+    keyStore = new KeyStoreKeyVault(credential, vault + '/', cache);
+    expect(keyStore.cache).toEqual(cache);
+    expect((<any>keyStore).vaultUri).toEqual(vault + '/');
+  });
 
   it('should list a named generated key', async () => {
     const name = 'KvTest-KeyStoreKeyVault' + Math.random().toString(10).substr(2);
@@ -58,11 +72,100 @@ describe('KeyStoreKeyVault', () => {
       await provider.onGenerateKey(alg, false, ['sign'], { keyReference: new KeyReference(name) });
       let list = await keyStore.list('key', new KeyStoreOptions({ latestVersion: false }));
       expect(list[name]).toBeDefined();
-      const key = await keyStore.get(new KeyReference(name, 'key'), new KeyStoreOptions({ latestVersion: false }));
+      // Two requests should hit cache
+      let key = await keyStore.get(new KeyReference(name, 'key'), new KeyStoreOptions({ latestVersion: false }));
+      key = await keyStore.get(new KeyReference(name, 'key'), new KeyStoreOptions({ latestVersion: false }));
       expect(key).toBeDefined();
       expect((await cache.list())[name]).toBeDefined();
     } finally {
       await (<KeyClient>keyStore.getKeyStoreClient('key')).beginDeleteKey(name);
+    }
+  });
+
+  it('should list a named stored secret k', async () => {
+    const name = 'KvTest-KeyStoreKeyVault' + Math.random().toString(10).substr(2);
+    const cache = new KeyStoreInMemory();
+    const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+    const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
+    try {
+      const secret1 = base64url.encode(name);
+      const secret2 = base64url.encode(name + '2');
+
+      //save two versions
+      await keyStore.save(new KeyReference(name), secret1);
+      await keyStore.save(new KeyReference(name), secret2);
+
+      let list = await keyStore.list('secret', new KeyStoreOptions({ latestVersion: false }));
+      expect(list[name]).toBeDefined();
+
+      // get latest version only
+      let key = await keyStore.get(new KeyReference(name, 'secret'), new KeyStoreOptions({ latestVersion: true }));
+      expect(key.keys.length).toEqual(1);
+      //TODO BUG. k is reported as object
+      expect((await cache.list())[name]).toBeDefined();
+
+      // get all versions
+      key = await keyStore.get(new KeyReference(name, 'secret'), new KeyStoreOptions({ latestVersion: false }));
+      expect(key.keys.length).toEqual(2);
+    } finally {
+      await (<SecretClient>keyStore.getKeyStoreClient('secret')).beginDeleteSecret(name);
+    }
+  });
+  it('should list a named stored secret with EC', async () => {
+    let cleaned = false;
+    const name = 'KvTest-KeyStoreKeyVault' + Math.random().toString(10).substr(2);
+    const cache = new KeyStoreInMemory();
+    const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+    const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
+    const subtle = new Subtle();
+    try {
+
+      const keyPair = <CryptoKeyPair>await subtle.generateKey(<EcKeyGenParams>{ name: 'ECDSA', namedCurve: 'secp256k1', hash: { name: 'SHA-256' } }, true, ["sign", "verify"]);
+      const jwk: any = await subtle.exportKey('jwk', keyPair.privateKey);
+
+      //save two versions
+      await keyStore.save(new KeyReference(name), jwk);
+
+      // save okp version
+      let okp = clone(jwk);
+      okp.kty = 'OKP';
+      await keyStore.save(new KeyReference(name), jwk);
+
+      let list = await keyStore.list('secret', new KeyStoreOptions({ latestVersion: false }));
+      expect(list[name]).toBeDefined();
+
+      // get latest version only, second should 
+      let key = await keyStore.get(new KeyReference(name, 'secret'), new KeyStoreOptions({ latestVersion: true }));
+      key = await keyStore.get(new KeyReference(name, 'secret'), new KeyStoreOptions({ latestVersion: true }));
+      expect(key.keys.length).toEqual(1);
+      //TODO BUG. k is reported as object
+      expect((await cache.list())[name]).toBeDefined();
+
+      // get all versions
+      key = await keyStore.get(new KeyReference(name, 'secret'), new KeyStoreOptions({ latestVersion: false }));
+      expect(key.keys.length).toEqual(2);
+
+      // get public key only
+      key = await keyStore.get(new KeyReference(name, 'secret'), new KeyStoreOptions({ publicKeyOnly: true }));
+      expect(key.keys.length).toEqual(1);
+
+      // negative cases
+      cleaned = true;
+        await (<SecretClient>keyStore.getKeyStoreClient('secret')).beginDeleteSecret(name);
+        const getKeyStoreClientSpy: jasmine.Spy = spyOn(keyStore, 'getKeyStoreClient').and.callFake(() => {
+          throw new Error('some error');
+      });         
+      try {
+        await keyStore.get(new KeyReference(name, 'secret'), new KeyStoreOptions({ latestVersion: true }));        
+        fail('get should have thrown');
+      } catch (exception) {
+        expect(exception.message).toEqual('some error');
+        
+      }  
+    } finally {
+      if (!cleaned) {
+        await (<SecretClient>keyStore.getKeyStoreClient('secret')).beginDeleteSecret(name);
+      }
     }
   });
 
@@ -78,11 +181,11 @@ describe('KeyStoreKeyVault', () => {
       await provider.onGenerateKey(alg, false, ['sign'], { keyReference: new KeyReference(name) });
 
       let parts = (<any>keyPair.publicKey.algorithm).kid.split('/');
-      const keyName = `${parts[parts.length-2]}/${parts[parts.length-1]}`;
+      const keyName = `${parts[parts.length - 2]}/${parts[parts.length - 1]}`;
 
       let list = await keyStore.list('key', new KeyStoreOptions({ latestVersion: false }));
       expect(list[name].kids[0].includes(keyName) || list[name].kids[1].includes(keyName)).toBeTruthy();
-      const key = await keyStore.get(new KeyReference(name, 'key',keyName), new KeyStoreOptions({ latestVersion: false }));
+      const key = await keyStore.get(new KeyReference(name, 'key', keyName), new KeyStoreOptions({ latestVersion: false }));
       expect(key.keys.length).toEqual(1);
       console.log(`name: ${keyName}`);
       console.log(`${JSON.stringify(key.keys[0])}`);
@@ -114,17 +217,20 @@ describe('KeyStoreKeyVault', () => {
     const cache = new KeyStoreInMemory();
     const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
     const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
-    let throwed = false;
+    await keyStore.save(new KeyReference(name, 'secret'), 'abcdefg');
+    let list = await keyStore.list('secret', new KeyStoreOptions({ latestVersion: false }));
+    expect(list[name]).toBeDefined();
     try {
-      await keyStore.save(new KeyReference(name, 'secret'), 'abcdefg');
-      let list = await keyStore.list('secret', new KeyStoreOptions({ latestVersion: false }));
-      expect(list[name]).toBeDefined();
       await cache.get(new KeyReference(name, 'secret'));
-      expect(throwed).toBeTruthy();
+      fail('Should have thrown during get: should set a secret');
     } catch (err) {
-      throwed = true;
       expect(err.message).toEqual(`${name} not found`)
-
+    } 
+    try {
+      await keyStore.save(<any>undefined, '');
+      fail('Should have thrown during save: should set a secret');
+    } catch (err) {
+      expect(err.message).toEqual(`Key reference needs to be specified`)
     } finally {
       await (<SecretClient>keyStore.getKeyStoreClient('secret')).beginDeleteSecret(name);
     }

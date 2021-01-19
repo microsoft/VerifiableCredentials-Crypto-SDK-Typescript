@@ -559,10 +559,10 @@ export default class JwsToken implements IJwsGeneralJson {
     }
 
     if (!alg) {
-      throw new CryptoProtocolError(
+      return Promise.reject(new CryptoProtocolError(
         JoseConstants.Jws,
         'Unable to validate signature as no signature algorithm has been specified in the header.'
-      );
+      ));
     }
     const algorithm = CryptoHelpers.jwaToWebCrypto(alg);
     const encodedProtected = !protectedHeader ? '' : JoseHelpers.encodeHeader(protectedHeader);

@@ -68,7 +68,7 @@ export default class SubtleCryptoExtension extends Subtle implements ISubtleCryp
     const format: string = (<any>algorithm).format;
     if (isElliptic && signature.byteLength <= 64 && format) {
       if (format.toUpperCase() !== 'DER') {
-        throw new CryptoError(algorithm, 'Only DER format supported for signature');
+        return Promise.reject(new CryptoError(algorithm, 'Only DER format supported for signature'));
       }
 
       // DER format needed for signature, specied in algorithm

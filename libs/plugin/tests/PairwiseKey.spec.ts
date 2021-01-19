@@ -8,6 +8,7 @@ import {CryptoFactory, SubtleCryptoExtension, SubtleCryptoNode, PairwiseKey } fr
 import { KeyStoreInMemory, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { PrivateKey, EcPrivateKey, OctKey, KeyContainer } from 'verifiablecredentials-crypto-sdk-typescript-keys';
 import base64url from 'base64url';
+import RsaPairwiseKey from '../lib/Pairwise/RsaPairwiseKey';
 
 class Helpers {
   // Make sure we generate the same pairwise key
@@ -234,5 +235,14 @@ describe('PairwiseKey', () => {
       results.push(<string>pairwiseKey.d);
       expect(1).toBe(results.filter(element => element === pairwiseKey.d).length);
     }
+  });
+
+  it('should generate RSA pairwise', async () =>{
+    const keyStore = new KeyStoreInMemory();
+    const cryptoFactory = new CryptoFactory(keyStore, new SubtleCryptoNode().getSubtleCrypto());
+  
+    const alg = { name: 'RSASSA-PKCS1-v1_5', publicExponent: new Uint8Array([0x01, 0x00, 0x01]), hash: { name: 'SHA-256' }};
+    const rsaPairwiseKey: any = await RsaPairwiseKey.generate(cryptoFactory, Buffer.from('seed'), <any>alg, 'peer');
+    expect(base64url.toBuffer(rsaPairwiseKey.n).byteLength).toEqual(256);
   });
 });

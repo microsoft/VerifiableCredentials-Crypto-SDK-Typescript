@@ -6,7 +6,8 @@ import { SubtleCryptoNode, CryptoFactory, CryptoFactoryScope, CryptoHelpers, Sub
 import { KeyStoreInMemory, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import EcPrivateKey from 'verifiablecredentials-crypto-sdk-typescript-keys/dist/lib/ec/EcPrivateKey';
 import { PublicKey } from 'verifiablecredentials-crypto-sdk-typescript-keys';
-
+import base64url from 'base64url';
+const clone = require('clone');
 
 describe('SubtleCryptoExtension', () => {
   const keyStore = new KeyStoreInMemory();
@@ -15,12 +16,26 @@ describe('SubtleCryptoExtension', () => {
 
   it('should generate an ECDSA key', async () => {
     const alg = CryptoHelpers.jwaToWebCrypto('Es256K');
-    const key: any = <CryptoKey>await generator.generateKey(
+    let key: any = <CryptoKey>await generator.generateKey(
       alg,
       true,
       ['sign', 'verify']
     );
-    const jwk = await cryptoFactory.defaultCrypto.exportKey('jwk', key.privateKey);
+    let jwk = await cryptoFactory.defaultCrypto.exportKey('jwk', key.privateKey);
+    expect(jwk.d).toBeDefined();
+    expect(jwk.x).toBeDefined();
+    expect(jwk.y).toBeDefined();
+    expect(jwk.kty).toEqual('EC');
+
+    // pairwise
+    const keyReference = new KeyReference('seed');
+    await keyStore.save(keyReference, base64url(Buffer.from('ABCDEFG')));
+    jwk = await generator.generatePairwiseKey(
+      alg,
+      'seed',
+      'persona',
+      'peer'
+    );
     expect(jwk.d).toBeDefined();
     expect(jwk.x).toBeDefined();
     expect(jwk.y).toBeDefined();
@@ -52,9 +67,11 @@ describe('SubtleCryptoExtension', () => {
     expect(jwk.k).toBeDefined();
     expect(jwk.kty).toEqual('oct');
   });
-  it('should sign a message', async () => {
+
+  it('should sign a message with ECDSA', async () => {
     const keyStore = new KeyStoreInMemory();
-    const factory = new CryptoFactory(keyStore, SubtleCryptoNode.getSubtleCrypto());
+    const crypto = SubtleCryptoNode.getSubtleCrypto();
+    const factory = new CryptoFactory(keyStore, crypto);
     const subtle = new SubtleCryptoExtension(factory);
     const alg = { name: 'ECDSA', namedCurve: 'secp256k1', hash: { name: 'SHA-256' }, format: 'DER' };
 
@@ -63,8 +80,16 @@ describe('SubtleCryptoExtension', () => {
     const payload = Buffer.from('test');
     let signature = await subtle.signByKeyStore(alg, new KeyReference('key'), payload);
     expect(signature.byteLength).toBeGreaterThan(65);
-    const publicKey = (await keyStore.get(new KeyReference('key'), {publicKeyOnly: true})).getKey<PublicKey>();
+    const publicKey = (await keyStore.get(new KeyReference('key'), { publicKeyOnly: true })).getKey<PublicKey>();
     let result = await subtle.verifyByJwk(alg, publicKey, signature, payload);
+    expect(result).toBeTruthy();
+
+    // verify by passing in crypto key
+    const cryptoKey = await subtle.importKey('jwk', <any>jwk, alg, true, ['sign', 'verify']);
+    let keyReference = new KeyReference('non-saved', 'signing', '', cryptoKey)
+    signature = await subtle.signByKeyStore(alg, keyReference, payload);
+    expect(signature.byteLength).toBeGreaterThan(65);
+    result = await subtle.verifyByJwk(alg, publicKey, signature, payload);
     expect(result).toBeTruthy();
 
     // without DER
@@ -73,7 +98,108 @@ describe('SubtleCryptoExtension', () => {
     expect(signature.byteLength).toBeLessThanOrEqual(64);
     result = await subtle.verifyByJwk(alg, publicKey, signature, payload);
     expect(result).toBeTruthy();
+
+    // without DER if the underlying algorithm provides DER
+    const signSpy: jasmine.Spy = spyOn(crypto, 'sign').and.callFake((alg: any) => {
+      (<any>alg).format = 'DER';
+      const r = new Uint8Array(32);
+      r.fill(0xff);
+      const s = new Uint8Array(32);
+      s.fill(0xff);
+
+      return Promise.resolve(SubtleCryptoExtension.toDer([r, s]));
+    });
+    signature = await subtle.signByKeyStore(alg, keyReference, payload);
+    expect(signature.byteLength).toBeLessThanOrEqual(64);
+
+    // negative cases
+    // Only DER format supported for signature
+    const modifiedAlg = clone(alg);
+    (<any>modifiedAlg).format = 'DER';
+    (<any>modifiedAlg).name = 'EdDSA';
+    signSpy.and.callFake((alg: any) => {
+      (<any>alg).format = 'XXX';
+      return Promise.resolve(new ArrayBuffer(64));
+    });
+    try {
+      await subtle.signByKeyStore(modifiedAlg, keyReference, payload);
+      fail('Should throw signature error');
+    } catch (exception) {
+      console.log('test');
+      expect(exception.message).toEqual('Only DER format supported for signature');
+    }
+
+    // Verify failure
+    const verifySpy: jasmine.Spy = spyOn(crypto, 'verify').and.callFake(() => {
+      return Promise.resolve(false);
+    });
+    result = await subtle.verifyByJwk(alg, publicKey, signature, payload);
+    expect(result).toBeFalsy();
+
+    const getKeyImportAlgorithmSpy: jasmine.Spy = spyOn(CryptoHelpers, 'getKeyImportAlgorithm').and.callFake((alg: any) => {
+      // change the algorithm will break the signature
+      const keyImportAlgorithm = clone(alg);
+      alg.name = 'EDDSA';
+      return keyImportAlgorithm;
+    });
+    const importSpy: jasmine.Spy = spyOn(crypto, 'importKey').and.callFake(() => {
+      return Promise.resolve(cryptoKey);
+    });
+    result = await subtle.verifyByJwk(alg, publicKey, signature, payload);
+    expect(result).toBeFalsy();
   });
+
+  it('should sign a message with RSA', async () => {
+    const keyStore = new KeyStoreInMemory();
+    const crypto = SubtleCryptoNode.getSubtleCrypto();
+    const factory = new CryptoFactory(keyStore, crypto);
+    const subtle = new SubtleCryptoExtension(factory);
+    const alg = { name: 'RSASSA-PKCS1-v1_5', modulusLength: 2048, publicExponent: new Uint8Array([0x01, 0x00, 0x01]), hash: { name: 'SHA-256' }};
+    let keyReference = new KeyReference('key');
+
+    const keyPair = <CryptoKeyPair>(await subtle.generateKey(alg, true, ['sign', 'verify']));
+    const publicJwk = await subtle.exportKey('jwk', keyPair.publicKey);
+    const privateJwk = await subtle.exportKey('jwk', keyPair.privateKey);
+    await keyStore.save(keyReference, <any>privateJwk);
+
+    const payload = Buffer.from('test');
+    let signature = await subtle.signByKeyStore(alg, keyReference, payload);
+    expect(signature.byteLength).toEqual(256);
+    const publicKey = (await keyStore.get(keyReference, { publicKeyOnly: true })).getKey<PublicKey>();
+    let result = await subtle.verifyByJwk(alg, publicKey, signature, payload);
+    expect(result).toBeTruthy();
+
+    // Verify failure
+    const verifySpy: jasmine.Spy = spyOn(crypto, 'verify').and.callFake(() => {
+      return Promise.resolve(false);
+    });
+    result = await subtle.verifyByJwk(alg, publicKey, signature, payload);
+    expect(result).toBeFalsy();
+  });
+
+  it('should encrypt a message with RSA', async () => {
+    const keyStore = new KeyStoreInMemory();
+    const crypto = SubtleCryptoNode.getSubtleCrypto();
+    const factory = new CryptoFactory(keyStore, crypto);
+    const subtle = new SubtleCryptoExtension(factory);
+    const alg = { name: 'RSA-OAEP', modulusLength: 2048, publicExponent: new Uint8Array([0x01, 0x00, 0x01]), hash: 'SHA-256' };
+    let keyReference = new KeyReference('key');
+
+    const keyPair = <CryptoKeyPair>(await subtle.generateKey(alg, true, ['encrypt', 'decrypt']));
+    const publicJwk = await subtle.exportKey('jwk', keyPair.publicKey);
+    const privateJwk = await subtle.exportKey('jwk', keyPair.privateKey);
+    await keyStore.save(keyReference, <any>privateJwk);
+
+    const payload = Buffer.from('test');
+    let cipher = await subtle.encryptByJwk(alg, publicJwk, payload);
+    expect(cipher).toBeDefined();
+
+    let decrypted = await subtle.decryptByKeyStore(alg, keyReference, cipher);
+    expect(new Uint8Array(decrypted)).toEqual(new Uint8Array(payload));
+    decrypted = await subtle.decryptByJwk(alg, privateJwk, cipher);
+    expect(new Uint8Array(decrypted)).toEqual(new Uint8Array(payload));
+  });
+
   it('should sign a message with key reference options', async () => {
     const keyStore = new KeyStoreInMemory();
     const factory = new CryptoFactory(keyStore, SubtleCryptoNode.getSubtleCrypto());
@@ -85,7 +211,7 @@ describe('SubtleCryptoExtension', () => {
     const payload = Buffer.from('test');
     let signature = await subtle.signByKeyStore(alg, new KeyReference('key'), payload);
     expect(signature.byteLength).toBeGreaterThan(65);
-    const publicKey = (await keyStore.get(new KeyReference('key'), {publicKeyOnly: true})).getKey<PublicKey>();
+    const publicKey = (await keyStore.get(new KeyReference('key'), { publicKeyOnly: true })).getKey<PublicKey>();
     let result = await subtle.verifyByJwk(alg, publicKey, signature, payload);
     expect(result).toBeTruthy();
   });
@@ -100,6 +226,15 @@ describe('SubtleCryptoExtension', () => {
     const der = SubtleCryptoExtension.toDer(rs)
     const expected = '3044021F5B04897074CCC44837665612A69E6CC64BF9C7F387FD9BCA35C8C05E73F2D1022100F6DF1292EFAAD62F6EBEF4BA611FE84F983EC46E880C1A20B81B0C6FC8AEC139';
     expect(Buffer.from(der).toString('hex').toUpperCase()).toEqual(expected);
+  });
+
+  it('should fail to decode DER', () => {
+    const signature = new Uint8Array(64);
+    signature.fill(0xff);
+    expect(() => SubtleCryptoExtension.fromDer(signature)).toThrowError('No DER format to decode');
+
+    signature[0] = 0x30;
+    expect(() => SubtleCryptoExtension.fromDer(signature)).toThrowError('Marker on index 2 must be 0x02');
   });
 
   it('should correctly roundtrip from R||S signature to DER signature', () => {
@@ -200,7 +335,7 @@ describe('SubtleCryptoExtension', () => {
       // roundtrip back to R||S
       const derArray = new Uint8Array(der);
       const roundtripRS = SubtleCryptoExtension.fromDer(derArray);
-      const r = SubtleCryptoExtension.toPaddedNumber(roundtripRS[0]);
+      const r = SubtleCryptoExtension.toPaddedNumber(roundtripRS[0], 32);
       const s = SubtleCryptoExtension.toPaddedNumber(roundtripRS[1]);
       const rsHex = Buffer.from(r).toString('hex').toUpperCase() + Buffer.from(s).toString('hex').toUpperCase();
       expect(rsHex).toEqual(scenario.rs, scenario.scenario + " back to R||S");

@@ -8,9 +8,9 @@ import KeyVaultEcdsaProvider from '../src/plugin/KeyVaultEcdsaProvider';
 import KeyVaultRsaOaepProvider from '../src/plugin/KeyVaultRsaOaepProvider';
 import { KeyStoreOptions, KeyStoreInMemory, KeyReference } from 'verifiablecredentials-crypto-sdk-typescript-keystore';
 import { KeyClient } from '@azure/keyvault-keys';
-import { Subtle, CryptoFactoryScope, IKeyGenerationOptions } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
+import { Subtle, IKeyGenerationOptions } from 'verifiablecredentials-crypto-sdk-typescript-plugin';
 import Credentials from './Credentials';
-import { KeyVaultProvider, CryptoFactoryKeyVault, SubtleCryptoKeyVault } from '../src';
+import { KeyVaultProvider, SubtleCryptoKeyVault } from '../src';
 const clone = require('clone');
 
 // Sample config
@@ -20,7 +20,7 @@ const clientSecret = encodeURI(Credentials.clientSecret);
 const vaultUri = Credentials.vaultUri;
 const keyVaultEnable = vaultUri.startsWith('https://');
 
-const subtle = new Subtle();
+const subtleCrypto = new Subtle();
 const random = (length: number) => Math.random().toString(36).substring(2, length + 2);
 const logging = require('adal-node').Logging;
 logging.setLoggingOptions({
@@ -43,7 +43,7 @@ afterEach(() => {
 
 describe('KeyVaultPlugin', () => {
   if (!keyVaultEnable) {
-    console.log('Key vault is enabled. Add your credentials to Credentials.ts')
+    console.log('Key vault is not enabled. Add your credentials to Credentials.ts')
     return;
   }
 
@@ -53,13 +53,25 @@ describe('KeyVaultPlugin', () => {
     const cache = new KeyStoreInMemory();
     const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
     const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
-    const plugin = new KeyVaultEcdsaProvider(subtle, keyStore);
+    const plugin = new KeyVaultEcdsaProvider(subtleCrypto, keyStore);
     try {
-      const result: CryptoKeyPair = await plugin.onGenerateKey(alg, false, ['sign']);
-      expect((<any>result.publicKey).algorithm.namedCurve).toEqual('K-256');
-      expect(result.publicKey.algorithm.name).toEqual('ECDSA');
-      expect((<any>result.publicKey.algorithm).kid.startsWith('https')).toBeTruthy();
-      expect((<any>result.publicKey.algorithm).kid.includes(name)).toBeTruthy();
+      const keypair: CryptoKeyPair = await plugin.onGenerateKey(alg, false, ['sign']);
+      expect((<any>keypair.publicKey).algorithm.namedCurve).toEqual('K-256');
+      expect(keypair.publicKey.algorithm.name).toEqual('ECDSA');
+      expect((<any>keypair.publicKey.algorithm).kid.startsWith('https')).toBeTruthy();
+      expect((<any>keypair.publicKey.algorithm).kid.includes(name)).toBeTruthy();
+
+      const jwk: any = await plugin.exportKey('jwk', keypair.publicKey);
+      expect(jwk.kid.startsWith('https://')).toBeTruthy();
+
+      // negative cases
+      try {
+        await plugin.exportKey('raw', keypair.publicKey);
+        fail('export key raw should fail');
+      } catch(exception) {
+        expect(exception.message).toEqual('Export key only supports jwk');
+      }
+
     } finally {
       await (<KeyClient>keyStore.getKeyStoreClient('key')).beginDeleteKey(name);
     }
@@ -70,7 +82,7 @@ describe('KeyVaultPlugin', () => {
     const cache = new KeyStoreInMemory();
     const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
     const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
-    const plugin = new KeyVaultEcdsaProvider(subtle, keyStore);
+    const plugin = new KeyVaultEcdsaProvider(subtleCrypto, keyStore);
     try {
       let keyReference = new KeyReference(name, 'key');
       let curve = 'P-256K';
@@ -91,7 +103,7 @@ describe('KeyVaultPlugin', () => {
     const cache = new KeyStoreInMemory();
     const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
     const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
-    const plugin = new KeyVaultEcdsaProvider(subtle, keyStore);
+    const plugin = new KeyVaultEcdsaProvider(subtleCrypto, keyStore);
     try {
 
       let keyReference = new KeyReference(name, 'key', remoteName);
@@ -113,19 +125,42 @@ describe('KeyVaultPlugin', () => {
     const cache = new KeyStoreInMemory();
     const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
     const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
-    const subtle = new SubtleCryptoKeyVault(new Subtle(), keyStore);
+    const subtleKv = new SubtleCryptoKeyVault(new Subtle(), keyStore);
     try {
 
       const keyReference = new KeyReference(name, 'key', remoteName);
       const curve = 'P-256K';
       const alg = { name: 'ECDSA', namedCurve: 'secp256k1', hash: { name: 'SHA-256' } };
-      const keypair = await subtle.generateKey(alg, false, ['sign', 'verify'], { keyReference, curve });
+      const keypair = await subtleKv.generateKey(alg, false, ['sign', 'verify'], { keyReference, curve });
       const payload = Buffer.from('hello Houston');
-      const signature = await subtle.sign(alg, keypair.publicKey, payload);
+      const signature = await subtleKv.sign(alg, keypair.publicKey, payload);
       expect(signature.byteLength).toEqual(64);
 
-      const jwk = await subtle.exportKey('jwk', keypair.publicKey);
+      const jwk = await subtleKv.exportKey('jwk', keypair.publicKey);
       expect(jwk.kty).toEqual('EC');
+
+      // negative cases
+      let publicKey = clone(keypair.publicKey);
+      delete (<any>publicKey.algorithm).kid;
+      try {
+        await subtleKv.sign(alg, publicKey, payload);
+        fail('sign should throw');
+      } catch(exception) {
+        expect(exception.message).toEqual('Missing kid in algortihm');
+      }
+
+      let getCryptoClientSpy: jasmine.Spy = spyOn(keyStore, 'getCryptoClient').and.callFake(() => {
+        return {
+          sign: () => Promise.reject(new Error('spy signing error'))
+        };
+      });
+      try {
+        await subtleKv.sign(alg, keypair.publicKey, payload);
+        fail('sign should throw');
+      } catch(exception) {
+        expect(exception.message).toEqual('spy signing error');
+      }
+
     } finally {
       await (<KeyClient>keyStore.getKeyStoreClient('key')).beginDeleteKey(remoteName);
     }
@@ -139,7 +174,7 @@ describe('KeyVaultPlugin', () => {
     try {
       let list = await keyStore.list('key', new KeyStoreOptions({ latestVersion: false }));
       const versions = list[name];
-      const plugin = new KeyVaultEcdsaProvider(subtle, keyStore);
+      const plugin = new KeyVaultEcdsaProvider(subtleCrypto, keyStore);
 
       // Generate EC
       let keyPair: CryptoKeyPair = await plugin.onGenerateKey(alg, false, ['sign', 'verify']);
@@ -183,7 +218,7 @@ describe('KeyVaultPlugin', () => {
     const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
     const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
     try {
-      const plugin = new KeyVaultEcdsaProvider(subtle, keyStore);
+      const plugin = new KeyVaultEcdsaProvider(subtleCrypto, keyStore);
 
       const payload = Buffer.from('test');
       console.log(payload);
@@ -198,8 +233,8 @@ describe('KeyVaultPlugin', () => {
       const webCryptoAlg = clone(alg);
       webCryptoAlg.namedCurve = 'K-256';
       const jwk = await (await cache.get(new KeyReference(name, 'key'), keyPair.publicKey)).getKey<JsonWebKey>();
-      const cryptoKey = await subtle.importKey('jwk', jwk, webCryptoAlg, true, ['verify']);
-      const result = await subtle.verify(webCryptoAlg, cryptoKey, Buffer.from(signature), payload);
+      const cryptoKey = await subtleCrypto.importKey('jwk', jwk, webCryptoAlg, true, ['verify']);
+      const result = await subtleCrypto.verify(webCryptoAlg, cryptoKey, Buffer.from(signature), payload);
       expect(result).toBeTruthy();
       expect((await cache.list())[name]).toBeDefined();
     } finally {
@@ -215,15 +250,15 @@ describe('KeyVaultPlugin', () => {
     const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
     const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
     try {
-      const plugin = new KeyVaultEcdsaProvider(subtle, keyStore);
+      const plugin = new KeyVaultEcdsaProvider(subtleCrypto, keyStore);
 
       const payload = Buffer.from('test');
       console.log(payload);
 
       // import reference key
       const keyReference = new KeyReference(name, 'key');
-      let cryptoKey: any = <CryptoKey>await subtle.generateKey(alg, true, ['sign'], { keyReference });
-      let jwk: any = await subtle.exportKey('jwk', cryptoKey.privateKey);
+      let cryptoKey: any = <CryptoKey>await subtleCrypto.generateKey(alg, true, ['sign'], { keyReference });
+      let jwk: any = await subtleCrypto.exportKey('jwk', cryptoKey.privateKey);
       jwk.kid = name;
 
       await keyStore.save(keyReference, jwk, new KeyStoreOptions());
@@ -231,17 +266,65 @@ describe('KeyVaultPlugin', () => {
 
       const cachedPublic = await (await cache.get(keyReference)).getKey<JsonWebKey>();
 
-      cryptoKey = await plugin.importKey('jwk', cachedPublic, alg, false, ['sign', 'verify']);
-      const signature = await plugin.onSign(alg, cryptoKey, payload);
+      cryptoKey = await plugin.importKey('jwk', cachedPublic, alg, false, ['sign']);
+      const signature = await plugin.sign(alg, cryptoKey, payload);
 
       // Set verify key
       const webCryptoAlg = clone(alg);
       webCryptoAlg.namedCurve = 'K-256';
       jwk = (await cache.get(new KeyReference(name, 'key'), new KeyStoreOptions({ publicKeyOnly: true }))).getKey<JsonWebKey>();
-      cryptoKey = await subtle.importKey('jwk', jwk, webCryptoAlg, true, ['verify']);
-      const result = await subtle.verify(webCryptoAlg, cryptoKey, signature, payload);
+      cryptoKey = await subtleCrypto.importKey('jwk', jwk, webCryptoAlg, true, ['verify']);
+      const result = await subtleCrypto.verify(webCryptoAlg, cryptoKey, signature, payload);
       expect(result).toBeTruthy();
       expect((await cache.list())[name]).toBeDefined();
+
+      // negative cases
+      try {
+        await plugin.importKey('raw', new Uint8Array([1,2,3,4]), webCryptoAlg, true, ['sign']);
+        fail('import raw should fail');
+      } catch (exception) {
+        expect(exception.message).toEqual('Import key only supports jwk');
+      }
+      let clonedJwk = clone(jwk);
+      clonedJwk.kty = 'RSA'
+      try {
+        await plugin.importKey('jwk', clonedJwk, webCryptoAlg, true, ['sign']);
+        fail('import RSA should fail');
+      } catch (exception) {
+        expect(exception.message).toEqual('Import key only supports kty EC');
+      }
+      clonedJwk = clone(jwk);
+      clonedJwk.crv = 'ed25519';
+      try {
+        await plugin.importKey('jwk', clonedJwk, webCryptoAlg, true, ['sign']);
+        fail('import crv should fail');
+      } catch (exception) {
+        expect(exception.message).toEqual('Import key only supports crv P-256K');
+      }
+      clonedJwk = clone(jwk);
+      delete clonedJwk.kid;
+      try {
+        await plugin.importKey('jwk', clonedJwk, webCryptoAlg, true, ['sign']);
+        fail('import crv should fail');
+      } catch (exception) {
+        expect(exception.message).toEqual('Imported key must have a kid in the format https://<vault>/keys/<name>/<version>');
+      }
+      clonedJwk = clone(jwk);
+      clonedJwk.kid = 'vaultUri';
+      try {
+        await plugin.importKey('jwk', clonedJwk, webCryptoAlg, true, ['sign']);
+        fail('import crv should fail');
+      } catch (exception) {
+        expect(exception.message).toEqual('Imported key must have a kid in the format https://<vault>/keys/<name>/<version>');
+      }
+      clonedJwk = clone(jwk);
+      clonedJwk.kid = 'https://vault.com';
+      try {
+        await plugin.importKey('jwk', clonedJwk, webCryptoAlg, true, ['sign']);
+        fail('import crv should fail');
+      } catch (exception) {
+        expect(exception.message).toEqual('Imported key must be of type keys or secrets');
+      }
     } finally {
       await (<KeyClient>keyStore.getKeyStoreClient('key')).beginDeleteKey(name);
     }
@@ -266,7 +349,7 @@ describe('KeyVaultPlugin', () => {
     const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
     const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
     try {
-      const plugin = new KeyVaultEcdsaProvider(subtle, keyStore);
+      const plugin = new KeyVaultEcdsaProvider(subtleCrypto, keyStore);
 
       // Generate EC
       let keyReference = new KeyReference(name, 'key');
@@ -303,19 +386,31 @@ describe('rsa-oaep', () => {
     const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
     const keyStore = new KeyStoreKeyVault(credential, vaultUri, cache);
     try {
-      const plugin = new KeyVaultRsaOaepProvider(subtle, keyStore);
+      const plugin = new KeyVaultRsaOaepProvider(subtleCrypto, keyStore);
       const payload = Buffer.from('hello houston');
 
       // generate key
       const keyPair: CryptoKeyPair = await plugin.onGenerateKey(alg, false, ['decrypt', 'encrypt']);
 
       // Encrypt with subtle
-      const cipher = await subtle.encrypt(alg, keyPair.publicKey, payload);
+      const cipher = await subtleCrypto.encrypt(alg, keyPair.publicKey, payload);
 
       // decrypt with key vault
       const decrypt = await plugin.onDecrypt(alg, keyPair.publicKey, cipher);
       expect(Buffer.from(decrypt)).toEqual(payload);
       expect((await cache.list())[name]).toBeDefined();
+
+      // negative cases
+      let clonedPk = clone(keyPair.publicKey);
+      delete clonedPk.algorithm.kid;
+
+      try {
+        await plugin.decrypt(alg, clonedPk, cipher);
+        fail('decrypt RSA should fail');
+      } catch (exception) {
+        expect(exception.message).toEqual('Missing kid in algortihm');
+      }
+
     } finally {
       await (<KeyClient>keyStore.getKeyStoreClient('key')).beginDeleteKey(name);
     }

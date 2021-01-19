@@ -31,7 +31,7 @@ describe('CryptoFactory', () => {
   it('should change a crypto suite item',() => {
     const keyStore = new KeyStoreInMemory();
     
-    const factory = new CryptoFactory(keyStore, SubtleCryptoNode.getSubtleCrypto());
+    let factory = new CryptoFactory(keyStore, SubtleCryptoNode.getSubtleCrypto());
     const algorithm = 'ES256K-tobeinvented';
     const subtleCrypto = new SubtleCryptoMock();
     let keyReference = new KeyReference('', 'secret');
@@ -39,6 +39,11 @@ describe('CryptoFactory', () => {
     let keyEncrypters: any = factory.getKeyEncrypter(algorithm, CryptoFactoryScope.All, keyReference);
     expect(keyEncrypters.ID).toBeUndefined();
 
+    factory.addKeyEncrypter(algorithm, {subtleCrypto: subtleCrypto, scope: CryptoFactoryScope.All, keyStoreType: ['secret']});
+    keyEncrypters = factory.getKeyEncrypter(algorithm, CryptoFactoryScope.Private, new KeyReference('', 'test'));
+    expect(keyEncrypters.ID).toBeUndefined();
+
+    factory = new CryptoFactory(keyStore, SubtleCryptoNode.getSubtleCrypto());    
     factory.addKeyEncrypter(algorithm, {subtleCrypto: subtleCrypto, scope: CryptoFactoryScope.Private, keyStoreType: ['secret']});
     keyEncrypters = factory.getKeyEncrypter(algorithm, CryptoFactoryScope.Private, keyReference);
     expect(keyEncrypters.ID).toEqual('SubtleCryptoMock');

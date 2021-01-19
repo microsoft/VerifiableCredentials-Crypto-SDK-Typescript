@@ -115,7 +115,7 @@ export default class EllipticEcDsaProvider extends EllipticDsaProvider {
   async onExportKey (format: KeyFormat, key: CryptoKey): Promise<JsonWebKey | ArrayBuffer> {
     //const ec = this.getCurve((<any>key.algorithm).namedCurve);
     if (format !== 'jwk') {
-      throw new Error(`Export key only supports jwk`);
+      return Promise.reject(new Error(`Export key only supports jwk`));
     }
 
     const cryptoKey: any = (<EllipticCurveKey> key).key;
@@ -151,7 +151,7 @@ export default class EllipticEcDsaProvider extends EllipticDsaProvider {
   async onImportKey (format: KeyFormat,
     keyData: JsonWebKey | ArrayBuffer, algorithm: EcKeyImportParams, extractable: boolean, keyUsages: KeyUsage[]): Promise<CryptoKey> {
     if (format !== 'jwk') {
-      throw new Error(`Import key only supports jwk`);
+      return Promise.reject(new Error(`Import key only supports jwk`));
     }
     const ec = this.getCurve(algorithm.namedCurve);
     const jwkKey: JsonWebKey = <JsonWebKey> keyData;

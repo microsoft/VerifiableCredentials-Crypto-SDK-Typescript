@@ -107,7 +107,7 @@ export default class JoseProtocol implements IPayloadProtection {
         const cipher: JweToken = JweToken.fromCryptoToken(token, options);
         return cipher.serialize(protocolFormat);
     default:
-        throw new CryptoProtocolError(JoseConstants.Jose, `Serialization format '${format}' is not supported`);
+        throw new CryptoProtocolError(JoseConstants.Jose, `Serialization format '${protocolFormat}' is not supported`);
     }
    }
 
@@ -131,7 +131,7 @@ export default class JoseProtocol implements IPayloadProtection {
         const jweProtectOptions = JweToken.fromPayloadProtectionOptions(options);
         return JweToken.toCryptoToken(protocolFormat, JweToken.deserialize(token, jweProtectOptions), options);
       default:
-        throw new CryptoProtocolError(JoseConstants.Jose, `Serialization format '${format}' is not supported`);
+        throw new CryptoProtocolError(JoseConstants.Jose, `Serialization format '${protocolFormat}' is not supported`);
     }
    }
 
