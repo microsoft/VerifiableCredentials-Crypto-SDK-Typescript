@@ -12,6 +12,13 @@
 **Customer impact:** low
 
 # version 1.1.12-preview.0
+## Update to ion v1.0
+**Type of change:** engineering    
+**Customer impact:** high
+
+This is a breaking change. Long form did's previously generated should be regenerated.
+We now also added an update key to the crypto object needed for ion v1.
+
 ## Remove all console.log calls from the SDK
 **Type of change:** engineering    
 **Customer impact:** low

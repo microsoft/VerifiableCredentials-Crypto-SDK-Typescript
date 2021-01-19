@@ -14,7 +14,7 @@ describe('SuiteJcsEd25519Signature2020', () => {
             .build();
         crypto = await crypto.generateKey(KeyUse.Signature);
         crypto = await crypto.generateKey(KeyUse.Signature, 'recovery');
-        const did = await new LongFormDid(crypto).serialize();
+        const did = 'did:test:12345';
         crypto = crypto.builder.useDid(did).build();
 
         let jsonLdProofs = new JoseBuilder(crypto)

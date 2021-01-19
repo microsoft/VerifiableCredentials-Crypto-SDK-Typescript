@@ -22,6 +22,9 @@ describe('CryptoBuilder', () => {
         expect(builder.signingAlgorithm).toEqual('EdDSA');
         builder.useRecoveryAlgorithm('EdDSA');
         expect(builder.recoveryAlgorithm).toEqual('EdDSA');
+        builder.useUpdateAlgorithm('EdDSA');
+        expect(builder.updateAlgorithm).toEqual('EdDSA');
+        builder = new CryptoBuilder();
 
         builder.useDid('did');
         expect(builder.did).toEqual('did');
@@ -34,16 +37,40 @@ describe('CryptoBuilder', () => {
 
         builder = builder.useKeyVault(credential, vault);
         expect(builder.cryptoFactory.keyStore.constructor.name).toEqual('KeyStoreKeyVault');
+        expect(builder.signingKeyIsExtractable).toBeTruthy();
+        expect(builder.recoveryKeyIsExtractable).toBeTruthy();
+        expect(builder.updateKeyIsExtractable).toBeTruthy();
+        expect(builder.signingKeyReference).toEqual(new KeyReference('signing-ES256K', 'secret'));
+        expect(builder.recoveryKeyReference).toEqual(new KeyReference('recovery-ES256K', 'secret'));
+        expect(builder.updateKeyReference).toEqual(new KeyReference('update-ES256K', 'secret'));
 
+        expect(builder.signingKeyReference.cryptoKey).toBeUndefined();
         builder = builder.useSigningKeyReference(new KeyReference('signing', 'key'));
         expect(builder.signingKeyReference?.keyReference).toEqual('signing');
         expect(builder.signingKeyIsExtractable).toBeFalsy();
         expect(builder.signingKeyOptions.latestVersion).toBeTruthy();
         expect(builder.signingKeyOptions.publicKeyOnly).toBeFalsy();
+        builder = builder.useSigningKeyReference(new KeyReference('signing', 'secret'));
+        expect(builder.signingKeyIsExtractable).toBeTruthy();
+
+        builder = builder.useRecoveryKeyReference(new KeyReference('recovery', 'key'));
+        expect(builder.recoveryKeyReference?.keyReference).toEqual('recovery');
+        expect(builder.recoveryKeyIsExtractable).toBeFalsy();
+        expect(builder.recoveryKeyOptions.latestVersion).toBeTruthy();
+        expect(builder.recoveryKeyOptions.publicKeyOnly).toBeFalsy();
+        builder = builder.useRecoveryKeyReference(new KeyReference('update', 'secret'));
+        expect(builder.recoveryKeyIsExtractable).toBeTruthy();
+
+        builder = builder.useUpdateKeyReference(new KeyReference('update', 'key'));
+        expect(builder.updateKeyReference?.keyReference).toEqual('update');
+        expect(builder.updateKeyIsExtractable).toBeFalsy();
+        expect(builder.updateKeyOptions.latestVersion).toBeTruthy();
+        expect(builder.updateKeyOptions.publicKeyOnly).toBeFalsy();
+        builder = builder.useUpdateKeyReference(new KeyReference('update', 'secret'));
+        expect(builder.updateKeyIsExtractable).toBeTruthy();
 
         const crypto = builder.build();
         expect(crypto.builder).toEqual(builder);
-
     });
 
     it('should generate a signing key', async () => {
@@ -53,6 +80,26 @@ describe('CryptoBuilder', () => {
             .build();
         crypto = await crypto.generateKey(KeyUse.Signature);
         const jwk = await crypto.builder.keyStore.get(crypto.builder.signingKeyReference!);
+        expect(jwk.alg).toEqual('RS256');
+    });
+
+    it('should generate a recovery key', async () => {
+        let crypto = new CryptoBuilder()
+            .useRecoveryKeyReference(new KeyReference('recoveryKey'))
+            .useRecoveryAlgorithm('RS256')
+            .build();
+        crypto = await crypto.generateKey(KeyUse.Signature, 'recovery');
+        const jwk = await crypto.builder.keyStore.get(crypto.builder.recoveryKeyReference!);
+        expect(jwk.alg).toEqual('RS256');
+    });
+
+    it('should generate an update key', async () => {
+        let crypto = new CryptoBuilder()
+            .useUpdateKeyReference(new KeyReference('updateKey'))
+            .useUpdateAlgorithm('RS256')
+            .build();
+        crypto = await crypto.generateKey(KeyUse.Signature, 'update');
+        const jwk = await crypto.builder.keyStore.get(crypto.builder.updateKeyReference!);
         expect(jwk.alg).toEqual('RS256');
     });
 });

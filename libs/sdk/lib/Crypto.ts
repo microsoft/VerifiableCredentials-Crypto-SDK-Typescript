@@ -59,6 +59,10 @@ export default class Crypto {
         keyReference = this.builder.recoveryKeyReference;
         jwaAlgorithm = this.builder.recoveryAlgorithm;
         break;
+      case 'update':
+        keyReference = this.builder.updateKeyReference;
+        jwaAlgorithm = this.builder.updateAlgorithm;
+        break;
       default:
         return Promise.reject(new Error(`Key generation type '${type}' not supported`));
     }
