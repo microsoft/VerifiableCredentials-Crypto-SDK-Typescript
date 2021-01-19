@@ -23,7 +23,8 @@ describe('JSONLD proofs', () => {
             .build();
         crypto = await crypto.generateKey(KeyUse.Signature);
         crypto = await crypto.generateKey(KeyUse.Signature, 'recovery');
-        crypto.builder.useDid(await new LongFormDid(crypto).serialize());
+        const did = 'did:test:12345';
+        crypto.builder.useDid(did);
         let jsonLdProofBuilder = new JoseBuilder(crypto)
             .useJsonLdProofsProtocol('JcsEd25519Signature2020')
         let jsonLdProof: IPayloadProtectionSigning = jsonLdProofBuilder.build();
