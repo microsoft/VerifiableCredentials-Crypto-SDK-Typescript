@@ -1,6 +1,6 @@
 {
   "name": "verifiablecredentials-crypto-sdk-typescript-keystore",
-  "version": "1.1.12-preview.1",
+  "version": "1.1.12-preview.2",
   "description": "Package for managing keys in a key store.",
   "repository": {
     "type": "git",
@@ -35,7 +35,7 @@
     "typescript": "4.0.3"
   },
   "dependencies": {
-    "verifiablecredentials-crypto-sdk-typescript-keys": "1.1.12-preview.1",
+    "verifiablecredentials-crypto-sdk-typescript-keys": "1.1.12-preview.2",
     "@types/node": "14.6.2",
     "base64url": "^3.0.1",
     "clone": "^2.1.2",

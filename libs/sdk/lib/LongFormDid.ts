@@ -45,7 +45,7 @@ export default class LongFormDid {
     
     // Create long-form did
     const didDocumentKeys: any = {
-      id: this.crypto.builder.recoveryKeyReference.keyReference,
+      id: this.crypto.builder.signingKeyReference.keyReference,
       type: "EcdsaSecp256k1VerificationKey2019",
       "publicKeyJwk": signingPublic,
       "purposes": [
