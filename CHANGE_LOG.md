@@ -1,3 +1,8 @@
+# version 1.1.12-preview.2
+## Fix bug in LongFormDid key reference.
+**Type of change:** bug    
+**Customer impact:** low
+
 # version 1.1.12-preview.1
 ## Keyvault exportKey did not add the kid in the jwk.
 **Type of change:** engineering    
