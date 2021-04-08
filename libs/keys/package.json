@@ -28,7 +28,7 @@
     "jasmine-reporters": "^2.3.2",
     "jasmine-spec-reporter": "^6.0.0",
     "jasmine-ts": "^0.3.0",
-    "nyc": "^15.1.0",
+    "nyc": "^14.0.1",
     "preload-js": "^0.6.3",
     "prettier": "^1.18.2",
     "ts-node": "8.5.4",
