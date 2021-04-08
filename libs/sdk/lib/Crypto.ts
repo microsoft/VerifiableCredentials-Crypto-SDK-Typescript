@@ -52,7 +52,7 @@ export default class Crypto {
    * Get the protocol used for signing
    */
   public signingProtocol(type: string): IPayloadProtectionSigning {
-      return this._signingProtocols[type];
+      return this.signingProtocols[type];
   }
 
   public get signingProtocols(): { [protocol: string]: IPayloadProtectionSigning } {

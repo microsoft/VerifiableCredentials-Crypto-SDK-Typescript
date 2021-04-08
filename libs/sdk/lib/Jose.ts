@@ -105,7 +105,7 @@ export default class Jose implements IPayloadProtectionSigning {
 
       // Override properties
       for (let key in this.builder.jwtProtocol) {
-        if (key in ['nbf', 'exp', 'jti']) {
+        if (['nbf', 'exp', 'jti'].includes(key)) {
           continue;
         }
         (<any>payload)[key] = (<any>payload)[key] || this.builder.jwtProtocol[key];
@@ -168,7 +168,7 @@ export default class Jose implements IPayloadProtectionSigning {
       case ProtectionFormat.JwsGeneralJson:
         return this._token.serialize(protocolFormat);
       default:
-        throw new Error(`The serialization format '${this.builder.serializationFormat}' is not supported`);
+        throw new Error(`The serialization format '${protocolFormat}' is not supported`);
     }
   }
 

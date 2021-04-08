@@ -59,7 +59,8 @@ describe('Jose', () => {
 
     it('should sign and verify', async () => {
         const payload = Buffer.from('The only way you can survive is to spread to another area. There is another organism on this planet that follows the same pattern. Do you know what it is? A virus. Human beings are a disease. A cancer of this planet.');
-
+        let getProtectionFormatMethod = Jose.getProtectionFormat;
+        let getProtectionFormatSpy: jasmine.Spy = spyOn(Jose, 'getProtectionFormat').and.callFake((protocol: string) => getProtectionFormatMethod(protocol));
         for (let inx = 0; inx < factories.length; inx++) {
             let crypto = factories[inx];
             console.log(`Using crypto ${crypto.builder.cryptoFactory.constructor.name}`);
@@ -114,6 +115,17 @@ describe('Jose', () => {
                 expect(e.message).toEqual(`Format 'whatever' is not supported`)
             }
 
+            jose = jose.builder
+                .useJsonLdProofsProtocol('JcsEd25519Signature2020', {})
+                .build();
+
+            try {
+                jose.serialize();
+                fail('serialize should fail');
+            } catch (e) {
+                expect(e.message).toEqual(`No token to serialize`)
+            }
+
             // verify has no token
             jose = new JoseBuilder(crypto).build();
             try {
@@ -131,6 +143,15 @@ describe('Jose', () => {
             } catch (ex) {
                 expect(ex.message).toEqual('No token to serialize');
             }
+            jose.deserialize(serialized);
+            getProtectionFormatSpy.and.callFake(() => 'some protocol');
+            try {
+                jose.serialize();
+                fail('wrong protocol should fail');
+            } catch (ex) {
+                expect(ex.message).toEqual(`The serialization format 'some protocol' is not supported`);
+            }
+            getProtectionFormatSpy = getProtectionFormatSpy.and.callFake((protocol: string) => getProtectionFormatMethod(protocol));
         }
     });
 
