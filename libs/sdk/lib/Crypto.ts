@@ -14,15 +14,27 @@ export default class Crypto {
   private signingKey: CryptoKeyPair | CryptoKey | undefined;
 
   // Set the protocols
-  private _signingProtocols: { [protocol: string]: IPayloadProtectionSigning } = {
-    JOSE: new JoseBuilder(this)
-      .build(),
-    JWT: new JoseBuilder(this)
-      .useJwtProtocol()
-      .build(),
-    JSONLDProofs: new JoseBuilder(this)
+  private createJSONLDProofs = ():IPayloadProtectionSigning => {
+    return new JoseBuilder(this)
       .useJsonLdProofsProtocol('JcsEd25519Signature2020')
-      .build()
+      .build();
+  }
+
+  private createJWT = ():IPayloadProtectionSigning => {
+    return new JoseBuilder(this)
+      .useJwtProtocol()
+      .build();
+  }
+
+  private createJOSE = ():IPayloadProtectionSigning => {
+    return new JoseBuilder(this)
+      .build();
+  }
+
+  private _signingProtocols: { [protocol: string]: IPayloadProtectionSigning } = {
+    JOSE: this.createJOSE(),
+    JWT: this.createJWT(),
+    JSONLDProofs: this.createJSONLDProofs()
   };
 
   constructor(
@@ -40,7 +52,7 @@ export default class Crypto {
    * Get the protocol used for signing
    */
   public signingProtocol(type: string): IPayloadProtectionSigning {
-    return this.signingProtocols[type];
+      return this._signingProtocols[type];
   }
 
   public get signingProtocols(): { [protocol: string]: IPayloadProtectionSigning } {
