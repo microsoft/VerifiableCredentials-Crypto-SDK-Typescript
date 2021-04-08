@@ -100,7 +100,7 @@ describe('SubtleCryptoExtension', () => {
     expect(result).toBeTruthy();
 
     // without DER if the underlying algorithm provides DER
-    const signSpy: jasmine.Spy = getProtectionFormatcrypto, 'sign').and.callFake((alg: any) => {
+    const signSpy: jasmine.Spy = spyOn(crypto, 'sign').and.callFake((alg: any) => {
       (<any>alg).format = 'DER';
       const r = new Uint8Array(32);
       r.fill(0xff);
