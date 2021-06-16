@@ -23,7 +23,6 @@ dependencies:
   bs58: 4.0.1
   canonicalize: 1.0.1
   canonicaljson: 1.0.1
-  elliptic: 6.5.3
   eslint: 6.8.0
   eslint-config-prettier: 6.15.0_eslint@6.8.0
   eslint-plugin-prettier: 3.4.0_b77cd85fda941e232840dc83bf6b7690
@@ -1140,6 +1139,18 @@ packages:
     dev: false
     resolution:
       integrity: sha512-IMqzv5wNQf+E6aHeIqATs0tOLeOTwj1QKbRcS3jBbYkl5oLAserA8yJTT7/VyHUYG91PRmPyeQDObKLPpeS4dw==
+  /elliptic/6.5.4:
+    dependencies:
+      bn.js: 4.12.0
+      brorand: 1.1.0
+      hash.js: 1.1.7
+      hmac-drbg: 1.0.1
+      inherits: 2.0.4
+      minimalistic-assert: 1.0.1
+      minimalistic-crypto-utils: 1.0.1
+    dev: false
+    resolution:
+      integrity: sha512-iLhC6ULemrljPZb+QutR5TQGB+pdW6KGD5RSegS+8sorOZT+rdQFbsQFJgvN3eRqNALqJer4oQ16YvJHlU8hzQ==
   /emoji-regex/7.0.3:
     dev: false
     resolution:
@@ -3875,7 +3886,7 @@ packages:
       big-integer: 1.6.48
       bn.js: 5.1.2
       clone: 2.1.2
-      elliptic: 6.5.3
+      elliptic: 6.5.4
       jasmine: 3.6.3
       jasmine-reporters: 2.4.0
       jasmine-spec-reporter: 6.0.0
@@ -3889,7 +3900,7 @@ packages:
     dev: false
     name: '@rush-temp/verifiablecredentials-crypto-sdk-typescript-plugin'
     resolution:
-      integrity: sha512-yfqO5Qm7xtZdfbkxjqQHftjvG6GCY3tH9orCrfzG5CayFf4b1+Qi3ZAnOzlPorq9rkcZygU4OumdIBaStOT2RA==
+      integrity: sha512-lJO2m8qZovRSrx/Y29Got7Ag0RUD3N3OS7QArkvQZdsq9O4PA1fx6824i9T46glizu+MKl5B3axWzOyWmoqlrg==
       tarball: file:projects/verifiablecredentials-crypto-sdk-typescript-plugin.tgz
     version: 0.0.0
   file:projects/verifiablecredentials-crypto-sdk-typescript-protocol-jose.tgz:
@@ -3995,7 +4006,6 @@ specifiers:
   bs58: 4.0.1
   canonicalize: 1.0.1
   canonicaljson: 1.0.1
-  elliptic: 6.5.3
   eslint: ^6.2.1
   eslint-config-prettier: ^6.1.0
   eslint-plugin-prettier: ^3.1.0
