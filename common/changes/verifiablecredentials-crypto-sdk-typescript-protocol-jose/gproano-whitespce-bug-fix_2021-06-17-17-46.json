@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "verifiablecredentials-crypto-sdk-typescript-protocol-jose",
+      "comment": "Allow caller to specify the preimage for validation",
+      "type": "minor"
+    }
+  ],
+  "packageName": "verifiablecredentials-crypto-sdk-typescript-protocol-jose",
+  "email": "gproano@microsoft.com"
+}

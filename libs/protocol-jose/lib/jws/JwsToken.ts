@@ -144,11 +144,11 @@ export default class JwsToken implements IJwsGeneralJson {
     // check for JWS compact format
     if (typeof token === 'string') {
       const parts = token.split('.');
-      if (parts.length > 1 &&parts.length <= 3) {
+      if (parts.length > 1 && parts.length <= 3) {
         jwsToken.payload = base64url.toBuffer(parts[1]);
         const signature = new JwsSignature();
         signature.protected = jwsToken.setProtected(parts[0]);
-        signature.signature = parts[2] ? base64url.toBuffer(parts[2]): Buffer.from('');
+        signature.signature = parts[2] ? base64url.toBuffer(parts[2]) : Buffer.from('');
         jwsToken.signatures = [signature];
         return jwsToken;
       }
@@ -205,12 +205,12 @@ export default class JwsToken implements IJwsGeneralJson {
       }
 
       if (!content.signatures) {
-       // manadatory field
+        // manadatory field
         return { result: false, reason: 'missing signatures' };
       }
 
       this.signatures = [];
-      for (let inx = 0 ; inx < content.signatures.length ; inx ++) {
+      for (let inx = 0; inx < content.signatures.length; inx++) {
         const jwsSignature = new JwsSignature();
         jwsSignature.signature = base64url.toBuffer((<any>content).signatures[inx].signature);
         if (content.signatures[inx].header) {
@@ -359,7 +359,7 @@ export default class JwsToken implements IJwsGeneralJson {
     const jwsToken = new JwsToken(this.options);
 
     // Get signing key public key
-    const jwk: PublicKey = (await keyStore.get(signingKeyReference, new KeyStoreOptions({publicKeyOnly: true}))).getKey<PublicKey>();
+    const jwk: PublicKey = (await keyStore.get(signingKeyReference, new KeyStoreOptions({ publicKeyOnly: true }))).getKey<PublicKey>();
     const jwaAlgorithm: string = jwk.alg || JoseConstants.DefaultSigningAlgorithm;
     const algorithm: CryptoAlgorithm = CryptoHelpers.jwaToWebCrypto(jwaAlgorithm);
 
@@ -446,7 +446,7 @@ export default class JwsToken implements IJwsGeneralJson {
    * @param options used for the signature. These options override the options provided in the constructor.
    * @returns True if signature validated.
    */
-   public async verify (validationKeys: PublicKey[], options?: IJwsSigningOptions): Promise<boolean> {
+  public async verify(validationKeys: PublicKey[], options?: IJwsSigningOptions): Promise<boolean> {
     const cryptoFactory: CryptoFactory = this.getCryptoFactory(options);
     const validator = new SubtleCryptoExtension(cryptoFactory);
 
@@ -456,7 +456,7 @@ export default class JwsToken implements IJwsGeneralJson {
     for (let inx = 0; inx < this.signatures.length; inx++) {
       const payloadSignature = this.signatures[inx];
       // We need to support an array of public keys todo
-      if ((success = await this.validate(payloadSignature, validator, validationKeys[0]))) {
+      if ((success = await this.validate(payloadSignature, validator, validationKeys[0], options?.preimage))) {
         if (success) {
           return true;
         }
@@ -483,7 +483,7 @@ export default class JwsToken implements IJwsGeneralJson {
     const jwsToken = new JwsToken(options);
     jwsToken.payload = <Buffer>cryptoToken.get(JoseConstants.tokenPayload);
     jwsToken.format = <ProtectionFormat>cryptoToken.get(JoseConstants.tokenFormat);
-    jwsToken.signatures =  <JwsSignature[]>cryptoToken.get(JoseConstants.tokenSignatures);
+    jwsToken.signatures = <JwsSignature[]>cryptoToken.get(JoseConstants.tokenSignatures);
     return jwsToken;
   }
 
@@ -508,9 +508,9 @@ export default class JwsToken implements IJwsGeneralJson {
   public static fromPayloadProtectionOptions(protectOptions: IPayloadProtectionOptions): IJwsSigningOptions {
     return <any>{
       cryptoFactory: protectOptions.cryptoFactory,
-      protected: protectOptions.options && protectOptions.options.has(JoseConstants.optionProtectedHeader) ? <JwsHeader>protectOptions.options.get(JoseConstants.optionProtectedHeader) : undefined, 
+      protected: protectOptions.options && protectOptions.options.has(JoseConstants.optionProtectedHeader) ? <JwsHeader>protectOptions.options.get(JoseConstants.optionProtectedHeader) : undefined,
       header: protectOptions.options && protectOptions.options.has(JoseConstants.optionHeader) ? <JwsHeader>protectOptions.options.get(JoseConstants.optionHeader) : undefined,
-      kidPrefix:  protectOptions.options && protectOptions.options.has(JoseConstants.optionKidPrefix) ? <JwsHeader>protectOptions.options.get(JoseConstants.optionKidPrefix) : undefined
+      kidPrefix: protectOptions.options && protectOptions.options.has(JoseConstants.optionKidPrefix) ? <JwsHeader>protectOptions.options.get(JoseConstants.optionKidPrefix) : undefined
     };
   }
 
@@ -518,11 +518,11 @@ export default class JwsToken implements IJwsGeneralJson {
    * Convert a @class IPayloadProtectionOptions into a @class IJwsSigningOptions
    * @param signingOptions to convert
    */
-   public static toPayloadProtectionOptions(signingOptions: IJwsSigningOptions): IPayloadProtectionOptions {
+  public static toPayloadProtectionOptions(signingOptions: IJwsSigningOptions): IPayloadProtectionOptions {
     const protectOptions = <any>{
       cryptoFactory: signingOptions.cryptoFactory,
       payloadProtection: new JoseProtocol(),
-      options: new TSMap<string, any>() 
+      options: new TSMap<string, any>()
     };
     if (signingOptions.header) {
       protectOptions.options.set(JoseConstants.optionHeader, signingOptions.header);
@@ -533,7 +533,7 @@ export default class JwsToken implements IJwsGeneralJson {
     if (signingOptions.kidPrefix) {
       protectOptions.options.set(JoseConstants.optionKidPrefix, signingOptions.kidPrefix);
     }
-    
+
     return protectOptions;
   }
 
@@ -541,7 +541,8 @@ export default class JwsToken implements IJwsGeneralJson {
   private async validate(
     payloadSignature: IJwsSignature,
     validator: ISubtleCryptoExtension,
-    validationKey: PublicKey
+    validationKey: PublicKey,
+    preimage: string | undefined,
   ): Promise<boolean> {
     let alg: string | undefined;
     const protectedHeader = payloadSignature.protected;
@@ -565,18 +566,23 @@ export default class JwsToken implements IJwsGeneralJson {
       ));
     }
     const algorithm = CryptoHelpers.jwaToWebCrypto(alg);
-    const encodedProtected = !protectedHeader ? '' : JoseHelpers.encodeHeader(protectedHeader);
-    const encodedContent = base64url.encode(this.payload);
-    const signatureInput = `${encodedProtected}.${encodedContent}`;
-    const payload = Buffer.from(signatureInput, 'utf-8');
-    return validator.verifyByJwk(algorithm, validationKey, payloadSignature.signature, payload);
+
+    // a caller may have already parsed the content of the token to be hashed, if not build it
+    if (!preimage) {
+      const encodedProtected = !protectedHeader ? '' : JoseHelpers.encodeHeader(protectedHeader);
+      const encodedContent = base64url.encode(this.payload);
+      preimage = `${encodedProtected}.${encodedContent}`;
+    }
+
+    const preimageBytes = Buffer.from(preimage, 'utf-8');
+    return validator.verifyByJwk(algorithm, validationKey, payloadSignature.signature, preimageBytes);
   }
 
   /**
    * Set the protected header
    * @param protectedHeader to set on the JwsToken object
    */
-   private setProtected(protectedHeader: string | JwsHeader) {
+  private setProtected(protectedHeader: string | JwsHeader) {
     if (typeof protectedHeader === 'string') {
       const json = base64url.decode(protectedHeader);
       return new TSMap<string, string>().fromJSON(JSON.parse(json));
@@ -589,7 +595,7 @@ export default class JwsToken implements IJwsGeneralJson {
    * Set the header for the signature
    * @param header to set on the JwsToken object
    */
-   private setHeader(header: string ) {
+  private setHeader(header: string) {
     return new TSMap<string, string>().fromJSON(JSON.parse(header));
   }
 }
