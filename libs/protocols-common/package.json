@@ -1,6 +1,6 @@
 {
   "name": "verifiablecredentials-crypto-sdk-typescript-protocols-common",
-  "version": "1.1.12-preview.2",
+  "version": "1.1.12-preview.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/microsoft/VerifiableCredentials-Crypto-SDK-Typescript.git"
@@ -39,9 +39,9 @@
     "typescript": "4.0.3"
   },
   "dependencies": {
-    "verifiablecredentials-crypto-sdk-typescript-keys": "1.1.12-preview.2",
-    "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.12-preview.2",
-    "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.12-preview.2",
+    "verifiablecredentials-crypto-sdk-typescript-keys": "1.1.12-preview.3",
+    "verifiablecredentials-crypto-sdk-typescript-keystore": "1.1.12-preview.3",
+    "verifiablecredentials-crypto-sdk-typescript-plugin": "1.1.12-preview.3",
     "base64url": "3.0.1",
     "typescript-map": "0.0.7",
     "webcrypto-core": "1.1.8"
