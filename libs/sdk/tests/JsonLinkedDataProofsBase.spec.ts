@@ -30,14 +30,14 @@ describe('JsonLinkedDataProofsBase', () => {
         }
 
         try {
-            await jsonLdBase.serialize();
+            jsonLdBase.serialize();
             fail('should throw ' + 'No credential to serialize')
         } catch (error) {
             expect(error.message).toEqual('No credential to serialize')
         }
 
         try {
-            await jsonLdBase.deserialize('xxx');
+            jsonLdBase.deserialize('xxx');
             fail('should throw ' + 'Could not parse JSON LD token')
         } catch (error) {
             expect(error.message).toEqual('Could not parse JSON LD token')

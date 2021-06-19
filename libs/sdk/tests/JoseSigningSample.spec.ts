@@ -40,14 +40,14 @@ describe('Jose Signing', () => {
         jose = await jose.sign(payload);
 
         // Serialize the signature
-        const signature = await jose.serialize();
+        const signature = jose.serialize();
 
         // make sure to have a clean jose object
         jose = new JoseBuilder(crypto)
             .build();
 
         // Deserialize the received signature
-        jose = await jose.deserialize(signature);
+        jose = jose.deserialize(signature);
 
         const validated = await jose.verify();
         expect(validated).toBeTruthy();
@@ -81,10 +81,10 @@ describe('Jose Signing', () => {
         jose = await jose.sign(payload);
 
         // Serialize the signature
-        const signature = await jose.serialize();
+        const signature = jose.serialize();
 
         // Deserialize the received signature
-        jose = await jose.deserialize(signature);
+        jose = jose.deserialize(signature);
 
         const validated = await jose.verify();
         expect(validated).toBeTruthy();
@@ -123,10 +123,10 @@ describe('Jose Signing', () => {
         jose = await jose.sign(payload);
 
         // Serialize the signature
-        const signature = await jose.serialize();
+        const signature = jose.serialize();
 
         // Deserialize the received signature
-        jose = await jose.deserialize(signature);
+        jose = jose.deserialize(signature);
 
         const validated = await jose.verify();
         expect(validated).toBeTruthy();
@@ -153,14 +153,14 @@ describe('Jose Signing', () => {
         jose = await jose.sign(payload);
 
         // Serialize the signature
-        const signature = await jose.serialize();
+        const signature = jose.serialize();
 
         // make sure to have a clean jose object
         jose = new JoseBuilder(crypto)
             .build();
 
         // Deserialize the received signature
-        jose = await jose.deserialize(signature);
+        jose = jose.deserialize(signature);
 
         const validated = await jose.verify();
         expect(validated).toBeTruthy();
@@ -197,10 +197,10 @@ describe('Jose Signing', () => {
         jose = await jose.sign(payload);
 
         // Serialize the signature
-        const signature = await jose.serialize();
+        const signature = jose.serialize();
 
         // Deserialize the received signature
-        jose = await jose.deserialize(signature);
+        jose = jose.deserialize(signature);
 
         const validated = await jose.verify();
         expect(validated).toBeTruthy();
@@ -239,10 +239,10 @@ describe('Jose Signing', () => {
         jose = await jose.sign(payload);
 
         // Serialize the signature
-        const signature = await jose.serialize();
+        const signature = jose.serialize();
 
         // Deserialize the received signature
-        jose = await jose.deserialize(signature);
+        jose = jose.deserialize(signature);
 
         const validated = await jose.verify();
         expect(validated).toBeTruthy();

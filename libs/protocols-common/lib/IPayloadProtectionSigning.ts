@@ -54,11 +54,11 @@ export interface IPayloadProtectionSigning {
   /**
    * Serialize a cryptographic token
    */
-  serialize(): Promise<string>;
+  serialize(): string;
 
   /**
    * Deserialize a cryptographic token
    * @param token The crypto token to serialize.
    */
-  deserialize(token: string): Promise<IPayloadProtectionSigning>;
+  deserialize(token: string): IPayloadProtectionSigning;
 }

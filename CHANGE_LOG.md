@@ -1,7 +1,13 @@
-# version 1.1.12-preview.2
+# version 1.1.12-preview.3
 ## Fix bug in LongFormDid key reference.
 **Type of change:** bug    
 **Customer impact:** low
+
+## Fix bug in JOSE deserialize.
+**Type of change:** bug    
+**Customer impact:** low
+ 
+deserialize and serialize are now switched back to no Promise methods.
 
 # version 1.1.12-preview.1
 ## Keyvault exportKey did not add the kid in the jwk.

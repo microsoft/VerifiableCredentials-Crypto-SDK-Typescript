@@ -59,7 +59,8 @@ describe('Jose', () => {
 
     it('should sign and verify', async () => {
         const payload = Buffer.from('The only way you can survive is to spread to another area. There is another organism on this planet that follows the same pattern. Do you know what it is? A virus. Human beings are a disease. A cancer of this planet.');
-
+        let getProtectionFormatMethod = Jose.getProtectionFormat;
+        let getProtectionFormatSpy: jasmine.Spy = spyOn(Jose, 'getProtectionFormat').and.callFake((protocol: string) => getProtectionFormatMethod(protocol));
         for (let inx = 0; inx < factories.length; inx++) {
             let crypto = factories[inx];
             console.log(`Using crypto ${crypto.builder.cryptoFactory.constructor.name}`);
@@ -73,8 +74,8 @@ describe('Jose', () => {
             jose = await jose.sign(payload);
 
             // Check kid
-            let serialized = await jose.serialize();
-            jose = await jose.deserialize(serialized);
+            let serialized = jose.serialize();
+            jose = jose.deserialize(serialized);
             expect(jose.signatureProtectedHeader['typ']).toEqual('JWT');
             expect(jose.signatureProtectedHeader.alg).toEqual('ES256K');
             expect(jose.signatureProtectedHeader.kid).toEqual('did#neo');
@@ -85,8 +86,8 @@ describe('Jose', () => {
 
             expect((<Jose>jose).builder.kid).toEqual('kid');
             jose = await jose.sign(payload);
-            serialized = await jose.serialize();
-            jose = await jose.deserialize(serialized);
+            serialized = jose.serialize();
+            jose = jose.deserialize(serialized);
             expect(jose.signatureProtectedHeader!.typ).toEqual('JWT');
             expect(jose.signatureProtectedHeader!.alg).toEqual('ES256K');
             expect(jose.signatureProtectedHeader!.kid).toEqual('kid');
@@ -102,16 +103,27 @@ describe('Jose', () => {
                 .build();
 
             try {
-                await jose.serialize();
+                jose.serialize();
                 fail('serializationFormat should fail');
             } catch (e) {
                 expect(e.message).toEqual(`Format 'whatever' is not supported`)
             }
             try {
-                await jose.deserialize(serialized);
+                jose.deserialize(serialized);
                 fail('deserializationFormat should fail');
             } catch (e) {
                 expect(e.message).toEqual(`Format 'whatever' is not supported`)
+            }
+
+            jose = jose.builder
+                .useJsonLdProofsProtocol('JcsEd25519Signature2020', {})
+                .build();
+
+            try {
+                jose.serialize();
+                fail('serialize should fail');
+            } catch (e) {
+                expect(e.message).toEqual(`No token to serialize`)
             }
 
             // verify has no token
@@ -126,11 +138,20 @@ describe('Jose', () => {
             // serialize has no token
             jose = new JoseBuilder(crypto).build();
             try {
-                await jose.serialize();
+                jose.serialize();
                 fail('no token to serialize should fail');
             } catch (ex) {
                 expect(ex.message).toEqual('No token to serialize');
             }
+            jose.deserialize(serialized);
+            getProtectionFormatSpy.and.callFake(() => 'some protocol');
+            try {
+                jose.serialize();
+                fail('wrong protocol should fail');
+            } catch (ex) {
+                expect(ex.message).toEqual(`The serialization format 'some protocol' is not supported`);
+            }
+            getProtectionFormatSpy = getProtectionFormatSpy.and.callFake((protocol: string) => getProtectionFormatMethod(protocol));
         }
     });
 
@@ -154,8 +175,8 @@ describe('Jose', () => {
         jose = await jose.sign(payload);
 
         // Check kid
-        let serialized = await jose.serialize();
-        jose = await jose.deserialize(serialized);
+        let serialized = jose.serialize();
+        jose = jose.deserialize(serialized);
         expect(jose.signatureProtectedHeader['typ']).toEqual('JWT');
         expect(jose.signatureProtectedHeader.alg).toEqual('ES256K');
         expect(jose.signatureProtectedHeader.kid).toEqual('did#neo');
@@ -176,7 +197,7 @@ describe('Jose', () => {
         // Negative cases
         try {
             spyOn(Jose, 'getProtectionFormat').and.returnValue(undefined);
-            await jose.deserialize(serialized);
+            jose.deserialize(serialized);
             fail(`Serialization format 'JwsCompactJson' is not supported should fail`);
         } catch (ex) {
             expect(ex.message).toEqual(`Serialization format 'JwsCompactJson' is not supported`);

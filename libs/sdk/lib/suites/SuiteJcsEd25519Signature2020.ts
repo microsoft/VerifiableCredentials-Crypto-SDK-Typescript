@@ -109,7 +109,7 @@ export default class SuiteJcsEd25519Signature2020 extends JsonLinkedDataProofsBa
   /**
   * Serialize a cryptographic token
   */
-  public serialize(signedPayload?: any): Promise<string> {
+  public serialize(signedPayload?: any): string {
     return super.serialize(signedPayload);
   }
 

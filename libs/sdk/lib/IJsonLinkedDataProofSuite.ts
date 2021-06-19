@@ -33,11 +33,11 @@ export default interface IJsonLinkedDataProofSuite {
     /**
     * Serialize a the payload
     */
-    serialize(signedPayload?: any): Promise<string>;
+    serialize(signedPayload?: any): string;
 
     /**
      * Deserialize a credential
      * @param credential The credential to deserialize.
      */
-    deserialize(credential: string): Promise<any>;
+    deserialize(credential: string): any;
 }
