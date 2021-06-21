@@ -23,6 +23,7 @@ dependencies:
   bs58: 4.0.1
   canonicalize: 1.0.1
   canonicaljson: 1.0.1
+  elliptic: 6.5.4
   eslint: 6.8.0
   eslint-config-prettier: 6.15.0_eslint@6.8.0
   eslint-plugin-prettier: 3.4.0_b77cd85fda941e232840dc83bf6b7690
@@ -34,7 +35,7 @@ dependencies:
   lru-cache: 6.0.0
   minimalistic-crypto-utils: 1.0.1
   ms-rest-azure: 2.6.0
-  node-fetch: 2.4.1
+  node-fetch: 2.6.1
   node-jose: 2.0.0
   preload-js: 0.6.3
   prettier: 1.19.1
@@ -47,6 +48,7 @@ dependencies:
   typescript: 4.0.3
   typescript-map: 0.0.7
   uuid: 8.3.2
+  verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites: 1.1.12-preview.2
   webcrypto-core: 1.1.8
 lockfileVersion: 5.2
 packages:
@@ -2326,12 +2328,6 @@ packages:
     dev: false
     resolution:
       integrity: sha512-1nh45deeb5olNY7eX82BkPO7SSxR5SSYJiPTrTdFUVYwAl8CKMA5N9PjTYkHiRjisVcxcQ1HXdLhx2qxxJzLNQ==
-  /node-fetch/2.4.1:
-    dev: false
-    engines:
-      node: 4.x || >=6.0.0
-    resolution:
-      integrity: sha512-P9UbpFK87NyqBZzUuDBDz4f6Yiys8xm8j7ACDbi6usvFm6KItklQUKjeoqTrYS/S1k6I8oaOC2YLLDr/gg26Mw==
   /node-fetch/2.6.1:
     dev: false
     engines:
@@ -3483,6 +3479,65 @@ packages:
     dev: false
     resolution:
       integrity: sha512-lKxKYG6H03yCZUpAGOPOsMcGxd1RHCu1iKvEHYDPmTyq2HueGhD73ssNBqqQWfvYs04G9iUFRvmAVLW20Jw6ow==
+  /verifiablecredentials-crypto-sdk-typescript-keys/1.1.12-preview.2:
+    dependencies:
+      '@types/node': 14.6.2
+      base64url: 3.0.1
+      clone: 2.1.2
+      node-jose: 2.0.0
+      webcrypto-core: 1.1.8
+    dev: false
+    resolution:
+      integrity: sha512-XsOtevpDzYcBeDw+uEhhsTxk5E2wpfkZEqsBNqnS0VaBRGE935rLiWgC5amIb4ehce4pFt8lgEZpAUjq2DT+jA==
+  /verifiablecredentials-crypto-sdk-typescript-keystore/1.1.12-preview.2:
+    dependencies:
+      '@types/node': 14.6.2
+      base64url: 3.0.1
+      clone: 2.1.2
+      verifiablecredentials-crypto-sdk-typescript-keys: 1.1.12-preview.2
+      webcrypto-core: 1.1.8
+    dev: false
+    resolution:
+      integrity: sha512-1UwhI7DW3j74v1M4uWCwgHCrQUoKJI85efxdqcQinDdFgq4CQQrjM0AdpJtB7CE3FM2LFNpUfbMm7mkSDHhxWw==
+  /verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites/1.1.12-preview.2:
+    dependencies:
+      base64url: 3.0.1
+      clone: 2.1.2
+      verifiablecredentials-crypto-sdk-typescript-keystore: 1.1.12-preview.2
+      verifiablecredentials-crypto-sdk-typescript-plugin: 1.1.12-preview.2
+      verifiablecredentials-crypto-sdk-typescript-plugin-elliptic: 1.1.12-preview.2
+      webcrypto-core: 1.1.8
+    dev: false
+    resolution:
+      integrity: sha512-XSPi+5Nv7205EH22zHxdgayKrdOz1DcPS1hdtYARneDfD6qPohRJYOcISblPDjYQSd4136kIiDoM7zmFYcX+GQ==
+  /verifiablecredentials-crypto-sdk-typescript-plugin-elliptic/1.1.12-preview.2:
+    dependencies:
+      base64url: 3.0.1
+      bn.js: 5.1.2
+      clone: 2.1.2
+      elliptic: 6.5.3
+      minimalistic-crypto-utils: 1.0.1
+      sha.js: 2.4.11
+      verifiablecredentials-crypto-sdk-typescript-plugin: 1.1.12-preview.2
+      webcrypto-core: 1.1.8
+    dev: false
+    resolution:
+      integrity: sha512-nSJDyH2YhVm8MER/Ky9vuim01hQS04rBpGdmJZAS+HgZfW7mWbm4F/nh43+QHM5AhD9P86+pXL3Ui4Nj7SXFEQ==
+  /verifiablecredentials-crypto-sdk-typescript-plugin/1.1.12-preview.2:
+    dependencies:
+      '@peculiar/webcrypto': 1.1.3
+      '@types/node': 14.6.2
+      base64url: 3.0.1
+      big-integer: 1.6.48
+      bn.js: 5.1.2
+      clone: 2.1.2
+      elliptic: 6.5.3
+      verifiablecredentials-crypto-sdk-typescript-keys: 1.1.12-preview.2
+      verifiablecredentials-crypto-sdk-typescript-keystore: 1.1.12-preview.2
+      webcrypto-core: 1.1.8
+    dev: false
+    resolution:
+      integrity: sha512-EJm5rmjsjooquyKpur9FoSkXuBxpTCpWZ7tnbY1e4LQ7qs4T7qI6xV1idi1jyK4NeMIHuc0BIf5N9qDO+liHxQ==
   /verror/1.10.0:
     dependencies:
       assert-plus: 1.0.0
@@ -3783,11 +3838,12 @@ packages:
       ts-node: 8.5.4_typescript@4.0.3
       tslint: 5.20.1_typescript@4.0.3
       typescript: 4.0.3
+      verifiablecredentials-crypto-sdk-typescript-plugin-elliptic: 1.1.12-preview.2
       webcrypto-core: 1.1.8
     dev: false
     name: '@rush-temp/verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites'
     resolution:
-      integrity: sha512-wueMYalc0hWvv8B37QgXHtahjAmR1sVlL2N6KBSZ5t8ADMx6LZt1NkAJMn5SWbikOuN1ytVa2kFrPWRnIewXNg==
+      integrity: sha512-ItirSCw23eELXStYQuDi+IkfyR53cjSUalwrI79ZoWze3FD87NzLbf2wgmdxUK/TwkbNbw9W9vAKjy2rHEirWQ==
       tarball: file:projects/verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites.tgz
     version: 0.0.0
   file:projects/verifiablecredentials-crypto-sdk-typescript-plugin-elliptic.tgz:
@@ -3797,14 +3853,14 @@ packages:
       base64url: 3.0.1
       bn.js: 5.1.2
       clone: 2.1.2
-      elliptic: 6.5.3
+      elliptic: 6.5.4
       husky: 0.14.3
       jasmine: 3.6.3
       jasmine-reporters: 2.4.0
       jasmine-spec-reporter: 6.0.0
       jasmine-ts: 0.3.0_1dbe8e80794e854a37ae94324a1a5cc1
       minimalistic-crypto-utils: 1.0.1
-      node-fetch: 2.4.1
+      node-fetch: 2.6.1
       nyc: 15.1.0
       sha.js: 2.4.11
       source-map-support: 0.5.12
@@ -3817,7 +3873,7 @@ packages:
     dev: false
     name: '@rush-temp/verifiablecredentials-crypto-sdk-typescript-plugin-elliptic'
     resolution:
-      integrity: sha512-Op9fs+2bwtWxJvvVVrKK72RlD1SPxq7MwOBOvAsGXvoTd0gpWH4gzp0Nrn+SnM3sNzh/NIECqD6EFU+UpOApXA==
+      integrity: sha512-a5xXs8QYdvuqvT/n+HgJSPG7jPGadbeb7aUShrlkV7VSsn+uo/ZfJJbUUp5Vo5rYqLPBkk63ShkAr2N1jX2J8A==
       tarball: file:projects/verifiablecredentials-crypto-sdk-typescript-plugin-elliptic.tgz
     version: 0.0.0
   file:projects/verifiablecredentials-crypto-sdk-typescript-plugin-factory.tgz:
@@ -3836,11 +3892,12 @@ packages:
       ts-node: 8.5.4_typescript@4.0.3
       tslint: 5.20.1_typescript@4.0.3
       typescript: 4.0.3
+      verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites: 1.1.12-preview.2
       webcrypto-core: 1.1.8
     dev: false
     name: '@rush-temp/verifiablecredentials-crypto-sdk-typescript-plugin-factory'
     resolution:
-      integrity: sha512-oeL6gGbAkTiByOt37JSeNkwffVvYTgR71Z0XU64oL+R6oAwpGLyUK1NVK9qxXmtOnSJ+wq4x7zYWUsJd66hJ+w==
+      integrity: sha512-/TlvYtFouPhjXniWY71zSwIyt/Cnm2+yu0sGMLC51PY7bsOaPczI8JU1snpLRFNfxGIjVDuoro10+ztaKKtgAQ==
       tarball: file:projects/verifiablecredentials-crypto-sdk-typescript-plugin-factory.tgz
     version: 0.0.0
   file:projects/verifiablecredentials-crypto-sdk-typescript-plugin-keyvault.tgz:
@@ -3870,11 +3927,12 @@ packages:
       tslint: 5.20.1_typescript@4.0.3
       tslint-config-standard: 8.0.1_tslint@5.20.1+typescript@4.0.3
       typescript: 4.0.3
+      verifiablecredentials-crypto-sdk-typescript-plugin-elliptic: 1.1.12-preview.2
       webcrypto-core: 1.1.8
     dev: false
     name: '@rush-temp/verifiablecredentials-crypto-sdk-typescript-plugin-keyvault'
     resolution:
-      integrity: sha512-fNIS2ph/wIFDue48DPKXZb5EZBwMJ5Ihv48QaFAzhfL2Uk8YS2eGBKoR5hX7gyUcrSQYdNlmrpiTWBHSRla/vQ==
+      integrity: sha512-EO0cGQGA1BsloD8ikL34gJR5oAqFZtqdwqhsskG4/sFBZ9dIsEm2I/XSULm4iuU/vlCoz7rWWC7MjaCV7DCgYQ==
       tarball: file:projects/verifiablecredentials-crypto-sdk-typescript-plugin-keyvault.tgz
     version: 0.0.0
   file:projects/verifiablecredentials-crypto-sdk-typescript-plugin.tgz:
@@ -3919,11 +3977,12 @@ packages:
       tslint: 5.20.1_typescript@4.0.3
       typescript: 4.0.3
       typescript-map: 0.0.7
+      verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites: 1.1.12-preview.2
       webcrypto-core: 1.1.8
     dev: false
     name: '@rush-temp/verifiablecredentials-crypto-sdk-typescript-protocol-jose'
     resolution:
-      integrity: sha512-QKfTrGxvRnNPqmH/FtTh7x8PJSNAD1A9iagl/8UQNeGZMw/dmftJqtjmzaccmHqYJVhx/H/8zBaoOYwDXTzR9g==
+      integrity: sha512-ARaivw6p7Pq8cgkdIbefpRo87KHUpryOytiMB3km2TI9uVAEYKLo5t9ueF4TDYBJUw6B3uFyQIwLtTFQygA10Q==
       tarball: file:projects/verifiablecredentials-crypto-sdk-typescript-protocol-jose.tgz
     version: 0.0.0
   file:projects/verifiablecredentials-crypto-sdk-typescript-protocols-common.tgz:
@@ -3945,7 +4004,7 @@ packages:
     dev: false
     name: '@rush-temp/verifiablecredentials-crypto-sdk-typescript-protocols-common'
     resolution:
-      integrity: sha512-Zi+FNcVfgOf4Ynr3cJAB0rm2v1Y+GIz6D1Yfjt8Zmx7ZWRRinAFXNaF/QkZnRI5buZmfxx6y9xPgphSN3OMuBw==
+      integrity: sha512-8lOITKdJs6KR3ldYOEE+LzmGZjPZT8VXinqITLwAOyn3XH/t65C1+clxcOI9pXYXzFC+1zBi4ISuJYXUdQ9doQ==
       tarball: file:projects/verifiablecredentials-crypto-sdk-typescript-protocols-common.tgz
     version: 0.0.0
   file:projects/verifiablecredentials-crypto-sdk-typescript.tgz:
@@ -3974,11 +4033,13 @@ packages:
       typescript: 4.0.3
       typescript-map: 0.0.7
       uuid: 8.3.2
+      verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites: 1.1.12-preview.2
+      verifiablecredentials-crypto-sdk-typescript-plugin-elliptic: 1.1.12-preview.2
       webcrypto-core: 1.1.8
     dev: false
     name: '@rush-temp/verifiablecredentials-crypto-sdk-typescript'
     resolution:
-      integrity: sha512-2fzt4PBpcMGWzdsiGBgjHxzHSdciF7gcHRfuXa1D8j+Gz5jeD70RDPdV9Z3ktLrLHi3dmlSw3D0t6WYXUtPAIA==
+      integrity: sha512-TQFGzNhWyC8l4EgSrmihwX7OAPYTNtNnfB2p35+jRdhr1mXtr08yBLJ0FHvMxO7z7xFODB27zw8UGSy95bkHJw==
       tarball: file:projects/verifiablecredentials-crypto-sdk-typescript.tgz
     version: 0.0.0
 specifiers:
@@ -4006,6 +4067,7 @@ specifiers:
   bs58: 4.0.1
   canonicalize: 1.0.1
   canonicaljson: 1.0.1
+  elliptic: 6.5.4
   eslint: ^6.2.1
   eslint-config-prettier: ^6.1.0
   eslint-plugin-prettier: ^3.1.0
@@ -4017,7 +4079,7 @@ specifiers:
   lru-cache: 6.0.0
   minimalistic-crypto-utils: 1.0.1
   ms-rest-azure: 2.6.0
-  node-fetch: 2.4.1
+  node-fetch: 2.6.1
   node-jose: 2.0.0
   preload-js: ^0.6.3
   prettier: ^1.18.2
@@ -4030,4 +4092,5 @@ specifiers:
   typescript: 4.0.3
   typescript-map: 0.0.7
   uuid: ^8.3.1
+  verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites: 1.1.12-preview.2
   webcrypto-core: 1.1.8
