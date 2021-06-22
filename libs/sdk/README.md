@@ -210,9 +210,22 @@ rush build or rush rebuild to force a full build
 
 The SDK is an assembly of smaller NPM packages. You can go into the directory of each packages and do npm run test to test the package.
 
+### Publish (long method)
+1. Starting at the leaves of the dependency tree, find an internal library that needs to be published (e.g., `libs/plugin/`) and upgrade its "version" in the package.json to the target version.
+2. Run `rush build` to make sure the latest version is built.
+3. Make sure that an appropiate `.npmrc` exists at the same level of the package.json.
+4. Run the publishing command that best suits your needs. It is most common to publish a preview version.
+
+```bash
+npm publish --tag preview
+```
+
+Skip the `--tag` to do a new release of the package. Remove 'preview.<n>' from the version number.
+The release package is the same as the last preview package.
+5. Find all internal libraries that depend on the published package (e.g., on `verifiablecredentials-crypto-sdk-typescript-plugin`) and upgrade their package.json to the newest version.
+6. Run `rush update`.
+7. Any change to a package.json file should result in a new version publish. Repeat steps 1-6, making sure to navigate the dependency tree from the bottom up all the way to the root (i.e. `libs/sdk/`).
  
-# 
-# 
 
 # Contributing
 
