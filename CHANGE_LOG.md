@@ -1,4 +1,4 @@
-# version 1.1.12-preview.5
+# version 1.1.12-preview.6
 ## Dependabot vulnerability fixes.
 **Type of change:** bug    
 **Customer impact:** low
