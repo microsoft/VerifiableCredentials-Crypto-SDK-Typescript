@@ -210,10 +210,6 @@ rush build or rush rebuild to force a full build
 
 The SDK is an assembly of smaller NPM packages. You can go into the directory of each packages and do npm run test to test the package.
 
- 
-# 
-# 
-
 # Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a

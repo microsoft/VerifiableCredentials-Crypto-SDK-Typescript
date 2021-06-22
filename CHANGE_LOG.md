@@ -1,3 +1,8 @@
+# version 1.1.12-preview.7
+## Dependabot vulnerability fixes.
+**Type of change:** bug    
+**Customer impact:** low
+
 # version 1.1.12-preview.2
 ## Fix bug in LongFormDid key reference.
 **Type of change:** bug    
