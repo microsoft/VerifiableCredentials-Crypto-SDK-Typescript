@@ -44,7 +44,7 @@
     "@azure/identity": "1.0.0",
     "@azure/keyvault-keys": "4.0.2",
     "@azure/keyvault-secrets": "4.0.2",
-    "@decentralized-identity/ion-sdk": "0.4.1",
+    "@decentralized-identity/ion-sdk": "0.5.0",
     "base64url": "3.0.1",
     "bs58": "4.0.1",
     "canonicalize": "1.0.1",
