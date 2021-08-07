@@ -38,14 +38,14 @@ describe('SuiteJcsEd25519Signature2020', () => {
         }
 
         let signedPayload = await suite.sign(payload);
-        const serialized = await suite.serialize(signedPayload);
+        const serialized = suite.serialize(signedPayload);
         const pl = JSON.parse(serialized);
         expect(pl.proof.signatureValue).toBeDefined();
         expect(pl.prop1).toEqual('prop1');
         expect(pl.prop2).toEqual('prop2');
 
         // Verify
-        signedPayload = await suite.deserialize(serialized);
+        signedPayload = suite.deserialize(serialized);
         const key = (await crypto.builder.keyStore.get(crypto.builder.signingKeyReference, new KeyStoreOptions({ publicKeyOnly: true }))).getKey<PublicKey>();
         let result = await suite.verify([key]);
         expect(result).toBeTruthy();
@@ -77,7 +77,7 @@ describe('SuiteJcsEd25519Signature2020', () => {
 
         try {
             delete payload.proof;
-            await suite.deserialize(JSON.stringify(payload));
+            suite.deserialize(JSON.stringify(payload));
             await suite.verify([key]);
             fail('Should throw ' + 'No proof to validate in signedPayload');
         } catch (exception) {
@@ -86,7 +86,7 @@ describe('SuiteJcsEd25519Signature2020', () => {
 
         try {
             payload['proof'] = {};
-            await suite.deserialize(JSON.stringify(payload));
+            suite.deserialize(JSON.stringify(payload));
             await suite.verify([key]);
             fail('Should throw ' + 'Proof does not contain the signatureValue');
         } catch (exception) {
@@ -188,7 +188,7 @@ describe('SuiteJcsEd25519Signature2020', () => {
             const jwk: OkpPublicKey = vectors[vector].publicKey;
 
             // Verify
-            const credential = await suite.deserialize(JSON.stringify(payload));
+            const credential = suite.deserialize(JSON.stringify(payload));
             const result = await suite.verify([jwk], credential);
             expect(result).toBeTruthy();
         }

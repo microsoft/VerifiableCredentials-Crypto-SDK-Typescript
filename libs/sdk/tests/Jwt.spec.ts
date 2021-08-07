@@ -14,8 +14,8 @@ describe('JWT', () => {
 
         const payload = { message: 'Hello Houston' };
         jwt = await jwt.sign(payload);
-        const token = await jwt.serialize();
-        const signedPayload = JSON.parse( (await <any>jwt.deserialize(token))._signaturePayload.toString());
+        const token = jwt.serialize();
+        const signedPayload = JSON.parse((<any>jwt.deserialize(token))._signaturePayload.toString());
         expect(signedPayload.exp).toBeDefined();
         expect(signedPayload.nbf).toBeDefined();
         expect(signedPayload.jti).toBeDefined();

@@ -55,25 +55,25 @@ export default class JsonLinkedDataProofsBase implements IJsonLinkedDataProofSui
   * Serialize a cryptographic token
   * @param signedPayload The payload to serialize
   */
-  public serialize(signedPayload?: any): Promise<string> {
-      this._credential = signedPayload ? signedPayload : this._credential;
-      if (!this._credential) {
-        return Promise.reject(new Error('No credential to serialize'));
-      }
+  public serialize(signedPayload?: any): string {
+    this._credential = signedPayload ? signedPayload : this._credential;
+    if (!this._credential) {
+      throw new Error('No credential to serialize');
+    }
 
-      return Promise.resolve(JSON.stringify(this._credential));
+    return JSON.stringify(this._credential);
   }
 
   /**
    * Deserialize a credential
    * @param credential The credential to deserialize.
    */
-  public deserialize(credential: string): Promise<any> {
+  public deserialize(credential: string): any {
     try {
       this._credential = JSON.parse(credential);
-      return Promise.resolve(this._credential);
+      return this._credential;
     } catch (exeption) {
-      return Promise.reject(new Error('Could not parse JSON LD token'));
+      throw new Error('Could not parse JSON LD token');
     }
   }
 }

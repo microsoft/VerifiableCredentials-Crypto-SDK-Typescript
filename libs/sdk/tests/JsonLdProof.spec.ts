@@ -47,7 +47,7 @@ describe('JSONLD proofs', () => {
         };
 
         jsonLdProof = await jsonLdProof.sign(doc);
-        const serialized = await jsonLdProof.serialize();
+        const serialized = jsonLdProof.serialize();
         const payload = JSON.parse(serialized);
         expect(payload.proof.type).toEqual('JcsEd25519Signature2020');
         const publicKey = (await crypto.builder.keyStore.get(crypto.builder.signingKeyReference, new KeyStoreOptions({ publicKeyOnly: true }))).getKey<PublicKey>();
@@ -57,12 +57,12 @@ describe('JSONLD proofs', () => {
         // Negative cases
         try {
             spyOn(Jose, 'payloadIsJsonLdProof').and.returnValue(['xxx', 'JcsEd25519Signature2020']);
-            await jsonLdProof.deserialize(serialized + 'kkk');
+            jsonLdProof.deserialize(serialized + 'kkk');
         } catch (exception) {
             expect(exception.message).toEqual('Could not parse JSON LD token');
         }
         try {
-            await jsonLdProof.serialize();
+            jsonLdProof.serialize();
         } catch (exception) {
             expect(exception.message).toEqual('No token to serialize');
         }        
@@ -119,7 +119,7 @@ describe('JSONLD proofs', () => {
             .build();
         let jsonLdProof: IPayloadProtectionSigning = new JoseBuilder(crypto)
             .build();
-        jsonLdProof = await jsonLdProof.deserialize(JSON.stringify(doc));
+        jsonLdProof = jsonLdProof.deserialize(JSON.stringify(doc));
         const result = await (<any>jsonLdProof).verify([publicKey]);
         expect(result).toBeTruthy();
     });
