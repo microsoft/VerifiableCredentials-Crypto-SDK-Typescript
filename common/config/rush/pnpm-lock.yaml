@@ -2,7 +2,7 @@ dependencies:
   '@azure/identity': 1.0.0
   '@azure/keyvault-keys': 4.0.2
   '@azure/keyvault-secrets': 4.0.2
-  '@decentralized-identity/ion-sdk': 0.4.1
+  '@decentralized-identity/ion-sdk': 0.5.0
   '@peculiar/webcrypto': 1.1.3
   '@rush-temp/verifiablecredentials-crypto-sdk-typescript': file:projects/verifiablecredentials-crypto-sdk-typescript.tgz
   '@rush-temp/verifiablecredentials-crypto-sdk-typescript-keys': file:projects/verifiablecredentials-crypto-sdk-typescript-keys.tgz
@@ -412,16 +412,17 @@ packages:
       node: '>=6.9.0'
     resolution:
       integrity: sha512-M/NzBpEL95I5Hh4dwhin5JlE7EzO5PHMAuzjxss3tiOBD46KfQvVedN/3jEPZvdRvtsK2222XfdHogNIttFgcg==
-  /@decentralized-identity/ion-sdk/0.4.1:
+  /@decentralized-identity/ion-sdk/0.5.0:
     dependencies:
-      base64url: 3.0.1
+      '@transmute/did-key-secp256k1': 0.2.1-unstable.42
+      '@waiting/base64': 4.2.9
       canonicalize: 1.0.1
-      jose: 2.0.2
       multihashes: 0.4.14
+      randombytes: 2.1.0
       uri-js: 4.4.0
     dev: false
     resolution:
-      integrity: sha512-3XfxifDgRYAUvgC/OT34hPgLXxMm9bC0RvrEP65ZadBGInZ+hH9Ws6abSW6hYBiT3uFR/4BfTIn2wPm7Xzj3zg==
+      integrity: sha512-W6Cd3KXd8Mqv8dgFvUEt1Jj3jKUtursmOhr50o1nG3J0LbVw8inCrkrmd7R9C5zpBPP+1EwpUya+A9JU5nbp7w==
   /@istanbuljs/load-nyc-config/1.1.0:
     dependencies:
       camelcase: 5.3.1
@@ -459,12 +460,6 @@ packages:
       node: '>=8.0.0'
     resolution:
       integrity: sha512-GtwNB6BNDdsIPAYEdpp3JnOGO/3AJxjPvny53s3HERBdXSJTGQw8IRhiaTEX0b3w9P8+FwFZde4k+qkjn67aVw==
-  /@panva/asn1.js/1.0.0:
-    dev: false
-    engines:
-      node: '>=10.13.0'
-    resolution:
-      integrity: sha512-UdkG3mLEqXgnlKsWanWcgb6dOjUzJ+XC5f+aWw30qrtjxeNUSfKX1cd5FBzOaXQumoe9nIqeZUvrRJS03HCCtw==
   /@peculiar/asn1-schema/2.0.36:
     dependencies:
       '@types/asn1js': 2.0.0
@@ -494,6 +489,38 @@ packages:
       node: '>=10.12.0'
     resolution:
       integrity: sha512-M1mipPJkWzIf92w3T1Vx5ir3kV9c0oWCcLkeh4vNa/3XDEtQ7xxj5NRKyq67NuVNKLH2/0JD1crlLJyqfYbfBA==
+  /@transmute/did-key-common/0.2.1-unstable.42:
+    dependencies:
+      base64url: 3.0.1
+      borc: 2.1.2
+      canonicalize: 1.0.5
+      cbor: 5.2.0
+    dev: false
+    engines:
+      node: '>=10'
+    resolution:
+      integrity: sha512-mJ58IKEBxa6SorCrIBSPu0OcEj94Y5+0/qUKqbNTTqfCOsPi6E5BEzMIgpf3Unrb59u+u5JBL0T/Sy7coOSO1A==
+  /@transmute/did-key-secp256k1/0.2.1-unstable.42:
+    dependencies:
+      '@transmute/did-key-common': 0.2.1-unstable.42
+      '@trust/keyto': 1.0.1
+      base64url: 3.0.1
+      bs58: 4.0.1
+      canonicalize: 1.0.1
+      secp256k1: 4.0.2
+    dev: false
+    engines:
+      node: '>=10'
+    resolution:
+      integrity: sha512-pLHsxVEeJYUz2jaUWznGJHRaRE+Fg3A4DiArWYpRSozYaSW5x2AhXELN+08qvU4E8FjiQmqInf8KqeS0hlUJoQ==
+  /@trust/keyto/1.0.1:
+    dependencies:
+      asn1.js: 5.4.1
+      base64url: 3.0.1
+      elliptic: 6.5.3
+    dev: false
+    resolution:
+      integrity: sha512-OXTmKkrnkwktCX86XA7eWs1TQ6u64enm0syzAfNhjigbuGLy5aLhbhRYWtjt4zzdG/irWudluheRZ9Ic9pCwsA==
   /@types/asn1js/2.0.0:
     dev: false
     resolution:
@@ -537,6 +564,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-tPIgT0GUmdJQNSHxp0X2jnpQfBSTfGxUMc/2CXBU2mnyTFVYVa2ojpoQ74w0U2yn2vw3jnC640+77lkFFpdVDw==
+  /@waiting/base64/4.2.9:
+    dev: false
+    engines:
+      node: '>=10.4.0'
+    resolution:
+      integrity: sha512-yzt9ih63oePux/sQM8Df6DTv1IeXGByaHrFiJoPszk0LaJwIGJ3IKhKhT/O6YMo2RignlP2cfxoo1lGmKZPIgQ==
   /acorn-jsx/5.3.1_acorn@7.4.1:
     dependencies:
       acorn: 7.4.1
@@ -656,6 +689,15 @@ packages:
     dev: false
     resolution:
       integrity: sha512-o5Roy6tNG4SL/FOkCAN6RzjiakZS25RLYFrcMttJqbdd8BWrnA+fGz57iN5Pb06pvBGvl5gQ0B48dJlslXvoTg==
+  /asn1.js/5.4.1:
+    dependencies:
+      bn.js: 4.12.0
+      inherits: 2.0.4
+      minimalistic-assert: 1.0.1
+      safer-buffer: 2.1.2
+    dev: false
+    resolution:
+      integrity: sha512-+I//4cYPccV8LdmBLiX8CYvf9Sp3vQsrqu2QNXRcrbiWvcx/UdlFiqUJJzxRQxgsZmvhXhn4cSKeSmoFjVdupA==
   /asn1/0.2.4:
     dependencies:
       safer-buffer: 2.1.2
@@ -744,6 +786,10 @@ packages:
     dev: false
     resolution:
       integrity: sha512-eJzYkFYy9L4JzXsbymsFn3p54D+llV27oTQ+ziJG7WFRheJcNZilgVXMG0LoZtlQSKBsJdWtLFqOD0u+U0jZKA==
+  /bignumber.js/9.0.1:
+    dev: false
+    resolution:
+      integrity: sha512-IdZR9mh6ahOBv/hYGiXyVuyCetmGJhtYkqLBpTStdhEGjegpPlUawydyaF3pbIOFynJTpllEs+NP+CS9jKFLjA==
   /bn.js/4.12.0:
     dev: false
     resolution:
@@ -752,6 +798,20 @@ packages:
     dev: false
     resolution:
       integrity: sha512-40rZaf3bUNKTVYu9sIeeEGOg7g14Yvnj9kH7b50EiwX0Q7A6umbvfI5tvHaOERH0XigqKkfLkFQxzb4e6CIXnA==
+  /borc/2.1.2:
+    dependencies:
+      bignumber.js: 9.0.1
+      buffer: 5.7.1
+      commander: 2.20.3
+      ieee754: 1.2.1
+      iso-url: 0.4.7
+      json-text-sequence: 0.1.1
+      readable-stream: 3.6.0
+    dev: false
+    engines:
+      node: '>=4'
+    resolution:
+      integrity: sha512-Sy9eoUi4OiKzq7VovMn246iTo17kzuyHJKomCfpWMlI6RpfN1gk95w7d7gH264nApVLg0HZfcpz62/g4VH1Y4w==
   /brace-expansion/1.1.11:
     dependencies:
       balanced-match: 1.0.2
@@ -847,6 +907,10 @@ packages:
     dev: false
     resolution:
       integrity: sha512-N3cmB3QLhS5TJ5smKFf1w42rJXWe6C1qP01z4dxJiI5v269buii4fLHWETDyf7yEd0azGLNC63VxNMiPd2u0Cg==
+  /canonicalize/1.0.5:
+    dev: false
+    resolution:
+      integrity: sha512-mAjKJPIyP0xqqv6IAkvso07StOmz6cmGtNDg3pXCSzXVZOqka7StIkAhJl/zHOi4M2CgpYfD6aeRWbnrmtvBEA==
   /canonicaljson/1.0.1:
     dependencies:
       bignumber.js: 4.1.0
@@ -858,6 +922,15 @@ packages:
     dev: false
     resolution:
       integrity: sha1-G2gcIf+EAzyCZUMJBolCDRhxUdw=
+  /cbor/5.2.0:
+    dependencies:
+      bignumber.js: 9.0.1
+      nofilter: 1.0.4
+    dev: false
+    engines:
+      node: '>=6.0.0'
+    resolution:
+      integrity: sha512-5IMhi9e1QU76ppa5/ajP1BmMWZ2FHkhAhjeVKQ/EFCgYSEaeVaoGtL7cxJskf9oCCk+XjzaIdc3IuU/dbA/o2A==
   /chalk/2.4.2:
     dependencies:
       ansi-styles: 3.2.1
@@ -1084,6 +1157,10 @@ packages:
       node: '>=0.4.0'
     resolution:
       integrity: sha1-3zrhmayt+31ECqrgsp4icrJOxhk=
+  /delimit-stream/0.1.0:
+    dev: false
+    resolution:
+      integrity: sha1-m4MZR3wOX4rrPONXrjBfwl6hzSs=
   /diff/4.0.2:
     dev: false
     engines:
@@ -1859,6 +1936,12 @@ packages:
     dev: false
     resolution:
       integrity: sha1-6PvzdNxVb/iUehDcsFctYz8s+hA=
+  /iso-url/0.4.7:
+    dev: false
+    engines:
+      node: '>=10'
+    resolution:
+      integrity: sha512-27fFRDnPAMnHGLq36bWTpKET+eiXct3ENlCcdcMdk+mjXrb2kw3mhBUg1B7ewAC0kVzlOPhADzQgz1SE6Tglog==
   /isstream/0.1.2:
     dev: false
     resolution:
@@ -1988,14 +2071,6 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-Th91zHsbsALWjDUIiU5d/W5zaYQsZFMPTdeNmi8GivZPmAaUAK8MblSG3yQI4VMGC/abF2us7ex60NH1AAIMTA==
-  /jose/2.0.2:
-    dependencies:
-      '@panva/asn1.js': 1.0.0
-    dev: false
-    engines:
-      node: '>=10.13.0 < 13 || >=13.7.0'
-    resolution:
-      integrity: sha512-yD93lsiMA1go/qxSY/vXWBodmIZJIxeB7QhFi8z1yQ3KUwKENqI9UA8VCHlQ5h3x1zWuWZjoY87ByQzkQbIrQg==
   /js-tokens/4.0.0:
     dev: false
     resolution:
@@ -2035,6 +2110,12 @@ packages:
     dev: false
     resolution:
       integrity: sha1-Epai1Y/UXxmg9s4B1lcB4sc1tus=
+  /json-text-sequence/0.1.1:
+    dependencies:
+      delimit-stream: 0.1.0
+    dev: false
+    resolution:
+      integrity: sha1-py8hfcSvxGKf/1/rME3BvVGi89I=
   /json5/1.0.1:
     dependencies:
       minimist: 1.2.5
@@ -2315,6 +2396,10 @@ packages:
     dev: false
     resolution:
       integrity: sha512-1nh45deeb5olNY7eX82BkPO7SSxR5SSYJiPTrTdFUVYwAl8CKMA5N9PjTYkHiRjisVcxcQ1HXdLhx2qxxJzLNQ==
+  /node-addon-api/2.0.2:
+    dev: false
+    resolution:
+      integrity: sha512-Ntyt4AIXyaLIuMHF6IOoTakB3K+RWxwtsHNRxllEoA6vPwP9o4866g6YWDLUdnucilZhmkxiHwHr11gAENw+QA==
   /node-fetch/2.4.1:
     dev: false
     engines:
@@ -2333,6 +2418,11 @@ packages:
       node: '>= 6.0.0'
     resolution:
       integrity: sha512-PPmu8eEeG9saEUvI97fm4OYxXVB6bFvyNTyiUOBichBpFG8A1Ljw3bY62+5oOjDEMHRnd0Y7HQ+x7uzxOzC6JA==
+  /node-gyp-build/4.2.3:
+    dev: false
+    hasBin: true
+    resolution:
+      integrity: sha512-MN6ZpzmfNCRM+3t57PTJHgHyw/h4OWnZ6mR8P5j/uZtqQr46RRuDE/P+g3n0YR/AiYXeWixZZzaip77gdICfRg==
   /node-jose/2.0.0:
     dependencies:
       base64url: 3.0.1
@@ -2359,6 +2449,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-uW7fodD6pyW2FZNZnp/Z3hvWKeEW1Y8R1+1CnErE8cXFXzl5blBOoVB41CvMer6P6Q0S5FXDwcHgFd1Wj0U9zg==
+  /nofilter/1.0.4:
+    dev: false
+    engines:
+      node: '>=8'
+    resolution:
+      integrity: sha512-N8lidFp+fCz+TD51+haYdbDGrcBWwuHX40F5+z0qkUjMJ5Tp+rdSuAkMJ9N9eoolDlEVTf6u5icM+cNKkKW2mA==
   /normalize-package-data/2.5.0:
     dependencies:
       hosted-git-info: 2.8.9
@@ -2722,6 +2818,12 @@ packages:
       node: '>=0.6'
     resolution:
       integrity: sha512-N5ZAX4/LxJmF+7wN74pUD6qAh9/wnvdQcjq9TZjevvXzSUo7bfmw91saqMjzGS2xq91/odN2dW/WOl7qQHNDGA==
+  /randombytes/2.1.0:
+    dependencies:
+      safe-buffer: 5.2.1
+    dev: false
+    resolution:
+      integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==
   /rdf-canonize/1.2.0:
     dependencies:
       node-forge: 0.10.0
@@ -2762,6 +2864,16 @@ packages:
     dev: false
     resolution:
       integrity: sha512-Ebho8K4jIbHAxnuxi7o42OrZgF/ZTNcsZj6nRKyUmkhLFq8CHItp/fy6hQZuZmP/n3yZ9VBUbp4zz/mX8hmYPw==
+  /readable-stream/3.6.0:
+    dependencies:
+      inherits: 2.0.4
+      string_decoder: 1.1.1
+      util-deprecate: 1.0.2
+    dev: false
+    engines:
+      node: '>= 6'
+    resolution:
+      integrity: sha512-BViHy7LKeTz4oNnkcLJ+lVSL6vpiFeX6/d3oSH8zCW7UxP2onchk+vTGB143xuFjHS3deTgkKoXXymXqymiIdA==
   /regexpp/2.0.1:
     dev: false
     engines:
@@ -2890,6 +3002,17 @@ packages:
     dev: false
     resolution:
       integrity: sha512-NqVDv9TpANUjFm0N8uM5GxL36UgKi9/atZw+x7YFnQ8ckwFGKrl4xX4yWtrey3UJm5nP1kUbnYgLopqWNSRhWw==
+  /secp256k1/4.0.2:
+    dependencies:
+      elliptic: 6.5.3
+      node-addon-api: 2.0.2
+      node-gyp-build: 4.2.3
+    dev: false
+    engines:
+      node: '>=10.0.0'
+    requiresBuild: true
+    resolution:
+      integrity: sha512-UDar4sKvWAksIlfX3xIaQReADn+WFnHvbVujpcbr+9Sf/69odMwy2MUsz5CKLQgX9nsIyrjuxL2imVyoNHa3fg==
   /semver/5.7.1:
     dev: false
     hasBin: true
@@ -3754,7 +3877,7 @@ packages:
     dev: false
     name: '@rush-temp/verifiablecredentials-crypto-sdk-typescript-keystore'
     resolution:
-      integrity: sha512-uuire0nroXGJ/r3RFGmtcILsqhRI3TH3UAw3New8rsE4ck80RkGPH5dVHiWBo9jdfC2FPrhwGXa/vZHep0Ev/A==
+      integrity: sha512-oXUWederiq1IcN4DfjBcQcn/ho1tRcfACrSoUKkxkU+5vn5TxtIVN2CeXq8hKVS6k2G33tdZQDOsIIAn1p9eNQ==
       tarball: file:projects/verifiablecredentials-crypto-sdk-typescript-keystore.tgz
     version: 0.0.0
   file:projects/verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites.tgz:
@@ -3776,7 +3899,7 @@ packages:
     dev: false
     name: '@rush-temp/verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites'
     resolution:
-      integrity: sha512-wueMYalc0hWvv8B37QgXHtahjAmR1sVlL2N6KBSZ5t8ADMx6LZt1NkAJMn5SWbikOuN1ytVa2kFrPWRnIewXNg==
+      integrity: sha512-kFMtPAirgTYQ1mxqDK4V/4MIBi1evi2Hw3+Ub3ZwCS6NnzbhOhyE34L/0mV22EJYPbpsiHLR15U669R/zwiVZg==
       tarball: file:projects/verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites.tgz
     version: 0.0.0
   file:projects/verifiablecredentials-crypto-sdk-typescript-plugin-elliptic.tgz:
@@ -3806,7 +3929,7 @@ packages:
     dev: false
     name: '@rush-temp/verifiablecredentials-crypto-sdk-typescript-plugin-elliptic'
     resolution:
-      integrity: sha512-Op9fs+2bwtWxJvvVVrKK72RlD1SPxq7MwOBOvAsGXvoTd0gpWH4gzp0Nrn+SnM3sNzh/NIECqD6EFU+UpOApXA==
+      integrity: sha512-cg1Fxpy/fHF87zTUPKsJwvBJhdifMcWpcvJ8Cn2Zj01/Mz99LT3oM+nlKApjcX35Xxy87J/CyGuMu4As8lZR5w==
       tarball: file:projects/verifiablecredentials-crypto-sdk-typescript-plugin-elliptic.tgz
     version: 0.0.0
   file:projects/verifiablecredentials-crypto-sdk-typescript-plugin-factory.tgz:
@@ -3829,7 +3952,7 @@ packages:
     dev: false
     name: '@rush-temp/verifiablecredentials-crypto-sdk-typescript-plugin-factory'
     resolution:
-      integrity: sha512-oeL6gGbAkTiByOt37JSeNkwffVvYTgR71Z0XU64oL+R6oAwpGLyUK1NVK9qxXmtOnSJ+wq4x7zYWUsJd66hJ+w==
+      integrity: sha512-PPRr2IGqeTDZqjq1+TmDbjSCiEAy8B4BycRqTEmamWXjz0Jz51VRvYVqe2qtW6Zm30aIXFh5UkulHC7Nwn9+7A==
       tarball: file:projects/verifiablecredentials-crypto-sdk-typescript-plugin-factory.tgz
     version: 0.0.0
   file:projects/verifiablecredentials-crypto-sdk-typescript-plugin-keyvault.tgz:
@@ -3863,7 +3986,7 @@ packages:
     dev: false
     name: '@rush-temp/verifiablecredentials-crypto-sdk-typescript-plugin-keyvault'
     resolution:
-      integrity: sha512-fNIS2ph/wIFDue48DPKXZb5EZBwMJ5Ihv48QaFAzhfL2Uk8YS2eGBKoR5hX7gyUcrSQYdNlmrpiTWBHSRla/vQ==
+      integrity: sha512-I/CrWmHLWV7aAFmXYdrDRdDm3PLJqEZZ0YReFjSyXNbdaYy72nsRDx+Sgybjc+k5YW656fP8RuM/Bakkey5aag==
       tarball: file:projects/verifiablecredentials-crypto-sdk-typescript-plugin-keyvault.tgz
     version: 0.0.0
   file:projects/verifiablecredentials-crypto-sdk-typescript-plugin.tgz:
@@ -3889,7 +4012,7 @@ packages:
     dev: false
     name: '@rush-temp/verifiablecredentials-crypto-sdk-typescript-plugin'
     resolution:
-      integrity: sha512-yfqO5Qm7xtZdfbkxjqQHftjvG6GCY3tH9orCrfzG5CayFf4b1+Qi3ZAnOzlPorq9rkcZygU4OumdIBaStOT2RA==
+      integrity: sha512-kp3BnefpKkih0zjLm03VR7HVYbu01IkpZblIgLn+So5NckyA+lG+P9K/EHDxl2pE6hEhM0bkz4w+ZwruXfQcOg==
       tarball: file:projects/verifiablecredentials-crypto-sdk-typescript-plugin.tgz
     version: 0.0.0
   file:projects/verifiablecredentials-crypto-sdk-typescript-protocol-jose.tgz:
@@ -3912,7 +4035,7 @@ packages:
     dev: false
     name: '@rush-temp/verifiablecredentials-crypto-sdk-typescript-protocol-jose'
     resolution:
-      integrity: sha512-QKfTrGxvRnNPqmH/FtTh7x8PJSNAD1A9iagl/8UQNeGZMw/dmftJqtjmzaccmHqYJVhx/H/8zBaoOYwDXTzR9g==
+      integrity: sha512-GGzA+06SIqKSCRzATsGpT+k2Ok3bEnZcBWBOAY5cgsjbuvP0rObPEoJ0wrJdPMYGtmc/9s14RqZdYYEBXqRUOQ==
       tarball: file:projects/verifiablecredentials-crypto-sdk-typescript-protocol-jose.tgz
     version: 0.0.0
   file:projects/verifiablecredentials-crypto-sdk-typescript-protocols-common.tgz:
@@ -3934,7 +4057,7 @@ packages:
     dev: false
     name: '@rush-temp/verifiablecredentials-crypto-sdk-typescript-protocols-common'
     resolution:
-      integrity: sha512-Zi+FNcVfgOf4Ynr3cJAB0rm2v1Y+GIz6D1Yfjt8Zmx7ZWRRinAFXNaF/QkZnRI5buZmfxx6y9xPgphSN3OMuBw==
+      integrity: sha512-OukV7I3T7Xen8qYhIiksVq93l5cmETLA3ur5KiYG+liI89qcsWK31q0qKlu9EwEie6p74q6H7OJU9pQe+wXqJw==
       tarball: file:projects/verifiablecredentials-crypto-sdk-typescript-protocols-common.tgz
     version: 0.0.0
   file:projects/verifiablecredentials-crypto-sdk-typescript.tgz:
@@ -3942,7 +4065,7 @@ packages:
       '@azure/identity': 1.0.0
       '@azure/keyvault-keys': 4.0.2
       '@azure/keyvault-secrets': 4.0.2
-      '@decentralized-identity/ion-sdk': 0.4.1
+      '@decentralized-identity/ion-sdk': 0.5.0
       '@types/jasmine': 2.8.17
       '@types/node': 14.6.2
       '@types/uuid': 3.4.4
@@ -3967,14 +4090,14 @@ packages:
     dev: false
     name: '@rush-temp/verifiablecredentials-crypto-sdk-typescript'
     resolution:
-      integrity: sha512-2fzt4PBpcMGWzdsiGBgjHxzHSdciF7gcHRfuXa1D8j+Gz5jeD70RDPdV9Z3ktLrLHi3dmlSw3D0t6WYXUtPAIA==
+      integrity: sha512-XFrF+hsEtm2cOR7BND8BDB2wUyQ912dG2/h1g6f2jj/FXor3/B+E5kJUg1AZwCbP+4b+3AbidetPgy73RgGw7A==
       tarball: file:projects/verifiablecredentials-crypto-sdk-typescript.tgz
     version: 0.0.0
 specifiers:
   '@azure/identity': 1.0.0
   '@azure/keyvault-keys': 4.0.2
   '@azure/keyvault-secrets': 4.0.2
-  '@decentralized-identity/ion-sdk': 0.4.1
+  '@decentralized-identity/ion-sdk': 0.5.0
   '@peculiar/webcrypto': 1.1.3
   '@rush-temp/verifiablecredentials-crypto-sdk-typescript': file:./projects/verifiablecredentials-crypto-sdk-typescript.tgz
   '@rush-temp/verifiablecredentials-crypto-sdk-typescript-keys': file:./projects/verifiablecredentials-crypto-sdk-typescript-keys.tgz

@@ -1,4 +1,4 @@
-# version 1.1.12-preview.3
+# version 1.1.12-preview.4
 ## Allow caller to specify preimage for JWS validation
 **Type of change:** bug    
 **Customer impact:** low
