@@ -1,0 +1,46 @@
+{
+  "name": "verifiablecredentials-crypto-sdk-typescript",
+  "entries": [
+    {
+      "version": "1.1.12",
+      "tag": "verifiablecredentials-crypto-sdk-typescript_v1.1.12",
+      "date": "Mon, 09 Aug 2021 22:36:21 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add a bug fix where a preimage is not derived"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"verifiablecredentials-crypto-sdk-typescript-keys\" from `1.1.12-preview.4` to `1.1.12`"
+          },
+          {
+            "comment": "Updating dependency \"verifiablecredentials-crypto-sdk-typescript-keystore\" from `1.1.12-preview.4` to `1.1.12`"
+          },
+          {
+            "comment": "Updating dependency \"verifiablecredentials-crypto-sdk-typescript-plugin\" from `1.1.12-preview.4` to `1.1.12`"
+          },
+          {
+            "comment": "Updating dependency \"verifiablecredentials-crypto-sdk-typescript-plugin-cryptofactory-suites\" from `1.1.12-preview.4` to `1.1.12`"
+          },
+          {
+            "comment": "Updating dependency \"verifiablecredentials-crypto-sdk-typescript-plugin-elliptic\" from `1.1.12-preview.4` to `1.1.12`"
+          },
+          {
+            "comment": "Updating dependency \"verifiablecredentials-crypto-sdk-typescript-plugin-factory\" from `1.1.12-preview.4` to `1.1.12`"
+          },
+          {
+            "comment": "Updating dependency \"verifiablecredentials-crypto-sdk-typescript-plugin-keyvault\" from `1.1.12-preview.4` to `1.1.12`"
+          },
+          {
+            "comment": "Updating dependency \"verifiablecredentials-crypto-sdk-typescript-protocol-jose\" from `1.1.12-preview.4` to `1.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"verifiablecredentials-crypto-sdk-typescript-protocols-common\" from `1.1.12-preview.4` to `1.1.12`"
+          }
+        ]
+      }
+    }
+  ]
+}

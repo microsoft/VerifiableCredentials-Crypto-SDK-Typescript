@@ -1,0 +1,17 @@
+{
+  "name": "verifiablecredentials-crypto-sdk-typescript-keys",
+  "entries": [
+    {
+      "version": "1.1.12",
+      "tag": "verifiablecredentials-crypto-sdk-typescript-keys_v1.1.12",
+      "date": "Mon, 09 Aug 2021 22:36:21 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add a bug fix where a preimage is not derived"
+          }
+        ]
+      }
+    }
+  ]
+}
