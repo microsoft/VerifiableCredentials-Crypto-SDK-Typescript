@@ -1,3 +1,8 @@
+# version 1.1.12-preview.10
+## Dependabot vulnerability fixes.
+**Type of change:** bug    
+**Customer impact:** low
+
 # version 1.1.12-preview.4
 ## Allow caller to specify preimage for JWS validation
 **Type of change:** bug    
