@@ -366,4 +366,4 @@ MigrationBackup/
  
 libs/keys/.rush/temp/package-deps_build.json
 common/config/rush/shrinkwrap.yaml
-/.npmrc
+.npmrc
