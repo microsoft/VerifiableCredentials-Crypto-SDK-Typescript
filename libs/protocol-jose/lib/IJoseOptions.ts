@@ -36,6 +36,8 @@ export interface IJoseOptions {
  * Need to redefine the location of this interface - todo
  */
 export interface IJwsSigningOptions extends IJoseOptions {
+  // preimage to validate
+  preimage?: string,
 }
 
 /**
