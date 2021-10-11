@@ -1,4 +1,6 @@
+❗ **From October 31, 2021, some Microsoft Azure AD Verifiable Credential SDK functionality will stop working in Microsoft Authenticator. Applications and services that currently use the Microsoft Azure AD Verifiable Credential SDK should migrate to the Microsoft [Request Service REST API](https://aka.ms/vcapi).**
 
+----
 
 # Repo
 
